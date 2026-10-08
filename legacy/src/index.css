@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-arc-bg: var(--arc-bg);
+  --color-arc-subtle: var(--arc-subtle);
+  --color-arc-dark: var(--arc-dark);
+  --color-arc-muted: var(--arc-muted);
+  --color-arc-border: var(--arc-border);
+  --color-arc-accent: var(--arc-accent);
+  --color-arc-accent-light: var(--arc-accent-light);
+}
+
+:root {
+  --arc-bg: #FFFFFF;
+  --arc-subtle: #F8F8F6;
+  --arc-dark: #111315;
+  --arc-muted: #6E7178;
+  --arc-border: #E8E8E4;
+  --arc-accent: #5B7E9F;
+  --arc-accent-light: #EEF3F8;
+}
+
+.dark {
+  --arc-bg: #0C0E10;
+  --arc-subtle: #14171A;
+  --arc-dark: #060708;
+  --arc-muted: #959AA4;
+  --arc-border: #23272D;
+  --arc-accent: #7EA2C4;
+  --arc-accent-light: #16202A;
+}
+
+/* Custom smooth styling and scroll behavior */
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  background-color: var(--arc-bg);
+  color: var(--arc-dark);
+}
+
+.dark body {
+  background-color: var(--arc-bg);
+  color: #F3F4F6;
+}
+
+/* Architectural watermark - scaled down (6-8px smaller) to avoid overlapping right cards */
+.hero-watermark {
+  font-size: clamp(1.4rem, 4.2vw, 3.9rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: rgba(255, 255, 255, 0.13);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  max-width: 48%;
+  pointer-events: none;
+}
+
+@media (max-width: 1024px) {
+  .hero-watermark {
+    font-size: clamp(1.2rem, 4.8vw, 2.8rem);
+    max-width: 65%;
+  }
+}
+
+/* Accessibility focus styles */
+:focus-visible {
+  outline: 2px solid var(--arc-accent);
+  outline-offset: 2px;
+}
+
+/* High performance scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 130, 145, 0.25);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 130, 145, 0.45);
+}
+
+/* Hide scrollbars cleanly for swipeable horizontal tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+
+/* ==========================================================================
+   Smooth Hardware-Accelerated Theme Crossfade (View Transitions API)
+   ========================================================================== */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: theme-fade-out;
+}
+::view-transition-new(root) {
+  animation-name: theme-fade-in;
+}
+
+@keyframes theme-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes theme-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Fallback smooth background transition without universal border-color pollution */
+body,
+#root {
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ==========================================================================
+   Skeleton Loading Shimmer Keyframes
+   ========================================================================== */
+@keyframes shimmer-wave {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer-wave 1.6s infinite ease-in-out;
+}
+

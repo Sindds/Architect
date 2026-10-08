@@ -1,0 +1,6 @@
+{
+  "name": "Arcline Estate — Architectural & Engineering Bureau",
+  "description": "Bento-grid landing page for luxury villa architecture and engineering contractor, featuring interactive cost calculator, project showcases, theme toggle, and EN/RU bilingual support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
