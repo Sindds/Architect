@@ -108,7 +108,7 @@ describe('Тексты: шаблоны, которые звучат как ре�
 
 describe('Тексты: структура', () => {
   it('у каждой секции лендинга есть заголовок и метка', () => {
-    const required = ['why', 'projects', 'cases', 'pricing', 'calculator', 'process', 'team', 'reviews', 'documents', 'faq', 'contacts']
+    const required = ['why', 'projects', 'pricing', 'calculator', 'process', 'team', 'reviews', 'documents', 'faq', 'contacts']
     for (const key of required) {
       const s = COPY.sections[key as keyof typeof COPY.sections]
       expect(s?.title, key).toBeTruthy()
@@ -132,13 +132,13 @@ describe('Тексты: структура', () => {
     const risky = ALL.filter((i) => /подорожа|разниц\S* (оплачива|бер[её]м)|удорожани/i.test(i.text))
     expect(fail(risky)).toEqual([])
     // FAQ ссылается на пункт 2.1 образца договора: проверяем, что пункт про твёрдую цену там есть.
-    const script = readFileSync(path.join(process.cwd(), 'scripts/make-sample-pdfs.ts'), 'utf8')
+    const script = readFileSync(path.join(process.cwd(), 'scripts/sample-docs.ts'), 'utf8')
     expect(script).toMatch(/<p>2\.1\.[^<]*твёрдая/)
     expect(FAQ.some((f) => f.answer.join(' ').includes('пункт 2.1 образца договора'))).toBe(true)
   })
 
   it('FAQ про гарантию ссылается на существующий раздел образца договора', () => {
-    const script = readFileSync(path.join(process.cwd(), 'scripts/make-sample-pdfs.ts'), 'utf8')
+    const script = readFileSync(path.join(process.cwd(), 'scripts/sample-docs.ts'), 'utf8')
     const section = script.match(/<h2>(\d+)\. Гарантия<\/h2>/)?.[1]
     const answer = FAQ.find((f) => /гаранти/i.test(f.question))?.answer.join(' ') ?? ''
     expect(section).toBeTruthy()

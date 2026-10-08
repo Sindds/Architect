@@ -15,7 +15,7 @@
     "lint:content": "node scripts/lint-content.mjs",
     "test": "vitest run",
     "e2e": "playwright test",
-    "docs:pdf": "tsx scripts/make-sample-pdfs.ts",
+    "docs:pdf": "tsx --import ./scripts/assets-hook.mjs scripts/make-sample-pdfs.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm lint:content && pnpm test"
   },
   "pnpm": {

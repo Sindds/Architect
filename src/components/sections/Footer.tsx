@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SITE } from '@/content/site'
+import { OfficeMap } from '../OfficeMap'
 import { Logo } from '../ui/Logo'
 
 /** Футер по образцу: тёмная скруглённая карточка с контактами, дисклеймером концепта и юридическими ссылками. */
@@ -41,6 +42,17 @@ export function Footer() {
               <li className="py-2 text-on-inverse-muted">{SITE.address}</li>
               <li className="text-on-inverse-muted">{SITE.hours}</li>
             </ul>
+          </div>
+        </div>
+        <div className="grid gap-6 border-b border-white/10 py-10 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <p className="label text-[#9fc0de]">Как добраться</p>
+            <p className="mt-3 max-w-sm text-on-inverse-muted">
+              {SITE.address}. {concept ? 'Адрес условный, как и вся компания концепт-проекта: карта показывает район.' : SITE.hours}
+            </p>
+          </div>
+          <div className="lg:col-span-8">
+            <OfficeMap />
           </div>
         </div>
         <div className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:justify-between">

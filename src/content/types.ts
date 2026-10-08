@@ -39,7 +39,9 @@ export interface PricingModel {
 export interface Picture {
   src: StaticImageData
   alt: string
-  caption: 'Визуализация' | 'Схема (иллюстрация)'
+  caption: 'Визуализация' | 'Схема (иллюстрация)' | 'Сгенерированный портрет'
+  /** Лицо сгенерировано: такие портреты допустимы только в режиме concept. */
+  generated?: boolean
 }
 
 export interface Room {
@@ -96,6 +98,7 @@ export interface Review {
 export interface TeamMember {
   name: string
   initials: string
+  photo?: Picture
   role: string
   responsibility: string
   stages: string
@@ -120,4 +123,34 @@ export interface Variant {
   heroImage: Picture
   firstProject: string
   calcStyle: Style
+}
+
+/** Смета-образец: разделы и позиции. Объём позиции = база × k, сумма раздела = доля цены дома. */
+export type EstimateUnit = 'м²' | 'м³' | 'м.п.' | 'т' | 'шт.' | 'компл.' | 'рейс' | 'маш.-ч' | 'мес.'
+export type EstimateBasis = 'fixed' | 'area' | 'footprint' | 'perimeter' | 'roof' | 'glazing' | 'walls' | 'upper' | 'terrace' | 'months' | 'bathrooms' | 'stairs'
+
+export interface EstimateItem {
+  name: string
+  unit: EstimateUnit
+  basis: EstimateBasis
+  k: number
+  /** Вес позиции внутри раздела. */
+  weight: number
+  /** Позиция «за комплект» (объём 1): забирает остаток округления, чтобы раздел сошёлся до рубля. */
+  absorb?: true
+}
+
+export interface EstimateSection {
+  title: string
+  /** С какого пакета раздел входит в цену. */
+  from: Tier
+  /** Доля цены дома в пакете «под ключ», %. Для других пакетов доли нормируются. */
+  share: number
+  items: EstimateItem[]
+}
+
+export interface EstimatePlan {
+  geometry: { perimeterK: number; roofK: number; glazingK: number; storeyHeight: number }
+  sections: EstimateSection[]
+  terrace: { title: string; items: EstimateItem[] }
 }

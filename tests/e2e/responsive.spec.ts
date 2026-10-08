@@ -56,7 +56,7 @@ for (const width of [320, 360, 640, 1024, 1180]) {
   test(`${width}px: текст и цифры в плитках кейсов, проектов и этапов не вылезают за плитку`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/')
-    const out = await page.locator('#cases dl > div, #projects dl > div, #process ol > li').evaluateAll((tiles) =>
+    const out = await page.locator('[data-testid=delivered] li, #projects dl > div, #process ol > li').evaluateAll((tiles) =>
       tiles.flatMap((tile) => {
         const t = tile.getBoundingClientRect()
         const parent = tile.parentElement!.getBoundingClientRect()
@@ -154,8 +154,8 @@ for (const width of [390, 1600]) {
   })
 }
 
-test('нет неподтверждённой популярности и «0%» в кейсах', async ({ page }) => {
+test('нет неподтверждённой популярности и «0%» в сданных домах', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByText('Выбирают чаще')).toHaveCount(0)
-  await expect(page.locator('#cases').getByText('смета не изменилась').first()).toBeVisible()
+  await expect(page.getByTestId('delivered').getByText('смета не изменилась').first()).toBeVisible()
 })

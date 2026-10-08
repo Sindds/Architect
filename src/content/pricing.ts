@@ -8,8 +8,8 @@ export const PRICING: PricingModel = {
       short: 'Закрытый тёплый дом без инженерии и отделки. Подходит, если дальше вы хотите вести стройку сами.',
       pricePerM2: 88_000,
       terracePerM2: 32_000,
-      daysBase: 90,
-      daysPerM2: 0.1,
+      daysBase: 75,
+      daysPerM2: 0.065,
       includes: [
         'Геология, топосъёмка, проект АР и КР',
         'Фундамент по расчёту: плита или сваи с ростверком',
@@ -29,8 +29,8 @@ export const PRICING: PricingModel = {
       short: 'Дом с инженерией и стенами, готовыми к отделке. Удобен, если интерьер делает ваш дизайнер.',
       pricePerM2: 125_000,
       terracePerM2: 40_000,
-      daysBase: 150,
-      daysPerM2: 0.12,
+      daysBase: 95,
+      daysPerM2: 0.08,
       includes: [
         'Всё из пакета «Тёплый контур»',
         'Отопление, водоснабжение, канализация',
@@ -49,8 +49,8 @@ export const PRICING: PricingModel = {
       short: 'Дом готов к жизни: отделка, сантехника, свет и настроенная инженерия. Остаётся привезти мебель.',
       pricePerM2: 175_000,
       terracePerM2: 50_000,
-      daysBase: 210,
-      daysPerM2: 0.15,
+      daysBase: 120,
+      daysPerM2: 0.1,
       includes: [
         'Всё из пакета «Под чистовую отделку»',
         'Чистовая отделка по дизайн-проекту бюро',

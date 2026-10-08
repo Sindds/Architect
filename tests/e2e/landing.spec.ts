@@ -67,6 +67,16 @@ test.describe('Шапка', () => {
   })
 })
 
+test('у команды портреты с описанием и пометкой о концепте', async ({ page }) => {
+  await page.goto('/')
+  const team = page.getByTestId('team')
+  await team.scrollIntoViewIfNeeded()
+  const photos = team.getByRole('img')
+  await expect(photos).toHaveCount(4)
+  await expect(photos.first()).toHaveAttribute('alt', /Алексей Воронов/)
+  await expect(page.locator('#team-title + p, #team-title ~ p').first()).toContainText('сгенерирован')
+})
+
 test.describe('Окна проектов и кейсов', () => {
   test('прямой заход /?project=titan открывает окно, Esc закрывает и чистит адрес', async ({ page }) => {
     await page.goto('/?project=titan')
@@ -93,6 +103,21 @@ test.describe('Окна проектов и кейсов', () => {
     await expect(card).toBeFocused()
   })
 
+  test('отдельного блока «Кейсы» нет: сданные дома — доказательство в «Как мы работаем»', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.locator('#cases')).toHaveCount(0)
+    await expect(page.getByRole('navigation', { name: 'Разделы страницы' }).getByRole('link', { name: 'Кейсы' })).toHaveCount(0)
+    const delivered = page.getByTestId('delivered')
+    await expect(delivered.getByRole('listitem')).toHaveCount(3)
+    // Доказательство на первом экране ведёт к сданным домам.
+    await expect(page.getByTestId('hero').getByRole('link', { name: /сданных дома/ })).toHaveAttribute('href', '#delivered')
+    const button = delivered.getByRole('button', { name: /Дом у воды/ })
+    await button.scrollIntoViewIfNeeded()
+    await button.click()
+    await expect(page.getByTestId('case-modal')).toBeVisible()
+    await expect(page).toHaveURL(/case=dom-u-vody/)
+  })
+
   test('окно кейса: план и факт, +2,7%', async ({ page }) => {
     await page.goto('/?case=rezidenciya-na-sklone')
     const modal = page.getByTestId('case-modal')
@@ -112,10 +137,10 @@ test.describe('Окна проектов и кейсов', () => {
 })
 
 test.describe('Калькулятор и квиз', () => {
-  test('значения по умолчанию: 47 150 000 ₽ и 202 дня', async ({ page }) => {
+  test('значения по умолчанию: 47 150 000 ₽ и 133 дня', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByTestId('calc-total')).toHaveText(formatRub(47_150_000))
-    await expect(page.getByTestId('calc-days')).toContainText(formatDays(202))
+    await expect(page.getByTestId('calc-days')).toContainText(formatDays(133))
   })
 
   test('прямая ссылка /?calc=titan#calculator: итог совпадает с pricing.ts', async ({ page }) => {

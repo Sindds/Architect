@@ -4,7 +4,6 @@ import { projectsFor } from '@/lib/variant'
 import { LandingProvider } from './LandingProvider'
 import { PageLoader } from './PageLoader'
 import { CalculatorSection } from './sections/CalculatorSection'
-import { Cases } from './sections/Cases'
 import { Documents } from './sections/Documents'
 import { Faq } from './sections/Faq'
 import { FinalCta } from './sections/FinalCta'
@@ -30,7 +29,6 @@ export function Landing({ variant }: { variant: VariantKey }) {
         <Hero variant={variant} />
         <WhyUs />
         <Projects projects={projectsFor(variant)} />
-        <Cases />
         <Pricing />
         <CalculatorSection defaultStyle={VARIANTS[variant].calcStyle} />
         <Process />

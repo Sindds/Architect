@@ -56,7 +56,7 @@ export function Hero({ variant }: { variant: VariantKey }) {
 
           <ul className="-mx-5 flex snap-x gap-3 overflow-x-auto px-5 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 xl:w-[19rem] xl:shrink-0 xl:grid-cols-1" aria-label="Доказательства">
             <li className="flex">
-              <a href="#cases" className={proof}>
+              <a href="#delivered" className={proof}>
                 <span className="display num text-3xl leading-none font-bold">{CASES.length}</span>{' '}
                 <span className="label leading-snug font-medium text-[#d4d8dd]">сданных дома: план и факт по смете</span>
               </a>

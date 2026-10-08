@@ -1,18 +1,24 @@
 import { ArrowUpRight, FileText } from 'lucide-react'
 import { COPY } from '@/content/copy'
+import { ESTIMATE_SAMPLE } from '@/content/estimate-sample'
 import { SITE } from '@/content/site'
+import { formatRub, plural } from '@/lib/format'
+import { estimateFor } from '@/lib/pricing'
 import { SectionHead } from '../ui/SectionHead'
+
+const sheet = estimateFor(ESTIMATE_SAMPLE)
+const lines = sheet.sections.reduce((n, s) => n + s.lines.length, 0)
 
 const DOCS = [
   {
     href: SITE.docs.contract,
-    title: 'Образец договора генподряда',
-    about: 'Цена, график платежей по этапам, порядок допсоглашений, гарантия и ответственность сторон.',
+    title: 'Образец договора строительного подряда',
+    about: 'Твёрдая цена, оплата после акта по каждому этапу, гарантия 10 лет на фундамент и каркас, неустойка по закону о защите прав потребителей, порядок допсоглашений и расторжения.',
   },
   {
     href: SITE.docs.estimate,
-    title: 'Образец сметы',
-    about: 'Разбивка по этапам и разделам: фундамент, каркас, кровля, остекление, инженерия, отделка. Отдельно указано, что в цену не входит.',
+    title: `Образец сметы ${ESTIMATE_SAMPLE.name} на ${formatRub(sheet.total)}`,
+    about: `${lines} ${plural(lines, ['позиция', 'позиции', 'позиций'])} в ${sheet.sections.length} разделах: объёмы, цены за единицу и суммы от геологии до светильников. Отдельно показаны график платежей и то, что в цену не входит.`,
   },
 ]
 

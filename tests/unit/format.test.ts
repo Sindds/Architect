@@ -15,8 +15,8 @@ describe('Срок после «от» — родительный падеж', (
     [119, `от 119${NB}дней`],
   ])('%i → %s', (n, out) => expect(formatDaysFrom(n)).toBe(out))
 
-  it('подзаголовок первого экрана: «от 254 дней», а не «от 254 дня»', () => {
-    expect(heroFor('default').subtitle).toContain(`от 254${NB}дней`)
+  it('подзаголовок первого экрана: «от 149 дней», а не «от 149 дня»', () => {
+    expect(heroFor('default').subtitle).toContain(`от 149${NB}дней`)
     expect(heroFor('default').subtitle).not.toMatch(/от \d+\s(дня|день)\b/)
   })
 })
