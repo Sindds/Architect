@@ -22,3 +22,8 @@ Next.js (App Router, TypeScript strict) — версия, совместимая
 
 ## Команды (появятся после P0)
 `pnpm dev` · `pnpm build` · `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm e2e` · `pnpm seed` · `pnpm lint:content` · `pnpm check` (typecheck + lint + lint:content + test)
+
+## Текущее состояние (08.10.2026)
+- По решению Дмитрия сделана упрощённая версия без Payload и Postgres: Next.js 16.3 (статическая генерация), контент в `src/content/*.ts`, расчёт — `src/lib/pricing.ts`. Payload — следующий этап, структура `src/content` повторяет будущие коллекции.
+- `pnpm typecheck` начинается с `next typegen` (создаёт `next-env.d.ts`). Playwright запускает Chromium из `/opt/pw-browsers/chromium` (`CHROMIUM_PATH`).
+- Варианты под рекламу — rewrite в `next.config.ts` на `/v/[variant]`. Не сделано из плана — список в `README.md`.

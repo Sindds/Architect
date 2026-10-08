@@ -1,0 +1,243 @@
+@import 'tailwindcss';
+
+/* Прототип в legacy/ не участвует в сборке стилей */
+@source not '../../legacy';
+
+/*
+  Направление: «чертёжный лист». Тёплая бумага, графитовая тушь, терракотовая разметка
+  размеров, тонкие линии сетки. Контраст пар текст/фон проверен: не ниже 4,97:1.
+*/
+@theme {
+  --color-paper: #f3efe6;
+  --color-paper-2: #e8e1d3;
+  --color-sheet: #fbf9f4;
+  --color-ink: #1b1c19;
+  --color-ink-2: #4e4a42;
+  --color-ink-3: #6b665c;
+  --color-line: #d3cbbb;
+  --color-accent: #9a3b16;
+  --color-accent-strong: #7f2f10;
+  --color-graphite: #1d2320;
+  --color-graphite-2: #2a322d;
+  --color-on-graphite: #ede8dd;
+  --color-on-graphite-2: #b5afa2;
+  --color-accent-on-dark: #e0916b;
+  --color-ok: #2e6a3e;
+  --color-danger: #a12a1c;
+
+  --font-sans: var(--font-onest-cyr), var(--font-onest-rub), var(--font-onest-lat), system-ui, sans-serif;
+  --font-display: var(--font-cormorant-cyr), var(--font-cormorant-rub), var(--font-cormorant-lat), Georgia, serif;
+  --font-mono: var(--font-plex-cyr), var(--font-plex-rub), var(--font-plex-lat), ui-monospace, monospace;
+
+  --text-display: clamp(2.5rem, 1.6rem + 2.9vw, 4.25rem);
+  --text-display--line-height: 1;
+  --text-h2: clamp(2.125rem, 1.6rem + 2vw, 3.75rem);
+  --text-h2--line-height: 1.04;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    font-feature-settings: 'tnum' 0;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  .on-dark :focus-visible {
+    outline-color: var(--color-accent-on-dark);
+  }
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-sheet);
+  }
+  dialog::backdrop {
+    background: rgb(27 28 25 / 0.62);
+    backdrop-filter: blur(2px);
+  }
+}
+
+@layer components {
+  .shell {
+    width: 100%;
+    max-width: 88rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+  @media (min-width: 48rem) {
+    .shell {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Подпись-разметка: моноширинный кегль, как надписи на чертеже */
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+  }
+  .num {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* Линия сетки листа на фоне секции */
+  .sheet-grid {
+    background-image: linear-gradient(to right, rgb(27 28 25 / 0.055) 1px, transparent 1px);
+    background-size: calc(100% / 12) 100%;
+  }
+
+  /* Размерная линия: засечки по краям, подпись по центру */
+  .dim {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--color-accent);
+  }
+  .dim::before,
+  .dim::after {
+    content: '';
+    flex: 1;
+    height: 9px;
+    background:
+      linear-gradient(currentColor, currentColor) left center / 1px 9px no-repeat,
+      linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat;
+  }
+  .dim::after {
+    background:
+      linear-gradient(currentColor, currentColor) right center / 1px 9px no-repeat,
+      linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0.75rem 1.4rem;
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1.2;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    cursor: pointer;
+    transition:
+      background-color 200ms var(--ease-out-soft),
+      color 200ms var(--ease-out-soft),
+      border-color 200ms var(--ease-out-soft),
+      transform 200ms var(--ease-out-soft);
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn:disabled {
+    cursor: progress;
+    opacity: 0.7;
+  }
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-sheet);
+  }
+  .btn-primary:hover {
+    background: var(--color-accent-strong);
+  }
+  .btn-ghost {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+  .btn-ghost:hover {
+    background: var(--color-ink);
+    color: var(--color-sheet);
+  }
+  .on-dark .btn-ghost {
+    border-color: var(--color-on-graphite);
+    color: var(--color-on-graphite);
+  }
+  .on-dark .btn-ghost:hover {
+    background: var(--color-on-graphite);
+    color: var(--color-graphite);
+  }
+
+  .link {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: color 200ms;
+  }
+  .link:hover {
+    color: var(--color-accent);
+  }
+  .on-dark .link:hover {
+    color: var(--color-accent-on-dark);
+  }
+
+  .field {
+    display: block;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.7rem 0.9rem;
+    background: var(--color-sheet);
+    color: var(--color-ink);
+    border: 1px solid var(--color-ink-3);
+    border-radius: 2px;
+    font-size: 1rem;
+    transition: border-color 150ms;
+  }
+  .field:hover {
+    border-color: var(--color-ink);
+  }
+  .field[aria-invalid='true'] {
+    border-color: var(--color-danger);
+  }
+
+  /* Появление при прокрутке — только CSS и только там, где браузер это умеет.
+     Без поддержки или при reduced motion контент виден сразу. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .reveal {
+        animation: reveal linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 40%;
+      }
+    }
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

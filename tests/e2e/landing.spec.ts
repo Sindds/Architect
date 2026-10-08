@@ -1,0 +1,183 @@
+import AxeBuilder from '@axe-core/playwright'
+import { expect, type Page, test } from '@playwright/test'
+import { formatDays, formatRub } from '@/lib/format'
+import { breakdown, projectPrice } from '@/lib/pricing'
+
+const isMobile = (page: Page) => (page.viewportSize()?.width ?? 0) < 768
+
+test.describe('Первый экран и варианты', () => {
+  test('H1 с ценой есть в исходном HTML', async ({ request }) => {
+    const html = await (await request.get('/')).text()
+    expect(html).toMatch(/<h1[^>]*>Дома из клееного бруса[^<]*под ключ от 51,6 млн ₽<\/h1>/)
+  })
+
+  test('варианты отдают свой H1 в HTML', async ({ request }) => {
+    expect(await (await request.get('/?v=monolith')).text()).toContain('под ключ от 119,4 млн ₽')
+    expect(await (await request.get('/?utm_content=fachwerk')).text()).toContain('под ключ от 69,5 млн ₽')
+    expect(await (await request.get('/?v=unknown')).text()).toContain('под ключ от 51,6 млн ₽')
+  })
+
+  test('несуществующий адрес — 404', async ({ request }) => {
+    expect((await request.get('/net-takoy-stranicy')).status()).toBe(404)
+  })
+
+  test('нет горизонтальной прокрутки, нет запросов к Яндексу при загрузке', async ({ page }) => {
+    const external: string[] = []
+    page.on('request', (r) => {
+      if (/yandex\.|mc\.yandex/.test(r.url())) external.push(r.url())
+    })
+    await page.goto('/')
+    await page.waitForLoadState('networkidle')
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+    expect(overflow).toBeLessThanOrEqual(0)
+    expect(external).toEqual([])
+  })
+})
+
+test.describe('Шапка', () => {
+  test('телефон виден; на мобильном все кнопки шапки ≥ 44×44', async ({ page }) => {
+    await page.goto('/')
+    if (isMobile(page)) {
+      await expect(page.getByRole('link', { name: /Позвонить/ })).toBeVisible()
+      const boxes = await page.locator('header a:visible, header button:visible').evaluateAll((els) =>
+        els.map((e) => {
+          const r = e.getBoundingClientRect()
+          return { w: r.width, h: r.height, text: e.textContent?.trim() || e.getAttribute('aria-label') }
+        }),
+      )
+      for (const b of boxes) {
+        expect.soft(b.h, `высота «${b.text}»`).toBeGreaterThanOrEqual(44)
+        expect.soft(b.w, `ширина «${b.text}»`).toBeGreaterThanOrEqual(44)
+      }
+    } else {
+      await expect(page.getByTestId('header-phone')).toBeVisible()
+    }
+  })
+
+  test('футер: дисклеймер концепта и юридические ссылки', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByTestId('disclaimer')).toContainText('Концепт-проект для портфолио')
+    for (const name of ['Политика конфиденциальности', 'Согласие на обработку данных', 'Файлы cookie']) {
+      await expect(page.locator('footer').getByRole('link', { name })).toBeVisible()
+    }
+  })
+})
+
+test.describe('Окна проектов и кейсов', () => {
+  test('прямой заход /?project=titan открывает окно, Esc закрывает и чистит адрес', async ({ page }) => {
+    await page.goto('/?project=titan')
+    const modal = page.getByTestId('project-modal')
+    await expect(modal).toBeVisible()
+    await expect(modal.getByRole('heading', { level: 2 })).toContainText('TITAN')
+    const titan = projectPrice({ style: 'monolith', area: 540, terrace: 120 }, 'turnkey')
+    await expect(modal).toContainText(formatRub(titan.price))
+    await page.keyboard.press('Escape')
+    await expect(modal).toBeHidden()
+    // page.url() обновляется асинхронно — проверяем с ожиданием.
+    await expect(page).not.toHaveURL(/project=/)
+  })
+
+  test('клик по карточке меняет адрес, «Назад» закрывает, фокус возвращается', async ({ page }) => {
+    await page.goto('/')
+    const card = page.getByTestId('projects-grid').getByRole('button', { name: 'VISTA' })
+    await card.scrollIntoViewIfNeeded()
+    await card.click()
+    await expect(page.getByTestId('project-modal')).toBeVisible()
+    await expect(page).toHaveURL(/project=vista/)
+    await page.goBack()
+    await expect(page.getByTestId('project-modal')).toBeHidden()
+    await expect(card).toBeFocused()
+  })
+
+  test('окно кейса: план и факт, +2,7%', async ({ page }) => {
+    await page.goto('/?case=rezidenciya-na-sklone')
+    const modal = page.getByTestId('case-modal')
+    await expect(modal).toBeVisible()
+    await expect(modal).toContainText('+2,7% к смете')
+    await expect(modal).toContainText(formatRub(140_950_000))
+  })
+
+  test('«Рассчитать этот проект» подставляет параметры в калькулятор', async ({ page }) => {
+    await page.goto('/?project=titan')
+    await page.getByTestId('project-modal').getByRole('button', { name: 'Рассчитать этот проект' }).click()
+    await expect(page.getByTestId('project-modal')).toBeHidden()
+    await expect(page.getByTestId('calc-area-input')).toHaveValue('540')
+    await expect(page.getByRole('radio', { name: /Монолит/ })).toBeChecked()
+    await expect(page).toHaveURL(/calc=titan/)
+  })
+})
+
+test.describe('Калькулятор и квиз', () => {
+  test('значения по умолчанию: 47 150 000 ₽ и 202 дня', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByTestId('calc-total')).toHaveText(formatRub(47_150_000))
+    await expect(page.getByTestId('calc-days')).toContainText(formatDays(202))
+  })
+
+  test('прямая ссылка /?calc=titan#calculator: итог совпадает с pricing.ts', async ({ page }) => {
+    await page.goto('/?calc=titan#calculator')
+    await expect(page.getByTestId('calc-area-input')).toHaveValue('540')
+    const expected = breakdown({ area: 540, terrace: 120, style: 'monolith', tier: 'whitebox', addons: ['knx'] })
+    await expect(page.getByTestId('calc-total')).toHaveText(formatRub(expected.total))
+  })
+
+  test('квиз: «Далее» неактивна без ответа, после 4 шагов — вилка и форма', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('link', { name: 'Рассчитать стоимость за 2 минуты' }).click()
+    const quiz = page.getByTestId('quiz')
+    await expect(quiz).toBeVisible()
+    for (const answer of ['250–350 м²', 'Скандинавский', 'В течение года', 'Участок есть']) {
+      const next = quiz.getByRole('button', { name: /Далее|Показать вилку/ })
+      await expect(next).toBeDisabled()
+      await quiz.getByText(answer, { exact: true }).click()
+      await next.click()
+    }
+    const result = page.getByTestId('quiz-result')
+    await expect(result).toContainText('Ваша вилка')
+    await result.getByRole('button', { name: 'Получить расчёт' }).click()
+    await expect(page.getByTestId('lead-modal').getByRole('heading', { name: 'Получить расчёт' })).toBeVisible()
+  })
+})
+
+test.describe('Заявка', () => {
+  test('«Покажем построенный дом» → форма «Экскурсия на объект»; без согласия не отправляется; с согласием — номер заявки', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Покажем построенный дом' }).click()
+    const modal = page.getByTestId('lead-modal')
+    await expect(modal.getByRole('heading', { name: 'Экскурсия на объект' })).toBeVisible()
+    const consent = modal.getByRole('checkbox')
+    await expect(consent).not.toBeChecked()
+
+    await modal.getByLabel('Имя').fill('Анна')
+    await modal.getByLabel('Телефон').fill('9161234567')
+    await expect(modal.getByLabel('Телефон')).toHaveValue('+7 (916) 123-45-67')
+    await page.waitForTimeout(3100)
+    await modal.getByRole('button', { name: 'Записаться на экскурсию' }).click()
+    await expect(modal.getByText('Без согласия на обработку данных отправить заявку нельзя')).toBeVisible()
+    await expect(modal.getByLabel('Имя')).toHaveValue('Анна')
+
+    await consent.check()
+    await modal.getByRole('button', { name: 'Записаться на экскурсию' }).click()
+    await expect(modal.getByTestId('lead-success')).toContainText(/Заявка №\d+ принята/)
+  })
+
+  test('FAQ раскрывается с клавиатуры', async ({ page }) => {
+    await page.goto('/')
+    const summary = page.locator('summary', { hasText: 'Можно ли через ипотеку или эскроу?' })
+    await summary.focus()
+    await page.keyboard.press('Enter')
+    await expect(page.getByText('Условия ипотеки и расчётов через эскроу уточняются')).toBeVisible()
+  })
+})
+
+test.describe('Доступность (axe)', () => {
+  for (const url of ['/', '/?project=vista', '/privacy']) {
+    test(`нет нарушений serious/critical: ${url}`, async ({ page }) => {
+      await page.goto(url)
+      if (url.includes('project')) await expect(page.getByTestId('project-modal')).toBeVisible()
+      const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
+      const bad = results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+      expect(bad.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' | ')}`)).toEqual([])
+    })
+  }
+})
