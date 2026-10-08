@@ -125,6 +125,16 @@ describe('Тексты: структура', () => {
     expect(repeated).toEqual([])
   })
 
+  it('обещания о цене не сильнее образца договора (CONTENT-SPEC §2, договор п. 2.1–2.2)', () => {
+    // В договоре: цена твёрдая и меняется только допсоглашением. Обещаний взять подорожание на себя там нет.
+    const risky = ALL.filter((i) => /подорожа|разниц\S* (оплачива|бер[её]м)|удорожани/i.test(i.text))
+    expect(fail(risky)).toEqual([])
+    // FAQ ссылается на пункт 2.1 образца договора: проверяем, что пункт про твёрдую цену там есть.
+    const script = readFileSync(path.join(process.cwd(), 'scripts/make-sample-pdfs.ts'), 'utf8')
+    expect(script).toMatch(/<p>2\.1\.[^<]*твёрдая/)
+    expect(FAQ.some((f) => f.answer.join(' ').includes('пункт 2.1 образца договора'))).toBe(true)
+  })
+
   it('FAQ про гарантию ссылается на существующий раздел образца договора', () => {
     const script = readFileSync(path.join(process.cwd(), 'scripts/make-sample-pdfs.ts'), 'utf8')
     const section = script.match(/<h2>(\d+)\. Гарантия<\/h2>/)?.[1]
