@@ -9,13 +9,16 @@ const isMobile = (page: Page) => (page.viewportSize()?.width ?? 0) < 768
 test.describe('Первый экран и варианты', () => {
   test('H1 с ценой есть в исходном HTML', async ({ request }) => {
     const html = await (await request.get('/')).text()
-    expect(html).toMatch(/<h1[^>]*>Дома из клееного бруса[^<]*под ключ от 51,6 млн ₽<\/h1>/)
+    // Текст H1 без тегов: цена может лежать в отдельном <span>, но заголовок остаётся одним H1.
+    const h1 = (html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? '').replace(/<[^>]+>/g, '').replace(/\u00a0/g, ' ')
+    expect(h1).toBe('Дома из клееного бруса с панорамным остеклением в Подмосковье — под ключ от 51,6 млн ₽')
   })
 
   test('варианты отдают свой H1 в HTML', async ({ request }) => {
-    expect(await (await request.get('/?v=monolith')).text()).toContain('под ключ от 119,4 млн ₽')
-    expect(await (await request.get('/?utm_content=fachwerk')).text()).toContain('под ключ от 69,5 млн ₽')
-    expect(await (await request.get('/?v=unknown')).text()).toContain('под ключ от 51,6 млн ₽')
+    const text = async (url: string) => (await (await request.get(url)).text()).replace(/\u00a0/g, ' ')
+    expect(await text('/?v=monolith')).toContain('под ключ от 119,4 млн ₽')
+    expect(await text('/?utm_content=fachwerk')).toContain('под ключ от 69,5 млн ₽')
+    expect(await text('/?v=unknown')).toContain('под ключ от 51,6 млн ₽')
   })
 
   test('несуществующий адрес — 404', async ({ request }) => {
@@ -124,7 +127,7 @@ test.describe('Калькулятор и квиз', () => {
 
   test('квиз: «Далее» неактивна без ответа, после 4 шагов — вилка и форма', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('link', { name: 'Рассчитать стоимость за 2 минуты' }).click()
+    await page.getByRole('link', { name: 'Узнать цену за 2 минуты' }).click()
     const quiz = page.getByTestId('quiz')
     await expect(quiz).toBeVisible()
     for (const answer of ['250–350 м²', 'Скандинавский', 'В течение года', 'Участок есть']) {

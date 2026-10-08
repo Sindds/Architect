@@ -49,11 +49,12 @@ export function Header() {
           glass ? 'border border-white/15 bg-black/55 text-white backdrop-blur-md' : 'border border-line bg-surface/95 text-fg backdrop-blur-xl'
         }`}
       >
-        <a href="#top" className="mr-auto inline-flex min-h-11 min-w-0 items-center" aria-label={`${SITE.brandFull}, в начало страницы`}>
+        <a href="#top" className="mr-auto inline-flex min-h-11 min-w-0 items-center">
           <Logo />
+          <span className="sr-only">, в начало страницы</span>
         </a>
 
-        <nav aria-label="Разделы страницы" className="hidden lg:block">
+        <nav aria-label="Разделы страницы" className="hidden xl:block">
           <ul className="flex items-center gap-0.5">
             {SITE.nav.map((item) => {
               const current = active === item.href
@@ -62,7 +63,7 @@ export function Header() {
                   <a
                     href={item.href}
                     aria-current={current ? 'true' : undefined}
-                    className={`inline-flex min-h-11 items-center rounded-full px-3.5 text-sm font-medium transition-colors ${
+                    className={`inline-flex min-h-11 items-center rounded-full px-3 text-sm font-medium whitespace-nowrap transition-colors ${
                       current ? (glass ? 'bg-white/20' : 'bg-fg text-bg') : glass ? 'hover:bg-white/15' : 'hover:bg-subtle'
                     }`}
                   >
@@ -74,17 +75,17 @@ export function Header() {
           </ul>
         </nav>
 
-        <a href={SITE.phoneHref} className="num hidden min-h-11 items-center px-3 text-sm font-semibold whitespace-nowrap xl:inline-flex" data-testid="header-phone">
+        <a href={SITE.phoneHref} className="num hidden min-h-11 items-center px-3 text-sm font-semibold whitespace-nowrap md:inline-flex" data-testid="header-phone">
           {SITE.phoneDisplay}
         </a>
-        <a href={SITE.phoneHref} className={`inline-flex size-11 shrink-0 items-center justify-center rounded-full transition-colors xl:hidden ${iconBtn}`} aria-label={`Позвонить: ${SITE.phoneDisplay}`}>
+        <a href={SITE.phoneHref} className={`inline-flex size-11 shrink-0 items-center justify-center rounded-full transition-colors md:hidden ${iconBtn}`} aria-label={`Позвонить: ${SITE.phoneDisplay}`} data-testid="header-phone-icon">
           <Phone aria-hidden className="size-5" strokeWidth={1.6} />
         </a>
         <button type="button" onClick={messenger} className={`inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors ${iconBtn}`} aria-label="Написать в мессенджер">
           <MessageCircle aria-hidden className="size-5" strokeWidth={1.6} />
         </button>
         <ThemeToggle className={iconBtn} />
-        <button type="button" onClick={calc} className={`btn hidden sm:inline-flex ${glass ? 'btn-light' : 'btn-primary'}`}>
+        <button type="button" onClick={calc} className={`btn hidden whitespace-nowrap lg:inline-flex ${glass ? 'btn-light' : 'btn-primary'}`}>
           Рассчитать стоимость
           <span className="btn-dot">
             <ArrowUpRight aria-hidden className="size-4" />
@@ -93,7 +94,7 @@ export function Header() {
         <button
           type="button"
           onClick={() => menuRef.current?.showModal()}
-          className={`inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors lg:hidden ${iconBtn}`}
+          className={`inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors xl:hidden ${iconBtn}`}
           aria-label="Открыть меню"
         >
           <Menu aria-hidden className="size-5" strokeWidth={1.6} />

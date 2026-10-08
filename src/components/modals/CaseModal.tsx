@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { getReview } from '@/content/people'
 import { PRICING } from '@/content/pricing'
 import type { Case } from '@/content/types'
-import { formatDayDelta, formatDays, formatDeviation, formatRub } from '@/lib/format'
+import { formatDayDelta, formatDays, formatPriceDelta, formatRub } from '@/lib/format'
 import { daysFor, priceFor } from '@/lib/pricing'
 import { LeadForm } from '../forms/LeadForm'
 import { useLanding } from '../LandingProvider'
@@ -93,7 +93,7 @@ function CaseBody({ kase }: { kase: Case }) {
         </table>
         <p className="mt-3">
           <span className="num font-medium text-accent">
-            {formatDeviation(planPrice, kase.factPrice)} к смете, {formatDayDelta(planDays, kase.factDays)}.
+            {formatPriceDelta(planPrice, kase.factPrice)}, {formatDayDelta(planDays, kase.factDays)}.
           </span>{' '}
           {kase.deviationNote}
         </p>

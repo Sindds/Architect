@@ -6,7 +6,8 @@ import { useState } from 'react'
 import { COPY } from '@/content/copy'
 import { PRICING, STYLE_ORDER } from '@/content/pricing'
 import type { Project, Style } from '@/content/types'
-import { formatDays, formatMln } from '@/lib/format'
+import { formatDaysFrom, formatMln } from '@/lib/format'
+import { nbsp } from '@/lib/typography'
 import { projectPrice } from '@/lib/pricing'
 import { useLanding } from '../LandingProvider'
 import { SectionHead } from '../ui/SectionHead'
@@ -20,7 +21,7 @@ export function Projects({ projects }: { projects: Project[] }) {
   return (
     <section id="projects" aria-labelledby="projects-title" className="border-t border-line">
       <div className="shell py-16 sm:py-24">
-        <SectionHead id="projects-title" index={2} copy={COPY.sections.projects} />
+        <SectionHead id="projects-title" copy={COPY.sections.projects} />
 
         <div className="mt-10 flex flex-wrap gap-2" role="group" aria-label="Фильтр по стилю">
           {filters.map((f) => (
@@ -47,13 +48,17 @@ export function Projects({ projects }: { projects: Project[] }) {
                       className="object-cover transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.04] motion-reduce:transition-none"
                     />
                     <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/30" />
-                    <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                      <span className="label rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-white backdrop-blur-md">{PRICING.styles[p.style].title}</span>
-                      <span className="label num rounded-full border border-white/20 bg-white/20 px-3 py-1.5 font-medium text-white backdrop-blur-md">
+                    <div className="absolute inset-x-4 top-4 flex flex-wrap gap-2">
+                      <span data-chip className="label rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-white backdrop-blur-md">
+                        {PRICING.styles[p.style].title}
+                      </span>
+                      <span data-chip className="label num rounded-full border border-white/20 bg-white/20 px-3 py-1.5 font-medium text-white backdrop-blur-md">
                         {p.area} м²
                       </span>
+                      <span data-chip className="label ml-auto rounded-full bg-black/60 px-3 py-1.5 font-medium text-[#d4d8dd]">
+                        {p.cover.caption}
+                      </span>
                     </div>
-                    <span className="label absolute top-4 right-4 rounded-full bg-black/60 px-3 py-1.5 font-medium text-[#d4d8dd]">{p.cover.caption}</span>
                     <div className="absolute inset-x-4 bottom-4 flex items-end justify-between gap-4 text-white sm:inset-x-6 sm:bottom-6">
                       <div>
                         <h3 className="display text-3xl font-bold sm:text-4xl">
@@ -67,7 +72,7 @@ export function Projects({ projects }: { projects: Project[] }) {
                           </button>
                         </h3>
                         <p className="label num mt-1 font-medium text-[#d4d8dd]">
-                          терраса {p.terrace} м² · {p.floors === 1 ? '1 этаж' : `${p.floors} этажа`} · от {formatDays(contour.days)}
+                          терраса {p.terrace} м² · {p.floors === 1 ? '1 этаж' : `${p.floors} этажа`} · {formatDaysFrom(contour.days)}
                         </p>
                       </div>
                       <span aria-hidden className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-[#111315] transition-transform group-hover:rotate-45 motion-reduce:transition-none">
@@ -76,14 +81,15 @@ export function Projects({ projects }: { projects: Project[] }) {
                     </div>
                     <span aria-hidden className="pointer-events-none absolute inset-0 rounded-3xl ring-accent-deco ring-offset-2 group-has-[:focus-visible]:ring-2" />
                   </div>
+                  <p className="mt-4 text-muted">{nbsp(p.tagline)}</p>
                   <dl className="num mt-3 grid grid-cols-2 gap-3">
                     <div className="card px-4 py-3">
                       <dt className="text-sm text-muted">Тёплый контур</dt>
-                      <dd className="text-lg font-semibold">от {formatMln(contour.price)}</dd>
+                      <dd className="text-base font-semibold min-[400px]:text-lg">от {formatMln(contour.price)}</dd>
                     </div>
                     <div className="card px-4 py-3">
                       <dt className="text-sm text-muted">Под ключ</dt>
-                      <dd className="text-lg font-semibold">от {formatMln(turnkey.price)}</dd>
+                      <dd className="text-base font-semibold min-[400px]:text-lg">от {formatMln(turnkey.price)}</dd>
                     </div>
                   </dl>
                 </article>

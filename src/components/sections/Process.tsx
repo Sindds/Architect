@@ -22,7 +22,7 @@ export function Process() {
   return (
     <section id="process" aria-labelledby="process-title" className="border-t border-line">
       <div className="shell py-16 sm:py-24">
-        <SectionHead id="process-title" index={6} copy={COPY.sections.process} lead={lead} />
+        <SectionHead id="process-title" copy={COPY.sections.process} lead={lead} />
 
         {/* Диаграмма сроков: ширина отрезка пропорциональна длительности этапа */}
         <div className="mt-12 hidden lg:block" aria-hidden>
@@ -47,18 +47,20 @@ export function Process() {
           </div>
         </div>
 
-        <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {STEPS.map((s, i) => (
-            <li key={s.title} className="reveal card flex flex-col p-5">
-              <div className="flex items-center justify-between gap-3">
+            <li key={s.title} className="reveal card grid gap-x-4 p-5 min-[360px]:grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-1 lg:flex lg:flex-col">
+              <div className="col-span-full flex items-center justify-between gap-3">
                 <span className="label num text-accent">Этап {i + 1}</span>
                 <span className="label num rounded-full bg-subtle px-2.5 py-1 font-medium text-muted">{formatDays(s.days)}</span>
               </div>
-              <h3 className="mt-4 text-lg font-semibold leading-snug">{s.title}</h3>
-              <p className="mt-2 text-[0.9375rem] text-muted">{s.result}</p>
-              <p className="num mt-auto pt-5">
-                <span className="display text-4xl font-bold">{s.paymentPercent}%</span>
-                <span className="mt-1 block text-sm text-muted">оплаты после акта</span>
+              <div>
+                <h3 className="mt-3 text-lg font-semibold leading-snug lg:mt-4">{s.title}</h3>
+                <p className="mt-1.5 text-[0.9375rem] break-words hyphens-auto text-muted">{s.result}</p>
+              </div>
+              <p className="num mt-3 min-[360px]:text-right sm:text-left lg:mt-auto lg:pt-5">
+                <span className="display text-3xl font-bold lg:text-4xl">{s.paymentPercent}%</span>
+                <span className="block text-sm text-muted">оплаты после акта</span>
               </p>
             </li>
           ))}

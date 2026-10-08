@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useId, useState } from 'react'
+import { ArrowUpRight } from 'lucide-react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { ADDON_ORDER, PRICING, STYLE_ORDER, TIER_ORDER } from '@/content/pricing'
 import { getProject } from '@/content/projects'
 import type { AddonKey, Style, Tier } from '@/content/types'
-import { formatDays, formatRub } from '@/lib/format'
-import { breakdown, ROUNDING_STEP } from '@/lib/pricing'
+import { formatDays, formatRub, groupDigits } from '@/lib/format'
+import { breakdown, minPriceFor, ROUNDING_STEP } from '@/lib/pricing'
 import { useLanding } from '../LandingProvider'
 
 const AREA = { min: 100, max: 800, step: 10 }
@@ -23,6 +24,26 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
   const [tier, setTier] = useState<Tier>('whitebox')
   const [addons, setAddons] = useState<AddonKey[]>(['knx'])
   const [presetName, setPresetName] = useState<string | null>(null)
+  // Мобильная панель итога: видна, пока человек двигает параметры, а карточка результата за экраном.
+  const controlsRef = useRef<HTMLDivElement>(null)
+  const resultRef = useRef<HTMLElement>(null)
+  const [controlsInView, setControlsInView] = useState(false)
+  const [resultInView, setResultInView] = useState(false)
+
+  useEffect(() => {
+    const controls = controlsRef.current
+    const result = resultRef.current
+    if (!controls || !result) return
+    const observer = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.target === controls) setControlsInView(e.isIntersecting)
+        if (e.target === result) setResultInView(e.isIntersecting)
+      }
+    })
+    observer.observe(controls)
+    observer.observe(result)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     // Префилл из окна проекта или ссылки /?calc=slug.
@@ -58,7 +79,7 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-12" data-testid="calculator">
-      <div className="card grid gap-7 p-5 sm:p-8 lg:col-span-7">
+      <div ref={controlsRef} className="card grid gap-7 p-5 sm:p-8 lg:col-span-7">
         {presetName && (
           <p className="label text-accent" role="status">
             Подставили параметры проекта {presetName}. Меняйте их как хотите.
@@ -123,9 +144,9 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
 
         <fieldset>
           <legend className="mb-3 font-medium">Стиль</legend>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2">
             {STYLE_ORDER.map((s) => (
-              <Choice key={s} type="radio" name={`${uid}-style`} checked={style === s} onChange={() => setStyle(s)} label={PRICING.styles[s].title} hint={`×${String(PRICING.styles[s].coef).replace('.', ',')}`} />
+              <Choice key={s} type="radio" name={`${uid}-style`} checked={style === s} onChange={() => setStyle(s)} label={PRICING.styles[s].title} hint={`от ${groupDigits(minPriceFor(tier, s))} ₽/м²`} />
             ))}
           </div>
         </fieldset>
@@ -158,7 +179,7 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
         </fieldset>
       </div>
 
-      <aside aria-label="Результат расчёта" className="lg:col-span-5">
+      <aside ref={resultRef} aria-label="Результат расчёта" className="lg:col-span-5">
         <div className="on-dark sticky top-28 rounded-3xl border border-white/10 bg-inverse p-6 text-on-inverse shadow-2xl sm:p-8">
           <p className="label text-[#9fc0de]">Предварительная смета</p>
           <dl className="num mt-4 grid gap-0 text-[0.9375rem]">
@@ -187,9 +208,34 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
             onClick={() => openLead({ title: 'Получить смету в PDF', source: 'calculator', estimate, context: estimate })}
           >
             Получить смету в PDF
+            <span className="btn-dot">
+              <ArrowUpRight aria-hidden className="size-4" />
+            </span>
           </button>
         </div>
       </aside>
+
+      {controlsInView && !resultInView && (
+        <div
+          data-testid="calc-sticky"
+          className="on-dark fixed inset-x-2 bottom-2 z-30 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-inverse/95 py-2 pr-2 pl-4 text-on-inverse shadow-2xl backdrop-blur lg:hidden"
+        >
+          <div className="min-w-0">
+            <p className="text-xs text-on-inverse-muted">Итого, {PRICING.tiers[tier].title.toLowerCase()}</p>
+            <p className="display num truncate text-xl font-bold">{formatRub(b.total)}</p>
+          </div>
+          <button
+            type="button"
+            className="btn btn-light shrink-0"
+            onClick={() => resultRef.current?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' })}
+          >
+            Смета
+            <span className="btn-dot">
+              <ArrowUpRight aria-hidden className="size-4" />
+            </span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -12,7 +12,7 @@ export function Faq() {
   return (
     <section id="faq" aria-labelledby="faq-title" className="border-t border-line">
       <div className="shell py-16 sm:py-24">
-        <SectionHead id="faq-title" index={10} copy={COPY.sections.faq} />
+        <SectionHead id="faq-title" copy={COPY.sections.faq} />
         <ul className="mt-10 grid gap-3 lg:mt-14 lg:ml-[25%]">
           {FAQ.map((f) => (
             <li key={f.question}>

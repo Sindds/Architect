@@ -3,7 +3,8 @@ import { COPY } from '@/content/copy'
 import { PRICING, STYLE_ORDER, TIER_ORDER } from '@/content/pricing'
 import { PROJECTS } from '@/content/projects'
 import { SITE } from '@/content/site'
-import { formatDays, groupDigits } from '@/lib/format'
+import { formatDaysFrom, groupDigits } from '@/lib/format'
+import { nbsp } from '@/lib/typography'
 import { daysFor, minPriceFor } from '@/lib/pricing'
 import { LeadButton } from '../LeadButton'
 import { SectionHead } from '../ui/SectionHead'
@@ -12,9 +13,9 @@ export function Pricing() {
   const minArea = Math.min(...PROJECTS.map((p) => p.area))
   return (
     <section id="pricing" aria-labelledby="pricing-title" className="shell py-16 sm:py-24">
-      <SectionHead id="pricing-title" index={4} copy={COPY.sections.pricing} />
+      <SectionHead id="pricing-title" copy={COPY.sections.pricing} />
 
-      <ol className="mt-10 grid gap-4 lg:mt-14 lg:grid-cols-3">
+      <ol className="-mx-4 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:mt-14 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0 lg:pb-0" aria-label="Пакеты готовности">
         {TIER_ORDER.map((tier, i) => {
           const t = PRICING.tiers[tier]
           const featured = tier === 'whitebox'
@@ -22,14 +23,14 @@ export function Pricing() {
           return (
             <li
               key={tier}
-              className={`reveal flex flex-col rounded-3xl border p-6 sm:p-8 ${featured ? 'on-dark border-white/10 bg-inverse text-on-inverse shadow-2xl' : 'card'}`}
+              className={`relative flex w-[85%] shrink-0 snap-center flex-col rounded-3xl border p-6 sm:w-[60%] sm:p-8 lg:w-auto ${featured ? 'on-dark border-white/10 bg-inverse text-on-inverse shadow-2xl' : 'card'}`}
             >
               <div className="flex items-center justify-between gap-3">
                 <p className={`label num ${featured ? 'text-[#9fc0de]' : 'text-accent'}`}>Пакет {i + 1} из 3</p>
-                {featured && <span className="label rounded-full bg-white/10 px-3 py-1.5 font-medium">Выбирают чаще</span>}
+                {featured && <span className="label rounded-full bg-white/10 px-3 py-1.5 font-medium">Для работы с дизайнером</span>}
               </div>
               <h3 className="display mt-4 text-2xl font-bold">{t.title}</h3>
-              <p className={`mt-2 ${muted}`}>{t.short}</p>
+              <p className={`mt-2 ${muted}`}>{nbsp(t.short)}</p>
 
               <table className="num mt-6 w-full text-left">
                 <caption className={`label mb-2 text-left font-medium ${muted}`}>Дом, ₽ за м²</caption>
@@ -57,7 +58,7 @@ export function Pricing() {
                 </tbody>
               </table>
               <p className={`mt-3 text-sm ${muted}`}>
-                Срок от {formatDays(daysFor(minArea, tier))} для дома {minArea} м²
+                Срок {formatDaysFrom(daysFor(minArea, tier))} для дома {minArea} м²
               </p>
 
               <h4 className={`label mt-6 font-medium ${muted}`}>Входит</h4>
@@ -85,6 +86,7 @@ export function Pricing() {
           )
         })}
       </ol>
+      <p className="label mt-1 font-normal text-muted lg:hidden">Листайте вбок, чтобы сравнить пакеты</p>
 
       <p className="mt-8 max-w-3xl rounded-2xl bg-accent-soft p-5 text-fg">
         Мы закрепляем цену в договоре. Пересчитать её можно только допсоглашением, если вы сами меняете проект.{' '}

@@ -11,6 +11,7 @@ const INTRO: Partial<Record<LeadRequest['source'], string>> = {
   calculator: 'Мы пришлём смету в PDF по вашим параметрам и ответим на вопросы о составе работ.',
   quiz: 'Мы уточним детали по телефону и пришлём расчёт с вилкой цены и сроков.',
   messenger: 'Оставьте номер, и мы напишем вам в выбранный мессенджер.',
+  architect: 'Архитектор перезвонит, выслушает, что вы задумали, и подскажет, какой проект подойдёт вашему участку.',
 }
 
 export function LeadModal({ request, onClose }: { request: LeadRequest | null; onClose: () => void }) {

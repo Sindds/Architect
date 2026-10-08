@@ -20,7 +20,7 @@ export function Documents() {
   return (
     <section id="documents" aria-labelledby="docs-title" className="border-t border-line">
       <div className="shell py-16 sm:py-24">
-        <SectionHead id="docs-title" index={9} copy={COPY.sections.documents} />
+        <SectionHead id="docs-title" copy={COPY.sections.documents} />
         <ul className="mt-10 grid gap-4 md:grid-cols-2 lg:mt-14">
           {DOCS.map((d) => (
             <li key={d.href}>

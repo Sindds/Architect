@@ -37,3 +37,14 @@ export function formatDayDelta(plan: number, fact: number): string {
   if (d === 0) return 'в срок'
   return d < 0 ? `на ${formatDays(-d)} раньше` : `+${formatDays(d)}`
 }
+
+/** Срок после предлога «от»: родительный падеж — «от 254 дней», «от 121 дня». */
+export function formatDaysFrom(n: number): string {
+  const word = n % 10 === 1 && n % 100 !== 11 ? 'дня' : 'дней'
+  return `от ${n}${NBSP}${word}`
+}
+
+/** Отклонение факта от сметы словами для карточек кейсов. */
+export function formatPriceDelta(plan: number, fact: number): string {
+  return plan === fact ? 'смета не изменилась' : `${formatDeviation(plan, fact)} к смете`
+}

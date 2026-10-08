@@ -7,14 +7,20 @@ type LeadButtonProps = Omit<LeadRequest, 'title'> & {
   children: string
   formTitle?: string
   className?: string
+  /** Класс для текста кнопки (если текст оформлен иначе, чем сама кнопка). */
+  textClassName?: string
+  /** Иконка перед текстом. */
+  leading?: React.ReactNode
+  /** Иконка после текста. */
   icon?: React.ReactNode
 }
 
-export function LeadButton({ children, formTitle, className = 'btn btn-primary', icon, ...request }: LeadButtonProps) {
+export function LeadButton({ children, formTitle, className = 'btn btn-primary', textClassName, leading, icon, ...request }: LeadButtonProps) {
   const { openLead } = useLanding()
   return (
     <button type="button" className={className} onClick={() => openLead({ title: formTitle ?? children, ...request })}>
-      {children}
+      {leading}
+      {textClassName ? <span className={textClassName}>{children}</span> : children}
       {icon}
     </button>
   )

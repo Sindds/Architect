@@ -1,7 +1,8 @@
-import { Quote } from 'lucide-react'
+import { ArrowUpRight, Quote } from 'lucide-react'
 import { COPY } from '@/content/copy'
 import { REVIEWS, TEAM } from '@/content/people'
 import { SITE } from '@/content/site'
+import { LeadButton } from '../LeadButton'
 import { SectionHead } from '../ui/SectionHead'
 
 export function Team() {
@@ -9,7 +10,7 @@ export function Team() {
   return (
     <section aria-labelledby="team-title" className="border-t border-line">
       <div className="shell py-16 sm:py-24">
-        <SectionHead id="team-title" index={7} copy={COPY.sections.team} lead={concept ? COPY.sections.team.lead : ''} />
+        <SectionHead id="team-title" copy={COPY.sections.team} lead={concept ? COPY.sections.team.lead : ''} />
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
           {TEAM.map((m) => (
             <li key={m.name} className="reveal card card-hover flex flex-col p-6">
@@ -23,6 +24,23 @@ export function Team() {
             </li>
           ))}
         </ul>
+        <div className="mt-6 flex flex-col items-start gap-4 rounded-3xl bg-accent-soft p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <p className="max-w-xl text-lg">
+            Ещё не выбрали проект? Расскажите архитектору, как вы хотите жить за городом, и он предложит, с чего начать.
+          </p>
+          <LeadButton
+            source="architect"
+            extended
+            className="btn btn-primary shrink-0"
+            icon={
+              <span className="btn-dot">
+                <ArrowUpRight aria-hidden className="size-4" />
+              </span>
+            }
+          >
+            Задать вопрос архитектору
+          </LeadButton>
+        </div>
       </div>
     </section>
   )
@@ -32,7 +50,7 @@ export function Reviews() {
   return (
     <section aria-labelledby="reviews-title" className="border-t border-line">
       <div className="shell py-16 sm:py-24">
-        <SectionHead id="reviews-title" index={8} copy={COPY.sections.reviews} />
+        <SectionHead id="reviews-title" copy={COPY.sections.reviews} />
         <ul className="mt-10 grid gap-4 lg:mt-14 lg:grid-cols-3">
           {REVIEWS.map((r) => (
             <li key={r.id} className="reveal">

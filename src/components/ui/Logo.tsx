@@ -13,7 +13,7 @@ export function Logo({ className = '' }: { className?: string }) {
         <span className="display text-sm font-bold tracking-[0.16em] whitespace-nowrap">
           ARCLINE<span className="hidden min-[440px]:inline"> ESTATE</span>
         </span>
-        <span className="label mt-1 hidden text-xs tracking-[0.16em] opacity-80 min-[440px]:block">архитектура и стройка</span>
+        <span className="label mt-1 hidden text-xs tracking-[0.16em] whitespace-nowrap opacity-80 2xl:block">архитектура и стройка</span>
       </span>
     </span>
   )

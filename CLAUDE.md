@@ -29,3 +29,5 @@ Next.js (App Router, TypeScript strict) — версия, совместимая
 - Варианты под рекламу — rewrite в `next.config.ts` на `/v/[variant]`. Не сделано из плана — список в `README.md`.
 - Дизайн повторяет образец architectural-three.vercel.app (bento, капсулы, тёмный первый экран). Цвета — токены `--c-*` в `globals.css` для светлой и тёмной темы; тему ставит скрипт в `<head>` (`src/lib/theme.ts`). Шрифты: Onest, Manrope, JetBrains Mono.
 - Тексты секций — `src/content/copy.ts`. Стиль текстов проверяет `tests/unit/copy.test.ts` (клише, «не X, а Y», одно тире в предложении).
+- Висячие предлоги убирает `nbsp()` из `src/lib/typography.ts` (заголовки, лиды, метки). Сроки «от N дней» — только `formatDaysFrom` (родительный падеж).
+- Адаптив проверяет `tests/e2e/responsive.spec.ts` (320–1440 px: строки H1, шапка, плитки, переполнение). `.sr-only` внутри лент с `overflow-x-auto` кладите в `relative`-родителя, иначе он расширяет страницу.

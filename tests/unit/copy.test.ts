@@ -67,6 +67,8 @@ describe('Тексты: шаблоны, которые звучат как ре�
       /действительно/i,
       /в разы/i,
       /без лишних слов/i,
+      // Популярность без данных — это «цифры без источника» (CONTENT-SPEC §2)
+      /выбирают чаще|самый популярн|хит продаж|лучший выбор/i,
     ]
     expect(fail(ALL.filter((i) => banned.some((re) => re.test(i.text))))).toEqual([])
   })
@@ -110,6 +112,17 @@ describe('Тексты: структура', () => {
       expect(s?.title, key).toBeTruthy()
       expect(s?.label, key).toBeTruthy()
     }
+  })
+
+  it('вводный абзац «Как мы работаем» не пересказывает карточки (нет общих фраз из 4 слов)', () => {
+    const words = (t: string) => t.toLowerCase().replace(/[^а-яё0-9\s]/g, ' ').split(/\s+/).filter(Boolean)
+    const shingles = (t: string) => {
+      const w = words(t)
+      return new Set(w.slice(0, -3).map((_, i) => w.slice(i, i + 4).join(' ')))
+    }
+    const lead = shingles(COPY.sections.why.lead ?? '')
+    const repeated = WHY_US.flatMap((c) => [...shingles(c.fact)].filter((x) => lead.has(x)))
+    expect(repeated).toEqual([])
   })
 
   it('FAQ про гарантию ссылается на существующий раздел образца договора', () => {

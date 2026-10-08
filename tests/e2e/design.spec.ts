@@ -28,7 +28,7 @@ test.describe('Дизайн в стиле образца (bento)', () => {
 
   test('кнопки — капсулы, карточки проектов скруглены', async ({ page }) => {
     await page.goto('/')
-    const cta = page.getByTestId('hero').getByRole('link', { name: /Рассчитать стоимость/ })
+    const cta = page.getByTestId('hero').getByRole('link', { name: /Узнать цену/ })
     const box = await cta.evaluate((el) => ({ r: parseFloat(getComputedStyle(el).borderTopLeftRadius), h: el.getBoundingClientRect().height }))
     expect(box.r).toBeGreaterThanOrEqual(box.h / 2)
     const card = await radius(page, 'project-card')

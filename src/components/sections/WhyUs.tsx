@@ -8,7 +8,7 @@ const ICONS = [FileSignature, ClipboardCheck, Banknote, Calculator]
 export function WhyUs() {
   return (
     <section aria-labelledby="why-title" className="shell py-16 sm:py-24">
-      <SectionHead id="why-title" index={1} copy={COPY.sections.why} />
+      <SectionHead id="why-title" copy={COPY.sections.why} />
       <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:mt-14">
         {WHY_US.map((item, i) => {
           const Icon = ICONS[i] ?? FileSignature

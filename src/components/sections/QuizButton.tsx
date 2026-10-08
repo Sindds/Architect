@@ -6,7 +6,7 @@ import { ArrowUpRight } from 'lucide-react'
 export function QuizButton() {
   return (
     <a href="#calculator" className="btn btn-light" onClick={() => window.dispatchEvent(new CustomEvent('arcline:open-quiz'))}>
-      Рассчитать стоимость за 2 минуты
+      Узнать цену за 2&nbsp;минуты
       <span className="btn-dot">
         <ArrowUpRight aria-hidden className="size-4" />
       </span>

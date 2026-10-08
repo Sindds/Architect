@@ -13,6 +13,7 @@ export const LEAD_SOURCES = [
   'calculator',
   'quiz',
   'final_cta',
+  'architect',
 ] as const
 
 export type LeadSource = (typeof LEAD_SOURCES)[number]

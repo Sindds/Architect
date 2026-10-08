@@ -40,7 +40,7 @@ export function CalculatorSection({ defaultStyle }: { defaultStyle: Style }) {
   return (
     <section id="calculator" tabIndex={-1} aria-labelledby="calc-title" className="border-t border-line py-16 outline-none sm:py-24">
       <div className="shell">
-        <SectionHead id="calc-title" index={5} copy={COPY.sections.calculator} />
+        <SectionHead id="calc-title" copy={COPY.sections.calculator} />
         <div role="tablist" aria-label="Способ расчёта" className="mt-10 inline-flex gap-1 rounded-full border border-line bg-surface p-1">
           {TABS.map((t, i) => (
             <button

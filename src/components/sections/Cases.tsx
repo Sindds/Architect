@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { CASES } from '@/content/cases'
 import { COPY } from '@/content/copy'
 import { PRICING } from '@/content/pricing'
-import { formatDayDelta, formatDeviation, formatMln } from '@/lib/format'
+import { formatDayDelta, formatDays, formatMln, formatPriceDelta } from '@/lib/format'
 import { daysFor, priceFor } from '@/lib/pricing'
 import { useLanding } from '../LandingProvider'
 import { SectionHead } from '../ui/SectionHead'
@@ -17,7 +17,7 @@ export function Cases() {
     <section id="cases" aria-labelledby="cases-title" className="mx-auto w-full max-w-[100rem] px-2 sm:px-4 md:px-6">
       <div className="on-dark rounded-[24px] border border-white/10 bg-inverse px-4 py-14 text-on-inverse sm:rounded-[36px] sm:px-8 sm:py-20 lg:px-14">
         <div className="mx-auto max-w-7xl">
-          <SectionHead id="cases-title" index={3} copy={COPY.sections.cases} tone="dark" />
+          <SectionHead id="cases-title" copy={COPY.sections.cases} tone="dark" />
           <ul className="mt-10 grid gap-5 lg:mt-14 lg:grid-cols-3">
             {CASES.map((c) => {
               const planPrice = priceFor(c)
@@ -53,21 +53,24 @@ export function Cases() {
                           «{c.title}»
                         </button>
                       </h3>
-                      <dl className="num mt-5 grid grid-cols-2 gap-3">
-                        <div className="rounded-2xl bg-white/[0.06] p-3">
-                          <dt className="label font-medium text-on-inverse-muted">Смета</dt>
-                          <dd className="mt-1 font-semibold">
-                            {formatMln(planPrice)} → {formatMln(c.factPrice)}
-                          </dd>
-                          <dd className="text-sm text-[#9fc0de]">{formatDeviation(planPrice, c.factPrice)}</dd>
-                        </div>
-                        <div className="rounded-2xl bg-white/[0.06] p-3">
-                          <dt className="label font-medium text-on-inverse-muted">Срок, дней</dt>
-                          <dd className="mt-1 font-semibold">
-                            {planDays} → {c.factDays}
-                          </dd>
-                          <dd className="text-sm text-[#9fc0de]">{formatDayDelta(planDays, c.factDays)}</dd>
-                        </div>
+                      <dl className="num mt-5 grid gap-3 text-[0.9375rem] min-[360px]:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                        {[
+                          { title: 'Смета', plan: formatMln(planPrice), fact: formatMln(c.factPrice), delta: formatPriceDelta(planPrice, c.factPrice) },
+                          { title: 'Срок', plan: formatDays(planDays), fact: formatDays(c.factDays), delta: formatDayDelta(planDays, c.factDays) },
+                        ].map((row) => (
+                          <div key={row.title} className="rounded-2xl bg-white/[0.06] p-3">
+                            <dt className="label font-medium text-on-inverse-muted">{row.title}</dt>
+                            <dd className="mt-1.5 flex flex-wrap items-baseline justify-between gap-x-2">
+                              <span className="text-on-inverse-muted">План</span>
+                              <span className="whitespace-nowrap">{row.plan}</span>
+                            </dd>
+                            <dd className="flex flex-wrap items-baseline justify-between gap-x-2 font-semibold">
+                              <span className="font-normal text-on-inverse-muted">Факт</span>
+                              <span className="whitespace-nowrap">{row.fact}</span>
+                            </dd>
+                            <dd className="mt-1 text-sm text-[#9fc0de]">{row.delta}</dd>
+                          </div>
+                        ))}
                       </dl>
                       <p className="mt-4 text-on-inverse-muted">{c.deviationNote}</p>
                       <span aria-hidden className="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold text-[#9fc0de]">
