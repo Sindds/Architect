@@ -57,11 +57,11 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
     .join('; ')
 
   return (
-    <div className="grid gap-8 lg:grid-cols-12" data-testid="calculator">
-      <div className="grid gap-7 lg:col-span-7">
+    <div className="grid gap-6 lg:grid-cols-12" data-testid="calculator">
+      <div className="card grid gap-7 p-5 sm:p-8 lg:col-span-7">
         {presetName && (
           <p className="label text-accent" role="status">
-            Параметры проекта {presetName} подставлены — меняйте их как нужно.
+            Подставили параметры проекта {presetName}. Меняйте их как хотите.
           </p>
         )}
         <div>
@@ -92,9 +92,9 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
               setArea(Number(e.target.value))
               setAreaText(e.target.value)
             }}
-            className="mt-3 h-11 w-full cursor-pointer accent-[var(--color-accent)]"
+            className="mt-3 h-11 w-full cursor-pointer accent-[var(--c-accent-deco)]"
           />
-          <div className="label num flex justify-between text-ink-3" aria-hidden>
+          <div className="label num flex justify-between font-normal text-muted" aria-hidden>
             <span>{AREA.min}</span>
             <span>{AREA.max}</span>
           </div>
@@ -117,7 +117,7 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
             step={TERRACE.step}
             value={terrace}
             onChange={(e) => setTerrace(Number(e.target.value))}
-            className="mt-3 h-11 w-full cursor-pointer accent-[var(--color-accent)]"
+            className="mt-3 h-11 w-full cursor-pointer accent-[var(--c-accent-deco)]"
           />
         </div>
 
@@ -159,8 +159,8 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
       </div>
 
       <aside aria-label="Результат расчёта" className="lg:col-span-5">
-        <div className="sticky top-24 border border-ink bg-sheet p-5 sm:p-7">
-          <p className="label text-ink-2">Предварительная смета</p>
+        <div className="on-dark sticky top-28 rounded-3xl border border-white/10 bg-inverse p-6 text-on-inverse shadow-2xl sm:p-8">
+          <p className="label text-[#9fc0de]">Предварительная смета</p>
           <dl className="num mt-4 grid gap-0 text-[0.9375rem]">
             <Row label={`Дом · ${area} м² × ${PRICING.styles[style].title.toLowerCase()}`} value={formatRub(b.house)} />
             <Row label={`Терраса · ${terrace} м²`} value={formatRub(b.terrace)} />
@@ -168,22 +168,22 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
               <Row key={a.key} label={a.title} value={formatRub(a.price)} />
             ))}
           </dl>
-          <div className="mt-5 border-t border-ink pt-4" aria-live="polite">
-            <p className="text-sm text-ink-2">Итого, {PRICING.tiers[tier].title.toLowerCase()}</p>
-            <p className="num font-display text-[2.75rem] font-medium leading-none" data-testid="calc-total">
+          <div className="mt-5 border-t border-white/15 pt-4" aria-live="polite">
+            <p className="text-sm text-on-inverse-muted">Итого, {PRICING.tiers[tier].title.toLowerCase()}</p>
+            <p className="display num mt-1 text-[2.4rem] leading-none font-bold sm:text-[2.75rem]" data-testid="calc-total">
               {formatRub(b.total)}
             </p>
-            <p className="num mt-3 flex flex-wrap gap-x-5 gap-y-1 text-ink-2">
+            <p className="num mt-3 flex flex-wrap gap-x-5 gap-y-1 text-on-inverse-muted">
               <span>{formatRub(b.perM2)} за м²</span>
               <span data-testid="calc-days">Срок — {formatDays(b.days)}</span>
             </p>
           </div>
-          <p className="mt-4 text-sm text-ink-2">
-            Расчёт предварительный: итог округлён до {formatRub(ROUNDING_STEP)}. Точную смету фиксируем в договоре после геологии и топосъёмки.
+          <p className="mt-4 text-sm text-on-inverse-muted">
+            Это предварительный расчёт, итог округлён до {formatRub(ROUNDING_STEP)}. Точную смету мы закрепим в договоре после геологии и топосъёмки.
           </p>
           <button
             type="button"
-            className="btn btn-primary mt-5 w-full"
+            className="btn btn-light mt-5 w-full"
             onClick={() => openLead({ title: 'Получить смету в PDF', source: 'calculator', estimate, context: estimate })}
           >
             Получить смету в PDF
@@ -197,8 +197,8 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline gap-2 py-1.5">
-      <dt className="text-ink-2">{label}</dt>
-      <span aria-hidden className="flex-1 border-b border-dotted border-ink-3/60" />
+      <dt className="text-on-inverse-muted">{label}</dt>
+      <span aria-hidden className="flex-1 border-b border-dotted border-white/25" />
       <dd className="font-medium whitespace-nowrap">{value}</dd>
     </div>
   )
@@ -216,14 +216,14 @@ interface ChoiceProps {
 
 function Choice({ type, name, checked, onChange, label, hint, description }: ChoiceProps) {
   return (
-    <label className="flex min-h-12 cursor-pointer items-start gap-3 border border-ink-3/70 bg-sheet px-3.5 py-3 transition-colors hover:border-ink has-[:checked]:border-ink has-[:checked]:bg-paper has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent">
-      <input type={type} name={name} checked={checked} onChange={onChange} className="mt-1 size-4 shrink-0 accent-[var(--color-accent)]" />
+    <label className="flex min-h-12 cursor-pointer items-start gap-3 rounded-2xl border border-line bg-surface px-4 py-3 transition-colors hover:border-line-strong has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent">
+      <input type={type} name={name} checked={checked} onChange={onChange} className="mt-1 size-4 shrink-0 accent-[var(--c-accent-deco)]" />
       <span className="grid flex-1 gap-0.5">
         <span className="flex flex-wrap items-baseline justify-between gap-x-3">
           <span className="font-medium">{label}</span>
-          {hint && <span className="num text-sm text-ink-2">{hint}</span>}
+          {hint && <span className="num text-sm text-muted">{hint}</span>}
         </span>
-        {description && <span className="text-sm text-ink-2">{description}</span>}
+        {description && <span className="text-sm text-muted">{description}</span>}
       </span>
     </label>
   )

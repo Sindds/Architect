@@ -22,7 +22,7 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
           </div>
 
           <div className="lg:col-span-5">
-            <p className="font-display text-2xl leading-snug">{project.tagline}</p>
+            <p className="text-xl leading-snug font-semibold">{project.tagline}</p>
             <dl className="mt-5 grid grid-cols-2 border-t border-line sm:grid-cols-3">
               {[
                 ['Дом', `${project.area} м²`],
@@ -33,13 +33,13 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                 ['Конструкция', style.construction],
               ].map(([k, v]) => (
                 <div key={String(k)} className="border-b border-line py-3 pr-3">
-                  <dt className="label text-ink-2">{k}</dt>
+                  <dt className="label text-muted">{k}</dt>
                   <dd className="num mt-0.5 font-medium">{v}</dd>
                 </div>
               ))}
             </dl>
 
-            <h3 className="label mt-6 text-ink-2">Цена и срок по пакетам</h3>
+            <h3 className="label mt-6 text-muted">Цена и срок по пакетам</h3>
             <table className="num mt-2 w-full text-left">
               <caption className="sr-only">Цена и срок строительства {project.name} по пакетам</caption>
               <thead className="sr-only">
@@ -58,18 +58,20 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                         {PRICING.tiers[tier].title}
                       </th>
                       <td className="py-2.5 pr-2 font-medium whitespace-nowrap">{formatRub(price)}</td>
-                      <td className="py-2.5 text-right whitespace-nowrap text-ink-2">{formatDays(days)}</td>
+                      <td className="py-2.5 text-right whitespace-nowrap text-muted">{formatDays(days)}</td>
                     </tr>
                   )
                 })}
               </tbody>
             </table>
-            <p className="mt-2 text-sm text-ink-2">С террасой {project.terrace} м², без опций. Цена фиксируется в договоре.</p>
+            <p className="mt-2 text-sm text-muted">С террасой {project.terrace} м², без опций. Цена фиксируется в договоре.</p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
               <button type="button" className="btn btn-primary" onClick={() => calculateProject(project.slug)}>
                 Рассчитать этот проект
-                <ArrowRight aria-hidden className="size-4" />
+                <span className="btn-dot">
+                  <ArrowRight aria-hidden className="size-4" />
+                </span>
               </button>
               <button
                 type="button"
@@ -84,7 +86,7 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
           </div>
 
           <div className="lg:col-span-5">
-            <h3 className="label text-ink-2">Что в проекте</h3>
+            <h3 className="label text-muted">Что в проекте</h3>
             <ul className="mt-3 grid gap-2">
               {project.features.map((f) => (
                 <li key={f} className="flex gap-3">
@@ -93,7 +95,7 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                 </li>
               ))}
             </ul>
-            <h3 className="label mt-6 text-ink-2">Конструктив</h3>
+            <h3 className="label mt-6 text-muted">Конструктив</h3>
             <dl className="mt-2 grid gap-2">
               {[
                 ['Фундамент', project.construction.foundation],
@@ -101,7 +103,7 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                 ['Остекление', project.construction.glazing],
               ].map(([k, v]) => (
                 <div key={k} className="grid grid-cols-[7.5rem_1fr] gap-2">
-                  <dt className="text-ink-2">{k}</dt>
+                  <dt className="text-muted">{k}</dt>
                   <dd>{v}</dd>
                 </div>
               ))}
@@ -109,7 +111,7 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
           </div>
 
           <div className="lg:col-span-7">
-            <h3 className="label text-ink-2">Экспликация помещений</h3>
+            <h3 className="label text-muted">Экспликация помещений</h3>
             <div className={`mt-3 grid gap-6 ${project.explication.length > 1 ? 'sm:grid-cols-2' : ''}`}>
               {project.explication.map((floor) => (
                 <table key={floor.floor} className="num w-full text-left text-[0.9375rem]">
@@ -126,7 +128,7 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                     {floor.rooms.map((r, i) => (
                       <tr key={`${r.name}-${i}`} className="border-b border-line/70">
                         <td className="py-1.5 pr-2">{r.name}</td>
-                        <td className="py-1.5 text-right whitespace-nowrap text-ink-2">{r.area} м²</td>
+                        <td className="py-1.5 text-right whitespace-nowrap text-muted">{r.area} м²</td>
                       </tr>
                     ))}
                   </tbody>

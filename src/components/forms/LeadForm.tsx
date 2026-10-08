@@ -1,6 +1,6 @@
 'use client'
 
-import { Check } from 'lucide-react'
+import { ArrowUpRight, Check } from 'lucide-react'
 import Link from 'next/link'
 import { useActionState, useEffect, useId, useRef, useState } from 'react'
 import { submitLead } from '@/app/actions/lead'
@@ -72,14 +72,14 @@ export function LeadForm({
 
   const dark = tone === 'dark'
   const errors = state.status === 'error' ? (state.fieldErrors ?? {}) : {}
-  const muted = dark ? 'text-on-graphite-2' : 'text-ink-2'
+  const muted = dark ? 'text-on-inverse-muted' : 'text-muted'
   const errorText = dark ? 'text-[#ffb59c]' : 'text-danger'
 
   if (state.status === 'ok') {
     return (
       <div ref={statusRef} tabIndex={-1} role="status" className="outline-none" data-testid="lead-success">
         <div className="flex items-start gap-3">
-          <span className={`mt-1 inline-flex size-8 shrink-0 items-center justify-center ${dark ? 'bg-accent-on-dark text-graphite' : 'bg-ok text-sheet'}`}>
+          <span className={`mt-1 inline-flex size-8 shrink-0 items-center justify-center rounded-full ${dark ? 'bg-[#9fc0de] text-[#111315]' : 'bg-ok text-white'}`}>
             <Check aria-hidden className="size-5" />
           </span>
           <div>
@@ -161,11 +161,11 @@ export function LeadForm({
               {Object.entries(CONTACT_METHODS).map(([value, label]) => (
                 <label
                   key={value}
-                  className={`inline-flex min-h-11 cursor-pointer items-center gap-2 border px-3 has-[:checked]:border-accent has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent ${
-                    dark ? 'border-on-graphite-2/60 has-[:checked]:bg-graphite-2' : 'border-ink-3 has-[:checked]:bg-paper'
+                  className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border px-4 has-[:checked]:border-accent has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent ${
+                    dark ? 'border-white/30 has-[:checked]:bg-white/10' : 'border-line-strong has-[:checked]:bg-accent-soft'
                   }`}
                 >
-                  <input type="radio" name="contactMethod" value={value} defaultChecked={value === contactMethod} className="accent-[var(--color-accent)]" />
+                  <input type="radio" name="contactMethod" value={value} defaultChecked={value === contactMethod} className="accent-[var(--c-accent-deco)]" />
                   {label}
                 </label>
               ))}
@@ -199,7 +199,7 @@ export function LeadForm({
             name="consent"
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 size-5 shrink-0 cursor-pointer accent-[var(--color-accent)]"
+            className="mt-0.5 size-5 shrink-0 cursor-pointer accent-[var(--c-accent-deco)]"
             aria-invalid={errors.consent ? true : undefined}
             aria-describedby={errors.consent ? `${uid}-consent-error` : undefined}
           />
@@ -238,8 +238,11 @@ export function LeadForm({
         )}
       </div>
 
-      <button type="submit" className="btn btn-primary w-full sm:w-auto sm:justify-self-start" disabled={pending || !startedAt}>
+      <button type="submit" className={`btn w-full sm:w-auto sm:justify-self-start ${dark ? 'btn-light' : 'btn-primary'}`} disabled={pending || !startedAt}>
         {pending ? 'Отправляем…' : submitLabel}
+        <span className="btn-dot">
+          <ArrowUpRight aria-hidden className="size-4" />
+        </span>
       </button>
     </form>
   )

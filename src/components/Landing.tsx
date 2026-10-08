@@ -2,6 +2,7 @@ import type { VariantKey } from '@/content/types'
 import { VARIANTS } from '@/content/variants'
 import { projectsFor } from '@/lib/variant'
 import { LandingProvider } from './LandingProvider'
+import { PageLoader } from './PageLoader'
 import { CalculatorSection } from './sections/CalculatorSection'
 import { Cases } from './sections/Cases'
 import { Documents } from './sections/Documents'
@@ -20,9 +21,10 @@ import { WhyUs } from './sections/WhyUs'
 export function Landing({ variant }: { variant: VariantKey }) {
   return (
     <LandingProvider variant={variant}>
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-3 focus:text-sheet">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-fg focus:px-5 focus:py-3 focus:text-bg">
         Перейти к содержанию
       </a>
+      <PageLoader />
       <Header />
       <main id="main">
         <Hero variant={variant} />

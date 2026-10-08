@@ -47,20 +47,20 @@ export function Modal({ open, onClose, title, hideTitle, size = 'lg', children, 
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
-      className={`m-auto max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] overflow-y-auto overscroll-contain bg-sheet p-0 text-ink shadow-[0_24px_80px_-20px_rgb(0_0_0/0.45)] backdrop:bg-ink/60 open:animate-[modal-in_220ms_var(--ease-out-soft)] motion-reduce:open:animate-none sm:max-h-[calc(100dvh-3rem)] ${
+      className={`m-auto max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] overflow-y-auto overscroll-contain rounded-[24px] border border-line bg-surface p-0 text-fg shadow-[0_24px_80px_-20px_rgb(0_0_0/0.55)] backdrop:bg-black/70 open:animate-[modal-in_220ms_var(--ease-out-soft)] motion-reduce:open:animate-none sm:max-h-[calc(100dvh-3rem)] ${
         size === 'sm' ? 'max-w-lg' : 'max-w-6xl'
       }`}
     >
       {open && (
         <div className="relative">
-          <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line bg-sheet/95 px-4 py-3 backdrop-blur sm:px-8 sm:py-4">
-            <h2 id={titleId} className={hideTitle ? 'sr-only' : 'font-display text-2xl font-medium leading-tight sm:text-3xl'}>
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line bg-surface/95 px-4 py-3 backdrop-blur sm:px-8 sm:py-4">
+            <h2 id={titleId} className={hideTitle ? 'sr-only' : 'font-display text-xl leading-tight font-bold sm:text-2xl'}>
               {title}
             </h2>
             <button
               type="button"
               onClick={onClose}
-              className="-mr-2 inline-flex size-11 shrink-0 cursor-pointer items-center justify-center text-ink-2 transition-colors hover:text-accent"
+              className="inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-subtle text-fg transition-colors hover:bg-fg hover:text-bg"
               aria-label="Закрыть окно"
             >
               <X aria-hidden className="size-6" strokeWidth={1.5} />

@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, type Page, test } from '@playwright/test'
+import type { Page } from '@playwright/test'
+import { expect, test } from './fixtures'
 import { formatDays, formatRub } from '@/lib/format'
 import { breakdown, projectPrice } from '@/lib/pricing'
 
@@ -166,7 +167,7 @@ test.describe('Заявка', () => {
     const summary = page.locator('summary', { hasText: 'Можно ли через ипотеку или эскроу?' })
     await summary.focus()
     await page.keyboard.press('Enter')
-    await expect(page.getByText('Условия ипотеки и расчётов через эскроу уточняются')).toBeVisible()
+    await expect(page.getByText('Условия ипотеки и эскроу мы пока уточняем')).toBeVisible()
   })
 })
 

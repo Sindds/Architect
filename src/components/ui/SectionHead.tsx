@@ -1,30 +1,35 @@
+import type { SectionCopy } from '@/content/copy'
+
 interface SectionHeadProps {
   id: string
-  index: string
-  label: string
-  title: string
+  index: number
+  copy: SectionCopy
+  /** Подзаголовок, если он собирается из цифр (например, срок по этапам). */
   lead?: string
   tone?: 'light' | 'dark'
-  aside?: React.ReactNode
+  total?: number
 }
 
-/** Заголовок секции: номер листа и раздел — как в штампе чертежа, затем H2 и лид. */
-export function SectionHead({ id, index, label, title, lead, tone = 'light', aside }: SectionHeadProps) {
-  const muted = tone === 'dark' ? 'text-on-graphite-2' : 'text-ink-2'
+/** Заголовок секции по образцу: слева метка моноширинным шрифтом, справа крупный заголовок прописными. */
+export function SectionHead({ id, index, copy, lead, tone = 'light', total = 11 }: SectionHeadProps) {
+  const dark = tone === 'dark'
+  const text = lead ?? copy.lead
   return (
-    <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
-      <div className="lg:col-span-8">
-        <p className={`label flex items-center gap-3 ${tone === 'dark' ? 'text-accent-on-dark' : 'text-accent'}`}>
-          <span className="num">{index}</span>
-          <span aria-hidden className="h-px w-8 bg-current" />
-          <span>{label}</span>
+    <div className="grid gap-4 lg:grid-cols-12 lg:gap-12">
+      <div className="lg:col-span-3">
+        <p data-testid="section-label" className={`label ${dark ? 'text-[#9fc0de]' : 'text-accent'}`}>
+          {copy.label}
         </p>
-        <h2 id={id} className="mt-4 font-display text-h2 font-medium tracking-[-0.01em]">
-          {title}
-        </h2>
-        {lead && <p className={`mt-4 max-w-2xl text-lg ${muted}`}>{lead}</p>}
+        <p className={`label num mt-1 font-normal ${dark ? 'text-on-inverse-muted' : 'text-muted'}`}>
+          {String(index).padStart(2, '0')} / {total}
+        </p>
       </div>
-      {aside && <div className="lg:col-span-4 lg:justify-self-end">{aside}</div>}
+      <div className="lg:col-span-9">
+        <h2 id={id} className="display text-[1.75rem] leading-[1.1] font-normal sm:text-4xl lg:text-[2.9rem]">
+          {copy.title}
+        </h2>
+        {text && <p className={`mt-4 max-w-3xl text-base leading-relaxed sm:text-lg ${dark ? 'text-on-inverse-muted' : 'text-muted'}`}>{text}</p>}
+      </div>
     </div>
   )
 }

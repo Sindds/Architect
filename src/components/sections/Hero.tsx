@@ -1,80 +1,87 @@
-import { ArrowDown, ArrowRight } from 'lucide-react'
+import { ArrowUpRight, FileText, MapPin } from 'lucide-react'
 import Image from 'next/image'
 import { CASES } from '@/content/cases'
+import { COPY } from '@/content/copy'
 import { SITE } from '@/content/site'
 import type { VariantKey } from '@/content/types'
 import { heroFor } from '@/lib/variant'
 import { LeadButton } from '../LeadButton'
 import { QuizButton } from './QuizButton'
 
+/** Первый экран по образцу: тёмная карточка с фото на всю ширину. Фото и H1 без анимации появления (LCP). */
 export function Hero({ variant }: { variant: VariantKey }) {
   const { h1, subtitle, variant: v } = heroFor(variant)
+  const glass = 'flex min-h-11 items-start gap-3 rounded-2xl border border-white/15 bg-black/45 p-4 text-left backdrop-blur-xl transition-[transform,background-color] duration-300 hover:-translate-y-0.5 hover:bg-black/60 motion-reduce:hover:translate-y-0'
 
   return (
-    <section id="top" aria-labelledby="hero-title" className="relative overflow-hidden">
-      <div className="sheet-grid pointer-events-none absolute inset-0 hidden lg:block" aria-hidden />
-      <div className="shell relative grid gap-8 pb-14 pt-8 lg:grid-cols-12 lg:gap-10 lg:pb-20 lg:pt-14">
-        <div className="lg:col-span-6 lg:pt-6">
-          <p className="label text-accent">{SITE.descriptor} · Новорижское направление</p>
-          <h1 id="hero-title" className="mt-5 font-display text-display font-medium tracking-[-0.01em]">
-            {h1}
-          </h1>
-          <p className="mt-6 max-w-xl text-lg text-ink-2">{subtitle}</p>
+    <section id="top" aria-labelledby="hero-title" className="mx-auto w-full max-w-[100rem] p-2 pb-0 sm:p-4 sm:pb-0 md:p-6 md:pb-0">
+      <div
+        data-testid="hero"
+        className="on-dark relative flex min-h-[92svh] flex-col justify-end overflow-hidden rounded-[24px] border border-white/10 bg-[#0a0b0d] p-5 pt-28 text-white shadow-2xl sm:rounded-[36px] sm:p-8 sm:pt-32 md:p-12 lg:p-14"
+      >
+        <Image
+          src={v.heroImage.src}
+          alt={v.heroImage.alt}
+          data-hero-image
+          preload
+          fill
+          placeholder="blur"
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/60" />
+        <p
+          aria-hidden
+          className="display pointer-events-none absolute bottom-[42%] left-5 max-w-[60%] text-[clamp(1.6rem,5vw,4.5rem)] leading-[0.9] font-bold tracking-[-0.04em] text-white/10 select-none sm:left-8 md:left-12"
+        >
+          {SITE.brandFull}
+        </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <QuizButton />
-            <a href="#projects" className="btn btn-ghost">
-              Смотреть проекты
-              <ArrowDown aria-hidden className="size-4" />
-            </a>
+        <div className="relative z-10 flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-4xl">
+            <p className="label text-[#9fc0de]">{COPY.ui.heroLabel}</p>
+            <h1 id="hero-title" className="display mt-4 text-[1.9rem] leading-[1.06] font-normal sm:text-5xl lg:text-[3.4rem] xl:text-[3.9rem]">
+              {h1}
+            </h1>
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-[#d4d8dd] sm:text-lg">{subtitle}</p>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <QuizButton />
+              <a href="#projects" className="btn btn-glass">
+                Смотреть проекты
+              </a>
+            </div>
           </div>
 
-          <ol className="mt-10 grid gap-px border-y border-line bg-line sm:grid-cols-3">
-            <li className="bg-paper py-4 pr-4">
-              <span className="label text-ink-3">01</span>
-              <a href="#cases" className="link mt-1 flex min-h-11 items-center leading-snug">
-                {CASES.length} сданных дома — план и факт по смете
+          <ul className="grid shrink-0 gap-3 sm:grid-cols-3 lg:w-[19rem] lg:grid-cols-1">
+            <li>
+              <a href="#cases" className={glass} aria-label={`${CASES.length} сданных дома: план и факт по смете`}>
+                <span className="display num text-3xl leading-none font-bold">{CASES.length}</span>
+                <span className="label mt-0.5 leading-snug font-medium text-[#d4d8dd]">сданных дома: план и факт по смете</span>
               </a>
             </li>
-            <li className="bg-paper py-4 pr-4 sm:pl-4">
-              <span className="label text-ink-3">02</span>
-              <a href={SITE.docs.contract} className="link mt-1 flex min-h-11 items-center leading-snug" target="_blank" rel="noopener">
-                Образец договора (PDF)
+            <li>
+              <a href={SITE.docs.contract} target="_blank" rel="noopener" className={glass}>
+                <FileText aria-hidden className="mt-0.5 size-6 shrink-0 text-[#9fc0de]" strokeWidth={1.5} />
+                <span className="label leading-snug font-medium text-[#d4d8dd]">Образец договора (PDF)</span>
               </a>
             </li>
-            <li className="bg-paper py-4 sm:pl-4">
-              <span className="label text-ink-3">03</span>
+            <li>
               <LeadButton
                 source="excursion"
                 formTitle="Экскурсия на объект"
-                className="link mt-1 flex min-h-11 cursor-pointer items-center text-left leading-snug"
                 submitLabel="Записаться на экскурсию"
+                className={`${glass} w-full cursor-pointer`}
+                icon={<ArrowUpRight aria-hidden className="ml-auto size-4 shrink-0" />}
               >
                 Покажем построенный дом
               </LeadButton>
             </li>
-          </ol>
+          </ul>
         </div>
-
-        <figure className="relative lg:col-span-6 lg:-mr-8 xl:-mr-[max(2rem,calc((100vw-88rem)/2+2rem))]">
-          <div className="dim label mb-3 hidden sm:flex" aria-hidden>
-            <span className="num">фасад · панорамное остекление</span>
-          </div>
-          <Image
-            src={v.heroImage.src}
-            alt={v.heroImage.alt}
-            preload
-            placeholder="blur"
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="aspect-[4/3] w-full bg-paper-2 object-cover sm:aspect-[16/10] lg:aspect-auto lg:h-[min(44rem,calc(100dvh-9rem))]"
-          />
-          <figcaption className="label mt-2 flex items-center justify-between gap-4 text-ink-2">
-            <span>{v.heroImage.caption}</span>
-            <a href="#projects" className="link inline-flex min-h-11 items-center gap-1.5">
-              Все проекты <ArrowRight aria-hidden className="size-3.5" />
-            </a>
-          </figcaption>
-        </figure>
+        <p className="label relative z-10 mt-8 flex items-center gap-2 font-normal text-[#b9bec6]">
+          <MapPin aria-hidden className="size-3.5" />
+          {v.heroImage.caption} · {SITE.address}
+        </p>
       </div>
     </section>
   )

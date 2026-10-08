@@ -53,27 +53,27 @@ export function Quiz() {
     const { low, high } = range()
     return (
       <div className="grid gap-6 lg:grid-cols-12" data-testid="quiz-result">
-        <div className="lg:col-span-7">
-          <h3 ref={headingRef} tabIndex={-1} className="font-display text-[2rem] font-medium leading-tight outline-none">
+        <div className="card p-6 sm:p-8 lg:col-span-7">
+          <h3 ref={headingRef} tabIndex={-1} className="display text-2xl leading-tight font-bold outline-none sm:text-3xl">
             Ваша вилка: от {formatMln(low)} до {formatMln(high)}
           </h3>
-          <p className="mt-3 text-ink-2">
-            Нижняя граница — тёплый контур минимальной площади, верхняя — под ключ максимальной. Без террасы и опций. Точная цена — после того как
+          <p className="mt-3 text-muted">
+            Нижняя граница соответствует тёплому контуру на минимальную площадь, верхняя — дому под ключ на максимальную. Террасу и опции мы не учитывали. Точную цену назовём, когда
             уточним проект и участок.
           </p>
           <ul className="mt-5 grid gap-1.5 text-[0.9375rem]">
             {QUESTIONS.map((q, i) => (
               <li key={q} className="flex gap-2">
-                <span className="text-ink-2">{q}</span>
+                <span className="text-muted">{q}</span>
                 <span className="font-medium">{options[i]?.[answers[i] ?? -1]}</span>
               </li>
             ))}
           </ul>
-          <button type="button" className="link mt-4 cursor-pointer text-ink-2" onClick={() => go(0)}>
+          <button type="button" className="link mt-4 inline-flex min-h-11 cursor-pointer items-center text-muted" onClick={() => go(0)}>
             Изменить ответы
           </button>
         </div>
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-5 lg:pt-8">
           <button
             type="button"
             className="btn btn-primary w-full"
@@ -88,8 +88,11 @@ export function Quiz() {
             }
           >
             Получить расчёт
+            <span className="btn-dot">
+              <ArrowRight aria-hidden className="size-4" />
+            </span>
           </button>
-          <p className="mt-3 text-sm text-ink-2">Перезвоним, уточним детали и пришлём смету в PDF.</p>
+          <p className="mt-3 text-sm text-muted">Мы перезвоним, уточним детали и пришлём смету в PDF.</p>
         </div>
       </div>
     )
@@ -97,18 +100,18 @@ export function Quiz() {
 
   const current = answers[step] ?? null
   return (
-    <div data-testid="quiz">
+    <div className="card p-6 sm:p-8" data-testid="quiz">
       <div className="flex items-center gap-4">
-        <p className="label num text-ink-2">
+        <p className="label num font-medium text-muted">
           Вопрос {step + 1} из {QUESTIONS.length}
         </p>
-        <div className="h-1 flex-1 bg-paper-2" role="progressbar" aria-label="Прогресс квиза" aria-valuemin={0} aria-valuemax={QUESTIONS.length} aria-valuenow={step}>
-          <div className="h-full bg-accent transition-[width] duration-300 motion-reduce:transition-none" style={{ width: `${(step / QUESTIONS.length) * 100}%` }} />
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-subtle" role="progressbar" aria-label="Прогресс квиза" aria-valuemin={0} aria-valuemax={QUESTIONS.length} aria-valuenow={step}>
+          <div className="h-full rounded-full bg-accent-deco transition-[width] duration-300 motion-reduce:transition-none" style={{ width: `${(step / QUESTIONS.length) * 100}%` }} />
         </div>
       </div>
       <fieldset className="mt-6">
         <legend>
-          <h3 ref={headingRef} tabIndex={-1} className="font-display text-[2rem] font-medium leading-tight outline-none">
+          <h3 ref={headingRef} tabIndex={-1} className="display text-2xl leading-tight font-bold outline-none sm:text-3xl">
             {QUESTIONS[step]}
           </h3>
         </legend>
@@ -116,14 +119,14 @@ export function Quiz() {
           {options[step]?.map((label, i) => (
             <label
               key={label}
-              className="flex min-h-14 cursor-pointer items-center gap-3 border border-ink-3/70 bg-sheet px-4 transition-colors hover:border-ink has-[:checked]:border-ink has-[:checked]:bg-paper has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent"
+              className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border border-line bg-surface px-4 transition-colors hover:border-line-strong has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent"
             >
               <input
                 type="radio"
                 name={`${uid}-q${step}`}
                 checked={current === i}
                 onChange={() => setAnswers((a) => a.map((x, j) => (j === step ? i : x)))}
-                className="size-4 accent-[var(--color-accent)]"
+                className="size-4 accent-[var(--c-accent-deco)]"
               />
               {label}
             </label>
@@ -139,7 +142,9 @@ export function Quiz() {
         )}
         <button type="button" className="btn btn-primary" disabled={current === null} onClick={() => go(step + 1)}>
           {step === QUESTIONS.length - 1 ? 'Показать вилку цены' : 'Далее'}
-          <ArrowRight aria-hidden className="size-4" />
+          <span className="btn-dot">
+            <ArrowRight aria-hidden className="size-4" />
+          </span>
         </button>
       </div>
     </div>
