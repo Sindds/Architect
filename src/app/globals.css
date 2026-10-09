@@ -140,6 +140,10 @@
   .on-dark :focus-visible {
     outline-color: #9fc0de;
   }
+  /* Свой значок раскрытия у <details>: системный треугольник скрыт и в Safari */
+  summary::-webkit-details-marker {
+    display: none;
+  }
   ::selection {
     background: var(--c-accent-deco);
     color: #ffffff;

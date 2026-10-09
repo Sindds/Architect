@@ -110,13 +110,16 @@ describe('CONTENT-SPEC §5.4 — этапы', () => {
 })
 
 describe('CONTENT-SPEC §9 — H1 вариантов', () => {
+  // В H1 — самая низкая цена проекта на сайте (тёплый контур), в подзаголовке — контур и под ключ.
   it.each([
-    ['default', '51,6'],
-    ['fachwerk', '69,5'],
-    ['monolith', '119,4'],
-    ['scandi', '51,6'],
-  ] as const)('%s → «под ключ от %s млн ₽»', (key, mln) => {
-    expect(heroFor(key).h1).toContain(`под ключ от ${mln}${NBSP}млн${NBSP}₽`)
+    ['default', '26,4', '51,6'],
+    ['fachwerk', '35,4', '69,5'],
+    ['monolith', '60,9', '119,4'],
+    ['scandi', '26,4', '51,6'],
+  ] as const)('%s → «от %s млн ₽», под ключ от %s', (key, contour, turnkey) => {
+    expect(heroFor(key).h1).toMatch(new RegExp(`— от ${contour}${NBSP}млн${NBSP}₽$`))
+    expect(heroFor(key).subtitle).toContain(`Тёплый контур от ${contour}${NBSP}млн${NBSP}₽`)
+    expect(heroFor(key).subtitle).toContain(`под ключ от ${turnkey}${NBSP}млн${NBSP}₽`)
   })
   it('первый проект в сетке — проект кампании', () => {
     expect(projectsFor('monolith')[0]?.slug).toBe('titan')

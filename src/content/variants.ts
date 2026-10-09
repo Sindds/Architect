@@ -2,7 +2,7 @@ import { MEDIA } from './media'
 import type { Variant, VariantKey } from './types'
 
 // Варианты первого экрана под рекламные кампании — CONTENT-SPEC §9.
-// Цена в H1 не вводится руками: «под ключ от …» считает pricing.ts по проектам стиля варианта.
+// Цена в H1 не вводится руками: «от …» (минимальный тёплый контур) считает pricing.ts по проектам стиля варианта.
 export const VARIANTS: Record<VariantKey, Variant> = {
   default: {
     key: 'default',

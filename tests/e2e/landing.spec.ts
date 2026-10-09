@@ -11,14 +11,30 @@ test.describe('Первый экран и варианты', () => {
     const html = await (await request.get('/')).text()
     // Текст H1 без тегов: цена может лежать в отдельном <span>, но заголовок остаётся одним H1.
     const h1 = (html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? '').replace(/<[^>]+>/g, '').replace(/\u00a0/g, ' ')
-    expect(h1).toBe('Дома из клееного бруса с панорамным остеклением в Подмосковье — под ключ от 51,6 млн ₽')
+    expect(h1).toBe('Дома из клееного бруса с панорамным остеклением в Подмосковье — от 26,4 млн ₽')
   })
 
   test('варианты отдают свой H1 в HTML', async ({ request }) => {
     const text = async (url: string) => (await (await request.get(url)).text()).replace(/\u00a0/g, ' ')
-    expect(await text('/?v=monolith')).toContain('под ключ от 119,4 млн ₽')
-    expect(await text('/?utm_content=fachwerk')).toContain('под ключ от 69,5 млн ₽')
-    expect(await text('/?v=unknown')).toContain('под ключ от 51,6 млн ₽')
+    expect(await text('/?v=monolith')).toContain('от 60,9 млн ₽')
+    expect(await text('/?utm_content=fachwerk')).toContain('от 35,4 млн ₽')
+    expect(await text('/?v=unknown')).toContain('от 26,4 млн ₽')
+  })
+
+  test('цена в заголовке не выше самой низкой цены в карточках проектов', async ({ page }) => {
+    await page.goto('/')
+    const mln = (s: string) => Number(s.replace(/\s/g, ' ').match(/от ([\d,]+) млн/)?.[1]?.replace(',', '.'))
+    const hero = mln((await page.getByTestId('hero-price').textContent()) ?? '')
+    const cards = (await page.locator('#projects dd').allTextContents()).map(mln).filter(Number.isFinite)
+    expect(cards.length).toBeGreaterThan(0)
+    expect(hero).toBeLessThanOrEqual(Math.min(...cards))
+  })
+
+  test('в блоке контактов нет схемы проезда: карта одна, в футере', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.locator('#contacts svg[role=img]')).toHaveCount(0)
+    await expect(page.locator('#contacts').getByText(/Схема/)).toHaveCount(0)
+    await expect(page.getByTestId('office-map')).toHaveCount(1)
   })
 
   test('несуществующий адрес — 404', async ({ request }) => {

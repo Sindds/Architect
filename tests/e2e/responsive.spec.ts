@@ -30,7 +30,7 @@ for (const width of [320, 375, 768, 1024, 1280, 1440]) {
     expect(h1?.lines).toBeLessThanOrEqual(5)
     const [price] = await textLines(page, '[data-testid=hero-price]')
     expect(price?.lines).toBe(1)
-    await expect(page.getByTestId('hero-price')).toContainText('51,6')
+    await expect(page.getByTestId('hero-price')).toContainText('26,4')
   })
 }
 
@@ -126,12 +126,36 @@ test.describe('Телефон', () => {
     await expect(bar).toContainText('₽')
   })
 
-  test('пакеты цен листаются по горизонтали, а не тянутся на три экрана', async ({ page }) => {
+  test('пакеты цен идут столбиком, каждый не выше экрана, состав раскрывается по нажатию', async ({ page }) => {
     await page.goto('/')
-    const tops = await page.locator('#pricing ol > li').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)))
-    expect(new Set(tops).size).toBe(1)
+    const boxes = await page.locator('#pricing ol > li').evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ top: r.top, h: r.height })))
+    expect(boxes).toHaveLength(3)
+    boxes.slice(1).forEach((b, i) => expect(b.top).toBeGreaterThan(boxes[i]!.top + boxes[i]!.h - 1))
+    for (const b of boxes) expect(b.h).toBeLessThanOrEqual(667)
+    const first = page.locator('#pricing ol > li').first()
+    await first.getByText('Что входит и что нет').click()
+    await expect(first.getByText('Геология, топосъёмка, проект АР и КР')).toBeVisible()
   })
 })
+
+// Горизонтальные ленты прокрутки на сайте не используем (замечание заказчика 09.10.2026).
+for (const width of [375, 768, 1440]) {
+  test(`${width}px: на странице нет горизонтальной прокрутки ни у страницы, ни у блоков`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/')
+    const scrollers = await page.evaluate(() =>
+      [...document.querySelectorAll('body *')]
+        .filter((el) => !el.closest('dialog'))
+        .filter((el) => {
+          const o = getComputedStyle(el).overflowX
+          return (o === 'auto' || o === 'scroll') && el.scrollWidth > el.clientWidth + 1
+        })
+        .map((el) => `${el.tagName}.${String(el.className).slice(0, 60)}`),
+    )
+    expect(scrollers).toEqual([])
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
+  })
+}
 
 test('фото первого экрана грузится с высоким приоритетом', async ({ request }) => {
   const html = await (await request.get('/')).text()
