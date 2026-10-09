@@ -46,7 +46,7 @@ export function Header() {
       <div
         data-testid="nav-capsule"
         className={`pointer-events-auto mx-auto flex max-w-[94rem] items-center gap-1.5 rounded-full py-1.5 pl-3 pr-1.5 shadow-xl transition-[background-color,border-color,color] duration-300 sm:gap-2 sm:pl-5 ${
-          glass ? 'border border-white/15 bg-black/55 text-white backdrop-blur-md' : 'border border-line bg-surface/95 text-fg backdrop-blur-xl'
+          glass ? 'border border-white/15 bg-black/75 text-white fine:bg-black/55 fine:backdrop-blur-md' : 'border border-line bg-surface text-fg fine:bg-surface/95 fine:backdrop-blur-xl'
         }`}
       >
         <a href="#top" className="mr-auto inline-flex min-h-11 min-w-0 items-center">
@@ -104,7 +104,7 @@ export function Header() {
       <dialog
         ref={menuRef}
         aria-label="Меню"
-        className="pointer-events-auto m-0 h-dvh max-h-dvh w-full max-w-full bg-[#0b0c0e]/95 p-0 text-white backdrop-blur-2xl"
+        className="pointer-events-auto m-0 h-dvh max-h-dvh w-full max-w-full bg-[#0b0c0e] p-0 text-white"
         onClick={(e) => {
           if (e.target === e.currentTarget) menuRef.current?.close()
         }}

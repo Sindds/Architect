@@ -49,10 +49,10 @@ export function Projects({ projects }: { projects: Project[] }) {
                     />
                     <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/30" />
                     <div className="absolute inset-x-4 top-4 flex flex-wrap gap-2">
-                      <span data-chip className="label rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-white backdrop-blur-md">
+                      <span data-chip className="label rounded-full border border-white/20 bg-black/70 px-3 py-1.5 text-white fine:bg-black/60 fine:backdrop-blur-md">
                         {PRICING.styles[p.style].title}
                       </span>
-                      <span data-chip className="label num rounded-full border border-white/20 bg-white/20 px-3 py-1.5 font-medium text-white backdrop-blur-md">
+                      <span data-chip className="label num rounded-full border border-white/20 bg-black/55 px-3 py-1.5 font-medium text-white fine:bg-white/20 fine:backdrop-blur-md">
                         {p.area} м²
                       </span>
                       <span data-chip className="label ml-auto rounded-full bg-black/60 px-3 py-1.5 font-medium text-[#d4d8dd]">

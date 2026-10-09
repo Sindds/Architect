@@ -218,7 +218,7 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
       {controlsInView && !resultInView && (
         <div
           data-testid="calc-sticky"
-          className="on-dark fixed inset-x-2 bottom-2 z-30 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-inverse/95 py-2 pr-2 pl-4 text-on-inverse shadow-2xl backdrop-blur lg:hidden"
+          className="on-dark fixed inset-x-2 bottom-2 z-30 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-inverse py-2 pr-2 pl-4 text-on-inverse shadow-2xl lg:hidden"
         >
           <div className="min-w-0">
             <p className="text-xs text-on-inverse-muted">Итого, {PRICING.tiers[tier].title.toLowerCase()}</p>

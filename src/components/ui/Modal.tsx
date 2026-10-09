@@ -53,7 +53,7 @@ export function Modal({ open, onClose, title, hideTitle, size = 'lg', children, 
     >
       {open && (
         <div className="relative">
-          <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line bg-surface/95 px-4 py-3 backdrop-blur sm:px-8 sm:py-4">
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line bg-surface px-4 py-3 fine:bg-surface/95 fine:backdrop-blur sm:px-8 sm:py-4">
             <h2 id={titleId} className={hideTitle ? 'sr-only' : 'font-display text-xl leading-tight font-bold sm:text-2xl'}>
               {title}
             </h2>

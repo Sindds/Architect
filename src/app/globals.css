@@ -4,6 +4,9 @@
 @source not '../../legacy';
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+/* Мышь и точный указатель. На сенсорных экранах дорогие для GPU эффекты (размытие фона, анимации
+   от прокрутки) не включаются: на телефонах они давали лаги (замер 09.10.2026, tests/e2e/performance.spec.ts). */
+@custom-variant fine (@media (hover: hover) and (pointer: fine));
 
 /*
   Дизайн по образцу architectural-three.vercel.app: светлые bento-карточки, крупные скругления,
@@ -142,8 +145,13 @@
     color: #ffffff;
   }
   dialog::backdrop {
-    background: rgb(5 6 8 / 0.7);
-    backdrop-filter: blur(4px);
+    background: rgb(5 6 8 / 0.78);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    dialog::backdrop {
+      background: rgb(5 6 8 / 0.7);
+      backdrop-filter: blur(4px);
+    }
   }
 }
 
@@ -192,9 +200,11 @@
       box-shadow 300ms var(--ease-out-soft),
       border-color 200ms ease;
   }
-  .card-hover:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 18px 40px -24px rgb(17 19 21 / 0.35);
+  @media (hover: hover) {
+    .card-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 40px -24px rgb(17 19 21 / 0.35);
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     .card-hover:hover {
@@ -266,10 +276,15 @@
     background: #e8edf2;
   }
   .btn-glass {
-    background: rgb(255 255 255 / 0.14);
+    background: rgb(17 19 21 / 0.55);
     border-color: rgb(255 255 255 / 0.28);
     color: #ffffff;
-    backdrop-filter: blur(12px);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .btn-glass {
+      background: rgb(255 255 255 / 0.14);
+      backdrop-filter: blur(12px);
+    }
   }
   .btn-glass:hover {
     background: rgb(255 255 255 / 0.24);
@@ -363,8 +378,9 @@
 
   /* Появление при прокрутке — только CSS и только там, где браузер это умеет.
      Без поддержки или при reduced motion контент виден сразу. */
+  /* Только для мыши: scroll-driven анимация держит каждую карточку отдельным GPU-слоем всё время. */
   @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
+    @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
       .reveal {
         animation: reveal linear both;
         animation-timeline: view();

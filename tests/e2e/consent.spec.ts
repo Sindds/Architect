@@ -18,8 +18,16 @@ test('при первом входе показывается баннер cooki
   await expect(b).toBeVisible()
   await expect(b.getByRole('link', { name: /Подробнее/ })).toHaveAttribute('href', '/cookies')
   for (const name of ['Принять все', 'Только необходимые']) {
-    const box = await b.getByRole('button', { name }).boundingBox()
+    const button = b.getByRole('button', { name })
+    const box = await button.boundingBox()
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(44)
+    // Подпись в одну строку даже на узком телефоне
+    const lines = await button.evaluate((el) => {
+      const r = document.createRange()
+      r.selectNodeContents(el)
+      return new Set([...r.getClientRects()].filter((x) => x.width > 1).map((x) => Math.round(x.top))).size
+    })
+    expect(lines).toBe(1)
   }
   const axe = await new AxeBuilder({ page }).include('[data-testid=cookie-banner]').analyze()
   expect(axe.violations).toEqual([])

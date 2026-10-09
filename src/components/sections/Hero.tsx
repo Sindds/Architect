@@ -13,7 +13,7 @@ import { QuizButton } from './QuizButton'
 export function Hero({ variant }: { variant: VariantKey }) {
   const { h1Prefix, h1Price, subtitle, variant: v } = heroFor(variant)
   const proof =
-    'flex h-full min-h-11 w-60 shrink-0 snap-start items-center gap-3 rounded-2xl border border-white/15 bg-black/45 p-4 text-left backdrop-blur-xl transition-[transform,background-color] duration-300 hover:-translate-y-0.5 hover:bg-black/60 motion-reduce:hover:translate-y-0 sm:w-full sm:shrink'
+    'flex h-full min-h-11 w-60 shrink-0 snap-start items-center gap-3 rounded-2xl border border-white/15 bg-black/60 p-4 text-left fine:bg-black/45 fine:backdrop-blur-xl transition-[transform,background-color] duration-300 hover:-translate-y-0.5 hover:bg-black/60 motion-reduce:hover:translate-y-0 sm:w-full sm:shrink'
 
   return (
     <section id="top" aria-labelledby="hero-title" className="mx-auto w-full max-w-[100rem] p-2 pb-0 sm:p-4 sm:pb-0 md:p-6 md:pb-0">

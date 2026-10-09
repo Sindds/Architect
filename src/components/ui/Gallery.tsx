@@ -28,7 +28,7 @@ export function Gallery({ pictures, label }: { pictures: Picture[]; label: strin
             className="aspect-[16/10] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transition-none"
             placeholder="blur"
           />
-          <span className="absolute top-3 right-3 inline-flex size-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur">
+          <span className="absolute top-3 right-3 inline-flex size-10 items-center justify-center rounded-full bg-black/70 text-white fine:bg-black/60 fine:backdrop-blur">
             <Maximize2 aria-hidden className="size-5" strokeWidth={1.5} />
           </span>
         </button>

@@ -29,11 +29,11 @@ export function CookieBanner() {
           Подробнее о cookie
         </Link>
       </p>
-      <div className="mt-3 flex gap-2">
-        <button type="button" className="btn btn-primary min-h-11 flex-1 px-4" onClick={() => choose('all')}>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button type="button" className="btn btn-primary min-h-11 grow px-3 text-sm tracking-normal whitespace-nowrap normal-case" onClick={() => choose('all')}>
           Принять все
         </button>
-        <button type="button" className="btn btn-ghost min-h-11 flex-1 px-4" onClick={() => choose('necessary')}>
+        <button type="button" className="btn btn-ghost min-h-11 grow px-3 text-sm tracking-normal whitespace-nowrap normal-case" onClick={() => choose('necessary')}>
           Только необходимые
         </button>
       </div>
