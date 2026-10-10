@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useActionState, useEffect, useId, useRef, useState } from 'react'
 import { submitLead } from '@/app/actions/lead'
 import { SITE } from '@/content/site'
-import { CONTACT_METHODS, HONEYPOT_FIELD, type LeadSource, type LeadState } from '@/lib/lead-schema'
+import { CONTACT_METHODS, HONEYPOT_FIELD, type LeadSource, type LeadState, SEND_FAILED } from '@/lib/lead-schema'
 import { maskRuPhone } from '@/lib/phone'
 
 interface LeadFormProps {
@@ -36,6 +36,19 @@ function readUtm(): string | undefined {
   }
 }
 
+/**
+ * Обрыв сети, ответ 5xx или новая версия сайта после выкладки: вызов server action бросает исключение.
+ * Без перехвата React передаёт его границе ошибок, страница целиком меняется на экран ошибки и ввод пропадает.
+ */
+async function sendLead(prev: LeadState, form: FormData): Promise<LeadState> {
+  try {
+    return await submitLead(prev, form)
+  } catch (error) {
+    console.error('[lead] Заявка не отправлена', error)
+    return { status: 'error', message: SEND_FAILED }
+  }
+}
+
 export function LeadForm({
   source,
   variant,
@@ -47,7 +60,7 @@ export function LeadForm({
   contactMethod = 'call',
   tone = 'light',
 }: LeadFormProps) {
-  const [state, action, pending] = useActionState<LeadState, FormData>(submitLead, { status: 'idle' })
+  const [state, action, pending] = useActionState<LeadState, FormData>(sendLead, { status: 'idle' })
   // Поля контролируемые: React сбрасывает неконтролируемые поля формы после action, а при ошибке ввод нужно сохранить.
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -225,10 +238,9 @@ export function LeadForm({
         {state.status === 'error' && (
           <p role="alert" className={`text-sm font-medium ${errorText}`}>
             {state.message}
-            {!state.fieldErrors && !state.message.includes(SITE.phoneDisplay) && (
+            {!state.fieldErrors && (
               <>
-                {' '}
-                Или позвоните:{' '}
+                {state.message.endsWith(':') ? ' ' : ' Или позвоните: '}
                 <a href={SITE.phoneHref} className="link num whitespace-nowrap">
                   {SITE.phoneDisplay}
                 </a>

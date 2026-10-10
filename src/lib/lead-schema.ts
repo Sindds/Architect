@@ -48,6 +48,9 @@ export type LeadState =
   | { status: 'ok'; id: number }
   | { status: 'error'; message: string; fieldErrors?: Partial<Record<'name' | 'phone' | 'consent' | 'comment', string>> }
 
+/** Заявка не дошла до сервера или сервер не смог её сохранить. Форма добавляет ссылку на телефон после двоеточия. */
+export const SEND_FAILED = 'Не удалось отправить. Позвоните:'
+
 /** Поле-ловушка для ботов: человек его не видит и не заполняет. */
 export const HONEYPOT_FIELD = 'company'
 

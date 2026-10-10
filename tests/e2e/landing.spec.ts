@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
-import type { Page } from '@playwright/test'
+import type { Page, Route } from '@playwright/test'
 import { expect, test } from './fixtures'
+import { SITE } from '@/content/site'
 import { formatDays, formatRub } from '@/lib/format'
 import { breakdown, projectPrice } from '@/lib/pricing'
 
@@ -205,6 +206,32 @@ test.describe('Заявка', () => {
     await modal.getByRole('button', { name: 'Записаться на экскурсию' }).click()
     await expect(modal.getByTestId('lead-success')).toContainText(/Заявка №\d+ принята/)
   })
+
+  // Сбой отправки (обрыв сети, ответ 500) не роняет страницу: форма с вводом остаётся, рядом телефон.
+  for (const [title, fail] of [
+    ['обрыв сети', (route: Route) => route.abort('failed')],
+    ['ответ 500', (route: Route) => route.fulfill({ status: 500, body: 'Internal Server Error' })],
+  ] as const) {
+    test(`сбой отправки (${title}): страница на месте, ввод сохранён, виден телефон`, async ({ page }) => {
+      await page.route('**/*', (route) =>
+        route.request().method() === 'POST' && route.request().headers()['next-action'] ? fail(route) : route.fallback(),
+      )
+      await page.goto('/')
+      await page.getByRole('button', { name: 'Покажем построенный дом' }).click()
+      const modal = page.getByTestId('lead-modal')
+      await modal.getByLabel('Имя').fill('Анна')
+      await modal.getByLabel('Телефон').fill('9161234567')
+      await modal.getByRole('checkbox').check()
+      await modal.getByRole('button', { name: 'Записаться на экскурсию' }).click()
+
+      const alert = modal.getByRole('alert')
+      await expect(alert).toContainText('Не удалось отправить')
+      await expect(alert.getByRole('link', { name: SITE.phoneDisplay })).toHaveAttribute('href', SITE.phoneHref)
+      await expect(modal.getByLabel('Имя')).toHaveValue('Анна')
+      await expect(modal.getByLabel('Телефон')).toHaveValue('+7 (916) 123-45-67')
+      await expect(page.getByRole('heading', { level: 1 })).toContainText('от')
+    })
+  }
 
   test('FAQ раскрывается с клавиатуры', async ({ page }) => {
     await page.goto('/')

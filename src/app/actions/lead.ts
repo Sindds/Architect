@@ -5,7 +5,7 @@ import { appendFile, mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { headers } from 'next/headers'
 import { SITE } from '@/content/site'
-import { type LeadInput, type LeadState, validateLead } from '@/lib/lead-schema'
+import { type LeadInput, type LeadState, SEND_FAILED, validateLead } from '@/lib/lead-schema'
 import { leadNotificationText, notifyTelegram } from '@/lib/notify'
 import { allowRequest, hashIp } from '@/lib/rate-limit'
 
@@ -18,7 +18,7 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
   const h = await headers()
   const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'unknown'
   if (!allowRequest(hashIp(ip))) {
-    return { status: 'error', message: `Слишком много заявок подряд. Позвоните нам: ${SITE.phoneDisplay}` }
+    return { status: 'error', message: 'Слишком много заявок подряд. Позвоните нам:' }
   }
 
   const id = randomInt(10_000, 99_999)
@@ -26,7 +26,7 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
     await persistLead(id, checked.data)
   } catch (error) {
     console.error('[lead] Не удалось сохранить заявку', error)
-    return { status: 'error', message: `Не удалось отправить. Позвоните: ${SITE.phoneDisplay}` }
+    return { status: 'error', message: SEND_FAILED }
   }
   await notifyTelegram(leadNotificationText(id, checked.data.source, checked.data.variant))
   return { status: 'ok', id }
