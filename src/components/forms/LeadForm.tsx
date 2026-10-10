@@ -248,13 +248,17 @@ export function LeadForm({
             Даю{' '}
             <Link href="/soglasie" className="link" target="_blank">
               согласие на обработку персональных данных
-            </Link>{' '}
-            по{' '}
-            <Link href="/privacy" className="link" target="_blank">
-              политике конфиденциальности
             </Link>
           </span>
         </label>
+        {/* Согласие оформляется отдельно от других документов (ч. 1 ст. 9 152-ФЗ): политика — справка рядом, не часть флажка. */}
+        <p className={`mt-1 text-sm ${muted}`}>
+          Как мы храним и защищаем данные, описано в{' '}
+          <Link href="/privacy" className="link" target="_blank">
+            политике конфиденциальности
+          </Link>
+          .
+        </p>
         {errors.consent && (
           <p id={`${uid}-consent-error`} className={`mt-1.5 text-sm ${errorText}`}>
             {errors.consent}

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { operatorRequisites } from '@/content/legal'
 import { SITE } from '@/content/site'
 import { OfficeMap } from '../OfficeMap'
 import { Logo } from '../ui/Logo'
@@ -57,7 +58,7 @@ export function Footer() {
         </div>
         <div className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:justify-between">
           <p className="max-w-xl text-sm text-on-inverse-muted" data-testid="disclaimer">
-            {concept ? SITE.disclaimer : SITE.brandFull}
+            {concept ? SITE.disclaimer : operatorRequisites(SITE)}
           </p>
           <ul className="flex flex-wrap gap-x-5 text-sm">
             <li>

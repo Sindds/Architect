@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import type { LegalDoc } from '@/content/legal'
+import { type LegalDoc, operatorRequisites } from '@/content/legal'
 import { SITE } from '@/content/site'
 import { ThemeToggle } from './ThemeToggle'
 import { Logo } from './ui/Logo'
@@ -40,7 +40,7 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
         </div>
       </main>
       <footer className="shell max-w-3xl border-t border-line py-8">
-        <p className="text-sm text-muted">{SITE.disclaimer}</p>
+        <p className="text-sm text-muted">{SITE.contentMode === 'concept' ? SITE.disclaimer : operatorRequisites(SITE)}</p>
       </footer>
     </div>
   )
