@@ -1,23 +1,21 @@
 import type { LeadSource } from './lead-schema'
+import { SINK_LABELS, type SinkResult } from './leads/deliver'
+import { SOURCE_LABELS } from './leads/record'
 
-const SOURCE_LABELS: Record<LeadSource, string> = {
-  header: 'шапка',
-  hero: 'первый экран',
-  excursion: 'экскурсия на объект',
-  messenger: 'мессенджер',
-  project_card: 'карточка проекта',
-  project_modal: 'окно проекта',
-  case_modal: 'окно кейса',
-  pricing_pdf: 'смета из блока цен',
-  calculator: 'калькулятор',
-  quiz: 'квиз',
-  final_cta: 'финальная форма',
-  architect: 'вопрос архитектору',
-}
-
-/** Текст уведомления. Только номер заявки, источник и вариант — без имени и телефона (152-ФЗ). */
-export function leadNotificationText(id: number, source: LeadSource, variant?: string): string {
-  return `Новая заявка №${id}. Источник: ${SOURCE_LABELS[source]}. Вариант: ${variant ?? 'default'}.`
+/**
+ * Текст уведомления: номер заявки, источник, вариант и где она сохранена — ссылка на карточку в CRM.
+ * Имени и телефона нет (152-ФЗ, правило 7 CLAUDE.md); текст ошибок хранилищ — только в журнале сервера.
+ */
+export function leadNotificationText(id: number, source: LeadSource, variant?: string, results: SinkResult[] = []): string {
+  const lines = [`Новая заявка №${id}. Источник: ${SOURCE_LABELS[source]}. Вариант: ${variant ?? 'default'}.`]
+  for (const r of results) {
+    const label = SINK_LABELS[r.sink]
+    if (!r.ok) lines.push(`Не принята в ${label}. Подробности в журнале сервера.`)
+    else if (r.url) lines.push(`${label}: ${r.url}`)
+    else if (r.sink !== 'file') lines.push(`${label}: принята${r.ref ? `, №${r.ref}` : ''}`)
+  }
+  if (results.length && !results.some((r) => r.ok)) lines.push('Заявка нигде не сохранена: клиенту показан телефон для звонка.')
+  return lines.join('\n')
 }
 
 export async function notifyTelegram(text: string): Promise<void> {
@@ -28,7 +26,7 @@ export async function notifyTelegram(text: string): Promise<void> {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text }),
+      body: JSON.stringify({ chat_id: chatId, text, link_preview_options: { is_disabled: true } }),
       signal: AbortSignal.timeout(5000),
     })
     if (!res.ok) console.error('[lead] Telegram ответил', res.status)

@@ -1,11 +1,12 @@
 'use server'
 
 import { randomInt } from 'node:crypto'
-import { appendFile, mkdir } from 'node:fs/promises'
-import path from 'node:path'
 import { headers } from 'next/headers'
+import { after } from 'next/server'
 import { SITE } from '@/content/site'
-import { type LeadInput, type LeadState, SEND_FAILED, validateLead } from '@/lib/lead-schema'
+import { type LeadState, SEND_FAILED, validateLead } from '@/lib/lead-schema'
+import { configuredSinks, deliverLead } from '@/lib/leads/deliver'
+import { toLeadRecord } from '@/lib/leads/record'
 import { leadNotificationText, notifyTelegram } from '@/lib/notify'
 import { allowRequest, hashIp } from '@/lib/rate-limit'
 
@@ -22,24 +23,26 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
   }
 
   const id = randomInt(10_000, 99_999)
+  const { source, variant } = checked.data
+
+  // Режим concept: компания вымышлена, персональные данные не сохраняются и никуда не передаются.
+  if (SITE.contentMode === 'concept') {
+    after(() => notifyTelegram(leadNotificationText(id, source, variant)))
+    return { status: 'ok', id }
+  }
+
+  // Режим client: файл на сервере, Битрикс24 и 1С — те, что заданы в переменных окружения (docs/INTEGRATIONS.md).
+  let delivered: Awaited<ReturnType<typeof deliverLead>>
   try {
-    await persistLead(id, checked.data)
+    delivered = await deliverLead(toLeadRecord(id, checked.data), configuredSinks())
   } catch (error) {
-    console.error('[lead] Не удалось сохранить заявку', error)
+    console.error('[lead] Ошибка настройки хранилищ заявок', error)
     return { status: 'error', message: SEND_FAILED }
   }
-  await notifyTelegram(leadNotificationText(id, checked.data.source, checked.data.variant))
-  return { status: 'ok', id }
-}
+  for (const r of delivered.results) if (!r.ok) console.error(`[lead] №${id} не принята: ${r.sink}`, r.error)
+  if (!delivered.results.length) console.error('[lead] Не задано ни одного хранилища заявок')
 
-/**
- * Режим concept: компания вымышлена, персональные данные не сохраняются.
- * Режим client: заявка пишется на сервер (.data/leads.ndjson); сервер и БД — в РФ (152-ФЗ, ч. 5 ст. 18).
- */
-async function persistLead(id: number, lead: LeadInput) {
-  if (SITE.contentMode === 'concept') return
-  const dir = path.join(process.cwd(), '.data')
-  await mkdir(dir, { recursive: true })
-  const record = { id, createdAt: new Date().toISOString(), consentVersion: SITE.legalVersion.version, ...lead }
-  await appendFile(path.join(dir, 'leads.ndjson'), `${JSON.stringify(record)}\n`, 'utf8')
+  // Уведомление уходит после ответа посетителю: медленный Telegram не задерживает форму.
+  after(() => notifyTelegram(leadNotificationText(id, source, variant, delivered.results)))
+  return delivered.ok ? { status: 'ok', id } : { status: 'error', message: SEND_FAILED }
 }

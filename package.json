@@ -16,6 +16,7 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "docs:pdf": "tsx --import ./scripts/assets-hook.mjs scripts/make-sample-pdfs.ts",
+    "leads:check": "tsx --env-file-if-exists=.env.local scripts/leads-check.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm lint:content && pnpm test"
   },
   "pnpm": {
