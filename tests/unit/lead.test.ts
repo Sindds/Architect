@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { HONEYPOT_FIELD, MIN_FILL_MS, validateLead } from '@/lib/lead-schema'
 import { leadNotificationText } from '@/lib/notify'
-import { maskRuPhone, normalizeRuPhone } from '@/lib/phone'
+import { maskRuPhone, maskRuPhoneEdit, normalizeRuPhone } from '@/lib/phone'
 import { allowRequest, resetRateLimit } from '@/lib/rate-limit'
 
 const NOW = 1_800_000_000_000
@@ -34,8 +34,63 @@ describe('телефон', () => {
 
   it('маска', () => {
     expect(maskRuPhone('89161234567')).toBe('+7 (916) 123-45-67')
-    expect(maskRuPhone('916')).toBe('+7 (916)')
+    expect(maskRuPhone('+79161234567')).toBe('+7 (916) 123-45-67')
+    expect(maskRuPhone('9161234567')).toBe('+7 (916) 123-45-67')
+    // Разделитель появляется вместе со следующей цифрой: иначе его нельзя стереть.
+    expect(maskRuPhone('916')).toBe('+7 (916')
+    expect(maskRuPhone('9161')).toBe('+7 (916) 1')
     expect(maskRuPhone('')).toBe('')
+  })
+})
+
+/** Ввод в поле, как в браузере: строка, курсор (|) и действие. */
+function edit(withCaret: string, action: { type: string } | 'backspace') {
+  const at = withCaret.indexOf('|')
+  const value = withCaret.replace('|', '')
+  const next =
+    action === 'backspace'
+      ? { value: value.slice(0, at - 1) + value.slice(at), caret: at - 1 }
+      : { value: value.slice(0, at) + action.type + value.slice(at), caret: at + action.type.length }
+  const masked = maskRuPhoneEdit(next.value, next.caret)
+  return `${masked.value.slice(0, masked.caret)}|${masked.value.slice(masked.caret)}`
+}
+
+function typeAll(chars: string) {
+  let state = '|'
+  for (const ch of chars) state = edit(state, { type: ch })
+  return state
+}
+
+describe('маска телефона при наборе', () => {
+  it('цифра по одной: курсор всегда в конце', () => {
+    expect(typeAll('9161234567')).toBe('+7 (916) 123-45-67|')
+  })
+
+  it('первая 8 или 7 — код страны, после неё можно набрать код на 8 (Санкт-Петербург 812)', () => {
+    expect(typeAll('8')).toBe('+7 (|')
+    expect(typeAll('88121234567')).toBe('+7 (812) 123-45-67|')
+    expect(typeAll('78121234567')).toBe('+7 (812) 123-45-67|')
+    expect(typeAll('+78121234567')).toBe('+7 (812) 123-45-67|')
+  })
+
+  it('исправление цифры в середине: курсор остаётся на месте', () => {
+    const afterDelete = edit('+7 (916|) 123-45-67', 'backspace')
+    expect(afterDelete).toBe('+7 (91|1) 234-56-7')
+    expect(edit(afterDelete, { type: '5' })).toBe('+7 (915|) 123-45-67')
+  })
+
+  it('стирание с конца проходит через скобку и пробел до пустого поля', () => {
+    let state = '+7 (916) 1|'
+    const seen: string[] = []
+    for (let i = 0; i < 5; i++) {
+      state = edit(state, 'backspace')
+      seen.push(state)
+    }
+    expect(seen).toEqual(['+7 (916|', '+7 (91|', '+7 (9|', '+7 (|', '|'])
+  })
+
+  it('стирание дефиса сдвигает курсор к цифре перед ним', () => {
+    expect(edit('+7 (916) 123-|45-67', 'backspace')).toBe('+7 (916) 123|-45-67')
   })
 })
 

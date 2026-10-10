@@ -233,6 +233,47 @@ test.describe('Заявка', () => {
     })
   }
 
+  test('маска телефона: правка в середине, код на 8, стирание через скобку', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Покажем построенный дом' }).click()
+    const phone = page.getByTestId('lead-modal').getByLabel('Телефон')
+
+    await phone.pressSequentially('9161234567')
+    await expect(phone).toHaveValue('+7 (916) 123-45-67')
+    // Курсор после «6» в коде: стираем её и набираем «5».
+    await phone.press('End')
+    for (let i = 0; i < 11; i++) await phone.press('ArrowLeft')
+    await phone.press('Backspace')
+    await phone.press('5')
+    await expect(phone).toHaveValue('+7 (915) 123-45-67')
+
+    await phone.fill('')
+    await phone.pressSequentially('88121234567')
+    await expect(phone).toHaveValue('+7 (812) 123-45-67')
+
+    await phone.press('End')
+    for (let i = 0; i < 11; i++) await phone.press('Backspace')
+    await expect(phone).toHaveValue('')
+  })
+
+  test('после ошибки отправки выбор способа связи и согласие сохраняются', async ({ page }) => {
+    await page.route('**/*', (route) =>
+      route.request().method() === 'POST' && route.request().headers()['next-action'] ? route.abort('failed') : route.fallback(),
+    )
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Написать в мессенджер' }).first().click()
+    const modal = page.getByTestId('lead-modal')
+    await modal.getByLabel('Имя').fill('Анна')
+    await modal.getByLabel('Телефон').fill('9161234567')
+    await modal.getByRole('radio', { name: 'MAX' }).check()
+    await modal.getByRole('checkbox').check()
+    await modal.getByRole('button', { name: /Отправить|Написать/ }).click()
+
+    await expect(modal.getByRole('alert')).toContainText('Не удалось отправить')
+    await expect(modal.getByRole('radio', { name: 'MAX' })).toBeChecked()
+    await expect(modal.getByRole('checkbox')).toBeChecked()
+  })
+
   test('FAQ раскрывается с клавиатуры', async ({ page }) => {
     await page.goto('/')
     const summary = page.locator('summary', { hasText: 'Можно ли через ипотеку или эскроу?' })

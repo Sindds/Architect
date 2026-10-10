@@ -2,11 +2,11 @@
 
 import { ArrowUpRight, Check } from 'lucide-react'
 import Link from 'next/link'
-import { useActionState, useEffect, useId, useRef, useState } from 'react'
+import { startTransition, useActionState, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { submitLead } from '@/app/actions/lead'
 import { SITE } from '@/content/site'
 import { CONTACT_METHODS, HONEYPOT_FIELD, type LeadSource, type LeadState, SEND_FAILED } from '@/lib/lead-schema'
-import { maskRuPhone } from '@/lib/phone'
+import { maskRuPhoneEdit } from '@/lib/phone'
 
 interface LeadFormProps {
   source: LeadSource
@@ -61,15 +61,19 @@ export function LeadForm({
   tone = 'light',
 }: LeadFormProps) {
   const [state, action, pending] = useActionState<LeadState, FormData>(sendLead, { status: 'idle' })
-  // Поля контролируемые: React сбрасывает неконтролируемые поля формы после action, а при ошибке ввод нужно сохранить.
+  // Поля контролируемые, отправка через onSubmit: после <form action> React сбрасывает форму, в том числе выбранный
+  // способ связи, а при ошибке ввод и выбор нужно сохранить.
   const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
+  // Значение вместе с курсором: новый объект на каждую правку, даже если строка не изменилась (стёрли дефис).
+  const [phone, setPhone] = useState({ value: '', caret: 0 })
   const [comment, setComment] = useState('')
   const [consent, setConsent] = useState(false)
+  const [method, setMethod] = useState<string>(contactMethod)
   const [startedAt, setStartedAt] = useState('')
   const [utm, setUtm] = useState<string | undefined>()
   const uid = useId()
   const statusRef = useRef<HTMLDivElement>(null)
+  const phoneRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     // Время начала и utm доступны только в браузере.
@@ -82,6 +86,12 @@ export function LeadForm({
   useEffect(() => {
     if (state.status !== 'idle') statusRef.current?.focus()
   }, [state])
+
+  // React ставит курсор в конец, когда меняет значение поля; возвращаем его туда, где набирал человек.
+  useLayoutEffect(() => {
+    const el = phoneRef.current
+    if (el && document.activeElement === el) el.setSelectionRange(phone.caret, phone.caret)
+  }, [phone])
 
   const dark = tone === 'dark'
   const errors = state.status === 'error' ? (state.fieldErrors ?? {}) : {}
@@ -115,7 +125,17 @@ export function LeadForm({
   })
 
   return (
-    <form action={action} noValidate className="grid gap-4" data-testid="lead-form">
+    <form
+      method="post"
+      noValidate
+      className="grid gap-4"
+      data-testid="lead-form"
+      onSubmit={(e) => {
+        e.preventDefault()
+        const data = new FormData(e.currentTarget)
+        startTransition(() => action(data))
+      }}
+    >
       <input type="hidden" name="source" value={source} />
       <input type="hidden" name="variant" value={variant} />
       <input type="hidden" name="startedAt" value={startedAt} />
@@ -154,8 +174,9 @@ export function LeadForm({
             autoComplete="tel"
             required
             placeholder="+7 (___) ___-__-__"
-            value={phone}
-            onChange={(e) => setPhone(maskRuPhone(e.target.value))}
+            ref={phoneRef}
+            value={phone.value}
+            onChange={(e) => setPhone(maskRuPhoneEdit(e.target.value, e.target.selectionStart ?? e.target.value.length))}
             className="field num"
           />
           {errors.phone && (
@@ -178,7 +199,14 @@ export function LeadForm({
                     dark ? 'border-white/30 has-[:checked]:bg-white/10' : 'border-line-strong has-[:checked]:bg-accent-soft'
                   }`}
                 >
-                  <input type="radio" name="contactMethod" value={value} defaultChecked={value === contactMethod} className="accent-[var(--c-accent-deco)]" />
+                  <input
+                    type="radio"
+                    name="contactMethod"
+                    value={value}
+                    checked={value === method}
+                    onChange={() => setMethod(value)}
+                    className="accent-[var(--c-accent-deco)]"
+                  />
                   {label}
                 </label>
               ))}
