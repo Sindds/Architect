@@ -4,11 +4,20 @@ import { randomInt } from 'node:crypto'
 import { headers } from 'next/headers'
 import { after } from 'next/server'
 import { SITE } from '@/content/site'
+import { clientIp } from '@/lib/client-ip'
 import { type LeadState, SEND_FAILED, validateLead } from '@/lib/lead-schema'
+import { checkLeadToken, leadTokenSecret, signLeadToken } from '@/lib/lead-token'
 import { configuredSinks, deliverLead } from '@/lib/leads/deliver'
 import { toLeadRecord } from '@/lib/leads/record'
 import { leadNotificationText, notifyTelegram } from '@/lib/notify'
 import { allowRequest, hashIp } from '@/lib/rate-limit'
+
+const secret = () => leadTokenSecret(process.env, SITE.contentMode === 'concept')
+
+/** Метка «начали заполнять форму сейчас», подписанная сервером. Форма запрашивает её при первом фокусе. */
+export async function issueLeadToken(): Promise<string> {
+  return signLeadToken(Date.now(), secret())
+}
 
 export async function submitLead(_prev: LeadState, form: FormData): Promise<LeadState> {
   const checked = validateLead(form)
@@ -16,9 +25,20 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
   if (checked.status === 'bot') return { status: 'ok', id: randomInt(10_000, 99_999) }
   if (checked.status !== 'valid') return checked
 
-  const h = await headers()
-  const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'unknown'
-  if (!allowRequest(hashIp(ip))) {
+  // Время заполнения считает сервер: время из браузера бот подделает.
+  const key = secret()
+  const token = checkLeadToken(checked.data.token, Date.now(), key)
+  if (token === 'too_fast') return { status: 'error', message: 'Форма отправлена слишком быстро. Подождите пару секунд и отправьте ещё раз.' }
+  if (token === 'expired') return { status: 'error', message: 'Форма долго была открыта. Обновите страницу и отправьте заявку ещё раз или позвоните:' }
+  if (token === 'invalid') {
+    if (!key) {
+      console.error('[lead] Не задан LEAD_TOKEN_SECRET: заявки не принимаются')
+      after(() => notifyTelegram('Заявки с сайта не принимаются: не задан LEAD_TOKEN_SECRET. Клиентам показан телефон.'))
+    }
+    return { status: 'error', message: SEND_FAILED }
+  }
+
+  if (!allowRequest(hashIp(clientIp(await headers())))) {
     return { status: 'error', message: 'Слишком много заявок подряд. Позвоните нам:' }
   }
 

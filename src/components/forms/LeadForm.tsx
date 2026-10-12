@@ -3,7 +3,7 @@
 import { ArrowUpRight, Check } from 'lucide-react'
 import Link from 'next/link'
 import { startTransition, useActionState, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
-import { submitLead } from '@/app/actions/lead'
+import { issueLeadToken, submitLead } from '@/app/actions/lead'
 import { SITE } from '@/content/site'
 import { CONTACT_METHODS, HONEYPOT_FIELD, type LeadSource, type LeadState, SEND_FAILED } from '@/lib/lead-schema'
 import { maskRuPhoneEdit } from '@/lib/phone'
@@ -69,19 +69,27 @@ export function LeadForm({
   const [comment, setComment] = useState('')
   const [consent, setConsent] = useState(false)
   const [method, setMethod] = useState<string>(contactMethod)
-  const [startedAt, setStartedAt] = useState('')
+  // Метка времени от сервера: запрашивается при первом фокусе в форме, проверяется при отправке (не быстрее 3 секунд).
+  const [token, setToken] = useState('')
+  const tokenRequested = useRef(false)
   const [utm, setUtm] = useState<string | undefined>()
   const uid = useId()
   const statusRef = useRef<HTMLDivElement>(null)
   const phoneRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    // Время начала и utm доступны только в браузере.
-    /* eslint-disable react-hooks/set-state-in-effect */
-    setStartedAt(String(Date.now()))
+    // utm доступны только в браузере.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUtm(readUtm())
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
+
+  // Один запрос на форму и только когда человек начал её заполнять: форма внизу страницы не нагружает сервер при загрузке.
+  // Сбой сети — метка «none»: кнопка станет активной, а сервер ответит ошибкой с телефоном.
+  const requestToken = () => {
+    if (tokenRequested.current) return
+    tokenRequested.current = true
+    issueLeadToken().then(setToken, () => setToken('none'))
+  }
 
   useEffect(() => {
     if (state.status !== 'idle') statusRef.current?.focus()
@@ -130,6 +138,7 @@ export function LeadForm({
       noValidate
       className="grid gap-4"
       data-testid="lead-form"
+      onFocus={requestToken}
       onSubmit={(e) => {
         e.preventDefault()
         const data = new FormData(e.currentTarget)
@@ -138,7 +147,7 @@ export function LeadForm({
     >
       <input type="hidden" name="source" value={source} />
       <input type="hidden" name="variant" value={variant} />
-      <input type="hidden" name="startedAt" value={startedAt} />
+      <input type="hidden" name="token" value={token} />
       {context && <input type="hidden" name="context" value={context} />}
       {estimate && <input type="hidden" name="estimate" value={estimate} />}
       {quiz && <input type="hidden" name="quiz" value={quiz} />}
@@ -282,7 +291,7 @@ export function LeadForm({
         )}
       </div>
 
-      <button type="submit" className={`btn w-full sm:w-auto sm:justify-self-start ${dark ? 'btn-light' : 'btn-primary'}`} disabled={pending || !startedAt}>
+      <button type="submit" className={`btn w-full sm:w-auto sm:justify-self-start ${dark ? 'btn-light' : 'btn-primary'}`} disabled={pending || !token}>
         {pending ? 'Отправляем…' : submitLabel}
         <span className="btn-dot">
           <ArrowUpRight aria-hidden className="size-4" />

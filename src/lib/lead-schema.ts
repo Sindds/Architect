@@ -20,9 +20,6 @@ export type LeadSource = (typeof LEAD_SOURCES)[number]
 
 export const CONTACT_METHODS = { call: 'Звонок', telegram: 'Telegram', whatsapp: 'WhatsApp', max: 'MAX' } as const
 
-/** Минимальное время заполнения формы: быстрее заполняют только боты. */
-export const MIN_FILL_MS = 3000
-
 export const leadSchema = z.object({
   name: z.string().trim().min(2, 'Укажите имя — не короче 2 символов').max(60, 'Имя — не длиннее 60 символов'),
   phone: z
@@ -38,7 +35,8 @@ export const leadSchema = z.object({
   estimate: z.string().max(600).optional(),
   quiz: z.string().max(1000).optional(),
   utm: z.string().max(600).optional(),
-  startedAt: z.coerce.number().int().positive(),
+  /** Метка времени, подписанная сервером (src/lib/lead-token.ts): её проверяет server action. */
+  token: z.string().max(100).optional(),
 })
 
 export type LeadInput = z.infer<typeof leadSchema>
@@ -71,11 +69,11 @@ export function readLeadForm(form: FormData) {
     estimate: get('estimate'),
     quiz: get('quiz'),
     utm: get('utm'),
-    startedAt: get('startedAt'),
+    token: get('token'),
   }
 }
 
-export function validateLead(form: FormData, now = Date.now()): LeadState | { status: 'valid'; data: LeadInput } | { status: 'bot' } {
+export function validateLead(form: FormData): LeadState | { status: 'valid'; data: LeadInput } | { status: 'bot' } {
   if (get(form, HONEYPOT_FIELD)) return { status: 'bot' }
   const parsed = leadSchema.safeParse(readLeadForm(form))
   if (!parsed.success) {
@@ -85,9 +83,6 @@ export function validateLead(form: FormData, now = Date.now()): LeadState | { st
       if (['name', 'phone', 'consent', 'comment'].includes(key) && !fieldErrors[key]) fieldErrors[key] = issue.message
     }
     return { status: 'error', message: 'Проверьте поля формы.', fieldErrors }
-  }
-  if (now - parsed.data.startedAt < MIN_FILL_MS) {
-    return { status: 'error', message: 'Форма отправлена слишком быстро. Подождите пару секунд и отправьте ещё раз.' }
   }
   return { status: 'valid', data: parsed.data }
 }

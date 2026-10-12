@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { HONEYPOT_FIELD, MIN_FILL_MS, validateLead } from '@/lib/lead-schema'
+import { HONEYPOT_FIELD, validateLead } from '@/lib/lead-schema'
 import { leadNotificationText } from '@/lib/notify'
 import { maskRuPhone, maskRuPhoneEdit, normalizeRuPhone } from '@/lib/phone'
 import { allowRequest, resetRateLimit } from '@/lib/rate-limit'
@@ -12,7 +12,7 @@ function form(overrides: Record<string, string | undefined> = {}) {
     phone: '+7 (916) 123-45-67',
     consent: 'on',
     source: 'hero',
-    startedAt: String(NOW - MIN_FILL_MS - 1),
+    token: 'метка',
     ...overrides,
   }
   const f = new FormData()
@@ -96,34 +96,29 @@ describe('маска телефона при наборе', () => {
 
 describe('заявка', () => {
   it('валидная заявка проходит, телефон приводится к E.164', () => {
-    const r = validateLead(form(), NOW)
+    const r = validateLead(form())
     expect(r.status).toBe('valid')
     if (r.status === 'valid') expect(r.data.phone).toBe('+79161234567')
   })
 
   it('без согласия — ошибка у поля consent', () => {
-    const r = validateLead(form({ consent: undefined }), NOW)
+    const r = validateLead(form({ consent: undefined }))
     expect(r.status).toBe('error')
     if (r.status === 'error') expect(r.fieldErrors?.consent).toMatch(/согласия/)
   })
 
   it('невалидный телефон — ошибка у поля phone', () => {
-    const r = validateLead(form({ phone: '12345' }), NOW)
+    const r = validateLead(form({ phone: '12345' }))
     if (r.status !== 'error') throw new Error('ожидалась ошибка')
     expect(r.fieldErrors?.phone).toBeTruthy()
   })
 
   it('заполненная ловушка — бот', () => {
-    expect(validateLead(form({ [HONEYPOT_FIELD]: 'ООО Ромашка' }), NOW).status).toBe('bot')
-  })
-
-  it('слишком быстрое заполнение — ошибка', () => {
-    const r = validateLead(form({ startedAt: String(NOW - 500) }), NOW)
-    expect(r.status).toBe('error')
+    expect(validateLead(form({ [HONEYPOT_FIELD]: 'ООО Ромашка' })).status).toBe('bot')
   })
 
   it('неизвестный источник отклоняется', () => {
-    expect(validateLead(form({ source: 'spam' }), NOW).status).toBe('error')
+    expect(validateLead(form({ source: 'spam' })).status).toBe('error')
   })
 })
 

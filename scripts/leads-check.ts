@@ -22,7 +22,7 @@ const lead = toLeadRecord(Math.floor(Date.now() / 1000) % 90_000 + 10_000, {
   source: 'final_cta',
   variant: 'default',
   utm: JSON.stringify({ utm_source: 'leads-check' }),
-  startedAt: 1,
+  token: 'метка',
 })
 
 async function main() {
@@ -35,6 +35,7 @@ async function main() {
   console.log(`  Битрикс24: ${b24 ? `${new URL(b24.webhook).host}, создаём ${b24.entity === 'lead' ? 'лид' : 'контакт и сделку'}` : 'не настроен (B24_WEBHOOK_URL)'}`)
   console.log(`  1С: ${onec ? new URL(onec.url).host : 'не настроена (ONEC_LEADS_URL)'}`)
   console.log(`  Telegram: ${telegram ? 'настроен' : 'не настроен (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)'}`)
+  console.log(`  Защита формы: ${process.env.LEAD_TOKEN_SECRET ? 'LEAD_TOKEN_SECRET задан' : '⚠ LEAD_TOKEN_SECRET не задан: в режиме client заявки не принимаются'}`)
 
   if (b24) {
     try {

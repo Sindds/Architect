@@ -16,7 +16,7 @@ const INPUT: LeadInput = {
   variant: 'monolith',
   quiz: 'Площадь: 200–250 м²',
   utm: JSON.stringify({ utm_source: 'yandex', utm_campaign: 'monolith', yclid: '123', evil: 'x' }),
-  startedAt: 1,
+  token: 'метка',
 }
 
 const LEAD: LeadRecord = toLeadRecord(48213, INPUT, new Date('2026-10-10T10:00:00Z'))
@@ -44,7 +44,7 @@ describe('запись заявки', () => {
     expect(LEAD.uid).toMatch(/^[0-9a-f-]{36}$/)
     expect(LEAD.utm).toEqual({ utm_source: 'yandex', utm_campaign: 'monolith', yclid: '123' })
     expect(LEAD).not.toHaveProperty('consent')
-    expect(LEAD).not.toHaveProperty('startedAt')
+    expect(LEAD).not.toHaveProperty('token')
     expect(LEAD.consentVersion).toBeTruthy()
   })
 

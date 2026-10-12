@@ -274,6 +274,19 @@ test.describe('Заявка', () => {
     await expect(modal.getByRole('checkbox')).toBeChecked()
   })
 
+  test('отправка сразу после заполнения: сервер по своей метке времени отвечает «слишком быстро»', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Покажем построенный дом' }).click()
+    const modal = page.getByTestId('lead-modal')
+    await modal.getByLabel('Имя').fill('Анна')
+    await modal.getByLabel('Телефон').fill('9161234567')
+    await modal.getByRole('checkbox').check()
+    const submit = modal.getByRole('button', { name: 'Записаться на экскурсию' })
+    await expect(submit).toBeEnabled()
+    await submit.click()
+    await expect(modal.getByRole('alert')).toContainText('слишком быстро')
+  })
+
   test('FAQ раскрывается с клавиатуры', async ({ page }) => {
     await page.goto('/')
     const summary = page.locator('summary', { hasText: 'Можно ли через ипотеку или эскроу?' })
