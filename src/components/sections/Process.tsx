@@ -18,7 +18,7 @@ export function Process() {
   const total = STEPS.reduce((s, x) => s + x.days, 0)
   // День начала каждого этапа: 0, 30, 75, …
   const starts = STEPS.map((_, i) => STEPS.slice(0, i).reduce((s, x) => s + x.days, 0))
-  const lead = `На примере ${STEPS_EXAMPLE.project} ${STEPS_EXAMPLE.area} м², ${PRICING.tiers[STEPS_EXAMPLE.tier].title.toLowerCase()}: от подписания договора до ключей проходит ${formatDays(total)}.`
+  const lead = `На примере ${STEPS_EXAMPLE.project} ${STEPS_EXAMPLE.area} м², ${PRICING.tiers[STEPS_EXAMPLE.tier].title.toLowerCase()}: от начала работ до ключей проходит ${formatDays(total)}.`
 
   return (
     <section id="process" aria-labelledby="process-title" className="border-t border-line">

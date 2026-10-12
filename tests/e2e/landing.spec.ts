@@ -38,6 +38,16 @@ test.describe('Первый экран и варианты', () => {
     await expect(page.getByTestId('office-map')).toHaveCount(1)
   })
 
+  test('тексты не обещают больше договора: срок от начала работ, оплата по этапам после акта', async ({ page }) => {
+    await page.goto('/')
+    // nbsp() ставит неразрывные пробелы после предлогов: приводим к обычным.
+    const text = (await page.locator('body').innerText()).replace(/\u00a0/g, ' ')
+    expect(text).not.toMatch(/от подпис\S* (договора )?до ключей/i)
+    expect(text).not.toMatch(/готовый результат/i)
+    expect(text).not.toMatch(/после геологии/i)
+    expect(text).toMatch(/от начала работ до ключей/)
+  })
+
   test('в контактах реквизиты компании; в концепте номера условные', async ({ page }) => {
     await page.goto('/')
     const req = page.getByTestId('requisites')

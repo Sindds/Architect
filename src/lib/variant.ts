@@ -16,7 +16,7 @@ export function heroFor(key: VariantKey) {
     h1: `${v.h1Prefix} — ${price}`,
     h1Prefix: v.h1Prefix,
     h1Price: price,
-    subtitle: `Тёплый контур от ${contour}, дом под ключ от ${turnkey}. Цена закреплена в договоре, а от подписи до ключей проходит ${formatDaysFrom(minTurnkeyDays(PROJECTS, v.heroStyleFilter))}.`,
+    subtitle: `Тёплый контур от ${contour}, дом под ключ от ${turnkey}. Цена закреплена в договоре, а от начала работ до ключей проходит ${formatDaysFrom(minTurnkeyDays(PROJECTS, v.heroStyleFilter))}.`,
   }
 }
 

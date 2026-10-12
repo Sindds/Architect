@@ -200,7 +200,7 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
             </p>
           </div>
           <p className="mt-4 text-sm text-on-inverse-muted">
-            Это предварительный расчёт, итог округлён до {formatRub(ROUNDING_STEP)}. Точную смету мы закрепим в договоре после геологии и топосъёмки.
+            Это предварительный расчёт, итог округлён до {formatRub(ROUNDING_STEP)}. Твёрдую цену фиксируем в договоре по смете вашего проекта: дальше она меняется, только если вы сами меняете проект или комплектацию.
           </p>
           <button
             type="button"
