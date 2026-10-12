@@ -2,6 +2,7 @@
 
 import { SITE } from '@/content/site'
 import { LeadForm } from '../forms/LeadForm'
+import { MessengerLinks, hasMessengerLinks } from '../MessengerLinks'
 import { type LeadRequest, useLanding } from '../LandingProvider'
 import { Modal } from '../ui/Modal'
 
@@ -25,6 +26,15 @@ export function LeadModal({ request, onClose }: { request: LeadRequest | null; o
             {INTRO[request.source] ?? 'Оставьте имя и телефон, мы перезвоним и ответим на вопросы.'} {SITE.callbackPromise}
           </p>
           {request.context && <p className="label mb-4 text-accent">{request.context}</p>}
+          {request.source === 'messenger' && hasMessengerLinks && (
+            <div className="mb-5 grid gap-2">
+              <p className="text-sm font-medium">Написать сразу, без формы:</p>
+              <div className="flex flex-wrap gap-2">
+                <MessengerLinks className="btn btn-primary min-h-11" />
+              </div>
+              <p className="mt-2 text-sm text-muted">Или оставьте номер, и мы напишем сами.</p>
+            </div>
+          )}
           <LeadForm
             source={request.source}
             variant={variant}

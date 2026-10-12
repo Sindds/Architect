@@ -2,6 +2,7 @@ import type { VariantKey } from '@/content/types'
 import { VARIANTS } from '@/content/variants'
 import { projectsFor } from '@/lib/variant'
 import { LandingProvider } from './LandingProvider'
+import { MobileActionBar } from './MobileActionBar'
 import { PageLoader } from './PageLoader'
 import { CalculatorSection } from './sections/CalculatorSection'
 import { Documents } from './sections/Documents'
@@ -39,6 +40,7 @@ export function Landing({ variant }: { variant: VariantKey }) {
         <FinalCta variant={variant} />
       </main>
       <Footer />
+      <MobileActionBar />
     </LandingProvider>
   )
 }

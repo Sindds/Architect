@@ -80,3 +80,14 @@ test('«Настройки cookie» в футере возвращают бан�
   await banner(page).getByRole('button', { name: 'Принять все' }).click()
   await expect(page.getByTestId('office-map').locator('iframe')).toHaveAttribute('src', /yandex\.ru\/map-widget/)
 })
+
+test('пока виден баннер cookie, нижняя панель на телефоне не появляется', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await expect(banner(page)).toBeVisible()
+  await page.locator('#projects').scrollIntoViewIfNeeded()
+  await page.evaluate(() => window.scrollBy(0, 400))
+  await expect(page.getByTestId('mobile-action-bar')).not.toHaveAttribute('data-shown', /.*/)
+  await banner(page).getByRole('button', { name: 'Только необходимые' }).click()
+  await expect(page.getByTestId('mobile-action-bar')).toHaveAttribute('data-shown', '')
+})

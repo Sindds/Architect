@@ -1,9 +1,10 @@
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { Fragment } from "react";
 import { COPY } from "@/content/copy";
 import { SITE } from "@/content/site";
 import type { VariantKey } from "@/content/types";
 import { LeadForm } from "../forms/LeadForm";
+import { MessengerLinks } from "../MessengerLinks";
 import { revealOrder } from "@/lib/reveal";
 
 export function FinalCta({ variant }: { variant: VariantKey }) {
@@ -38,6 +39,14 @@ export function FinalCta({ variant }: { variant: VariantKey }) {
         >
           {SITE.email}
         </a>
+      ),
+    },
+    {
+      icon: MessageCircle,
+      node: (
+        <span className="flex flex-wrap gap-2 py-1">
+          <MessengerLinks className="btn btn-light min-h-11 px-4 text-sm" />
+        </span>
       ),
     },
     { icon: MapPin, node: <span>{SITE.address}</span> },

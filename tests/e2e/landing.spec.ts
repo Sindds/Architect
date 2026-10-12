@@ -360,3 +360,37 @@ test.describe('Доступность (axe)', () => {
     })
   }
 })
+
+test.describe('Нижняя панель на телефоне и мессенджеры', () => {
+  test('панель появляется после первого экрана, прячется у калькулятора и в контактах; цели ≥ 44 px', async ({ page }) => {
+    await page.goto('/')
+    const bar = page.getByTestId('mobile-action-bar')
+    if (!isMobile(page)) {
+      await expect(bar).toBeHidden()
+      return
+    }
+    await expect(bar).not.toHaveAttribute('data-shown', /.*/)
+    await page.locator('#projects').scrollIntoViewIfNeeded()
+    await page.evaluate(() => window.scrollBy(0, 400))
+    await expect(bar).toHaveAttribute('data-shown', '')
+    for (const target of await bar.locator('a, button').all()) {
+      const box = await target.boundingBox()
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44)
+      expect(box?.width ?? 0).toBeGreaterThanOrEqual(44)
+    }
+    await bar.getByRole('link', { name: 'Рассчитать стоимость' }).click()
+    await expect(page).toHaveURL(/#calculator$/)
+    await expect(bar).not.toHaveAttribute('data-shown', /.*/)
+    await page.locator('#contacts').scrollIntoViewIfNeeded()
+    await expect(bar).not.toHaveAttribute('data-shown', /.*/)
+  })
+
+  test('в контактах кнопки Telegram и MAX; без ссылок в концепте — форма с выбранным мессенджером', async ({ page }) => {
+    await page.goto('/')
+    const contacts = page.locator('#contacts')
+    await contacts.getByRole('button', { name: 'MAX' }).click()
+    const modal = page.getByTestId('lead-modal')
+    await expect(modal.getByRole('heading', { name: 'Написать в MAX' })).toBeVisible()
+    await expect(modal.getByRole('radio', { name: 'MAX' })).toBeChecked()
+  })
+})
