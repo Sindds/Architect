@@ -25,5 +25,8 @@ export const themeInitScript = `(function () {
   d.style.colorScheme = theme;
   var visited = false;
   try { visited = sessionStorage.getItem('${LOADER_KEY}') === '1' } catch (e) {}
-  if (visited || mm('(prefers-reduced-motion: reduce)')) d.dataset.loader = 'skip';
+  // Рекламный трафик (метки, клик Директа или Google, варианты под рекламу) — без лоадера: решение 12.10.2026.
+  var ad = false;
+  try { ad = /[?&](utm_[a-z]+|yclid|gclid|v)=/.test(location.search) || location.pathname.indexOf('/v/') === 0 } catch (e) {}
+  if (visited || ad || mm('(prefers-reduced-motion: reduce)')) d.dataset.loader = 'skip';
 })();`

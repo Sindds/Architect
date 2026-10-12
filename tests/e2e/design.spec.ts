@@ -103,6 +103,15 @@ plain.describe('Лоадер', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
   })
 
+  // Решение 12.10.2026: каждый клик по объявлению — новая сессия, рекламный посетитель сразу видит предложение.
+  for (const url of ['/?utm_source=yandex&utm_medium=cpc', '/?yclid=123', '/?v=monolith', '/v/fachwerk']) {
+    plain(`посетителю из рекламы не показывается: ${url}`, async ({ page }) => {
+      await page.goto(url, { waitUntil: 'commit' })
+      await expect(page.locator('html')).toHaveAttribute('data-loader', 'skip')
+      await expect(page.getByTestId('page-loader')).toBeHidden({ timeout: 200 })
+    })
+  }
+
   plain('при повторном заходе в той же сессии не показывается', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByTestId('page-loader')).toBeHidden({ timeout: 3000 })

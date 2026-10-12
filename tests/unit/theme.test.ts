@@ -17,7 +17,8 @@ describe('Тема: выбор', () => {
 })
 
 /** Запускает скрипт из <head> в песочнице с подставными браузерными API. */
-function runInit({ stored = null as string | null, prefersDark = false, visited = false, reduced = false }) {
+function runInit({ stored = null as string | null, prefersDark = false, visited = false, reduced = false, url = '/' }) {
+  const { pathname, search } = new URL(url, 'https://arcline.test')
   const dataset: Record<string, string> = {}
   const style: Record<string, string> = {}
   const store = (init: Record<string, string>) => ({ getItem: (k: string) => init[k] ?? null, setItem() {} })
@@ -26,6 +27,7 @@ function runInit({ stored = null as string | null, prefersDark = false, visited 
     localStorage: store(stored ? { [THEME_KEY]: stored } : {}),
     sessionStorage: store(visited ? { [LOADER_KEY]: '1' } : {}),
     matchMedia: (q: string) => ({ matches: q.includes('dark') ? prefersDark : q.includes('reduce') ? reduced : false }),
+    location: { pathname, search },
   }
   vm.runInNewContext(themeInitScript, sandbox)
   return { dataset, style }
@@ -41,6 +43,13 @@ describe('Тема: скрипт в <head> до отрисовки', () => {
     expect(runInit({}).dataset.loader).toBeUndefined()
     expect(runInit({ visited: true }).dataset.loader).toBe('skip')
     expect(runInit({ reduced: true }).dataset.loader).toBe('skip')
+  })
+
+  it('пропускает лоадер для рекламного трафика: метки, клики Директа и Google, варианты под рекламу', () => {
+    for (const url of ['/?utm_source=yandex', '/?a=1&yclid=5', '/?gclid=7', '/?v=monolith', '/v/fachwerk']) {
+      expect(runInit({ url }).dataset.loader, url).toBe('skip')
+    }
+    expect(runInit({ url: '/?project=vista' }).dataset.loader).toBeUndefined()
   })
   it('не падает, если хранилище недоступно', () => {
     const sandbox = {
