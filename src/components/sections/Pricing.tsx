@@ -3,6 +3,7 @@ import { COPY } from "@/content/copy";
 import { PRICING, STYLE_ORDER, TIER_ORDER } from "@/content/pricing";
 import { PROJECTS } from "@/content/projects";
 import { SITE } from "@/content/site";
+import type { Style } from "@/content/types";
 import { formatDaysFrom, groupDigits } from "@/lib/format";
 import { nbsp } from "@/lib/typography";
 import { daysFor, minPriceFor } from "@/lib/pricing";
@@ -11,7 +12,8 @@ import { PackageDetails } from "./PackageDetails";
 import { SectionHead } from "../ui/SectionHead";
 import { revealOrder } from "@/lib/reveal";
 
-export function Pricing() {
+/** Смета пакета в PDF — для дома по умолчанию из калькулятора (CONTENT-SPEC §5.2): 350 м², терраса 50 м². */
+export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
   const minArea = Math.min(...PROJECTS.map((p) => p.area));
   return (
     <section
@@ -125,6 +127,7 @@ export function Pricing() {
               <LeadButton
                 source="pricing_pdf"
                 context={`Пакет «${t.title}»`}
+                smeta={{ area: 350, terrace: 50, style: defaultStyle, tier, addons: [] }}
                 className={`btn mt-auto w-full ${featured ? "btn-light" : "btn-ghost"}`}
               >
                 Получить смету в PDF

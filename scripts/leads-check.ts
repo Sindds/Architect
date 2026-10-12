@@ -36,6 +36,7 @@ async function main() {
   console.log(`  1С: ${onec ? new URL(onec.url).host : 'не настроена (ONEC_LEADS_URL)'}`)
   console.log(`  Telegram: ${telegram ? 'настроен' : 'не настроен (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)'}`)
   console.log(`  Защита формы: ${process.env.LEAD_TOKEN_SECRET ? 'LEAD_TOKEN_SECRET задан' : '⚠ LEAD_TOKEN_SECRET не задан: в режиме client заявки не принимаются'}`)
+  console.log(`  PDF-смета: ${process.env.SMETA_SIGNING_SECRET ? 'SMETA_SIGNING_SECRET задан' : '⚠ SMETA_SIGNING_SECRET не задан: в режиме client ссылки на смету не будет'}`)
 
   if (b24) {
     try {

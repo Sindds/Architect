@@ -8,6 +8,7 @@ import type { LeadSource } from '@/lib/lead-schema'
 import { CaseModal } from './modals/CaseModal'
 import { LeadModal } from './modals/LeadModal'
 import { ProjectModal } from './modals/ProjectModal'
+import type { SmetaInput } from '@/lib/smeta-token'
 
 export interface LeadRequest {
   /** Заголовок формы = текст нажатой кнопки (правило CTA, CONTENT-SPEC §4). */
@@ -15,6 +16,8 @@ export interface LeadRequest {
   source: LeadSource
   context?: string
   estimate?: string
+  /** Параметры дома для PDF-сметы: после заявки появится ссылка «Скачать смету (PDF)». */
+  smeta?: SmetaInput
   quiz?: string
   extended?: boolean
   submitLabel?: string

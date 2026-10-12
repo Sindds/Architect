@@ -11,8 +11,28 @@ import { configuredSinks, deliverLead } from '@/lib/leads/deliver'
 import { toLeadRecord } from '@/lib/leads/record'
 import { leadNotificationText, notifyTelegram } from '@/lib/notify'
 import { allowRequest, hashIp } from '@/lib/rate-limit'
+import { signSmetaToken, smetaInputSchema, smetaSecret } from '@/lib/smeta-token'
 
 const secret = () => leadTokenSecret(process.env, SITE.contentMode === 'concept')
+
+/** Ссылка на PDF-смету после заявки с параметрами дома (PLAN P5.4). Без секрета в режиме client ссылки нет. */
+function smetaLink(id: number, raw: string | undefined): string | undefined {
+  if (!raw) return undefined
+  let data: unknown
+  try {
+    data = JSON.parse(raw)
+  } catch {
+    return undefined
+  }
+  const input = smetaInputSchema.safeParse(data)
+  if (!input.success) return undefined
+  const key = smetaSecret(process.env, SITE.contentMode === 'concept')
+  if (!key) {
+    console.error('[lead] Не задан SMETA_SIGNING_SECRET: ссылка на PDF-смету не выдаётся')
+    return undefined
+  }
+  return `/smeta/${signSmetaToken(id, input.data, Date.now(), key)}`
+}
 
 /** Метка «начали заполнять форму сейчас», подписанная сервером. Форма запрашивает её при первом фокусе. */
 export async function issueLeadToken(): Promise<string> {
@@ -48,7 +68,7 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
   // Режим concept: компания вымышлена, персональные данные не сохраняются и никуда не передаются.
   if (SITE.contentMode === 'concept') {
     after(() => notifyTelegram(leadNotificationText(id, source, variant)))
-    return { status: 'ok', id }
+    return { status: 'ok', id, smeta: smetaLink(id, checked.data.estimateInput) }
   }
 
   // Режим client: файл на сервере, Битрикс24 и 1С — те, что заданы в переменных окружения (docs/INTEGRATIONS.md).
@@ -64,5 +84,5 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
 
   // Уведомление уходит после ответа посетителю: медленный Telegram не задерживает форму.
   after(() => notifyTelegram(leadNotificationText(id, source, variant, delivered.results)))
-  return delivered.ok ? { status: 'ok', id } : { status: 'error', message: SEND_FAILED }
+  return delivered.ok ? { status: 'ok', id, smeta: smetaLink(id, checked.data.estimateInput) } : { status: 'error', message: SEND_FAILED }
 }

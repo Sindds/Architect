@@ -6,6 +6,9 @@ const variantKeys = '(?<variant>fachwerk|monolith|scandi)'
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // PDF-смета (/smeta/[token]): react-pdf работает в Node как есть, без сборщика; шрифты читаются с диска.
+  serverExternalPackages: ['@react-pdf/renderer'],
+  outputFileTracingIncludes: { '/smeta/[token]': ['./scripts/pdf-fonts/*.ttf'] },
   images: {
     formats: ['image/avif', 'image/webp'],
   },

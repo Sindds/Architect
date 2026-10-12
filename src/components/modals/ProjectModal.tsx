@@ -77,7 +77,21 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                 type="button"
                 className="btn btn-ghost"
                 onClick={() =>
-                  openLead({ title: 'Получить смету в PDF', source: 'project_modal', context: `Проект ${project.name}, ${project.area} м²` })
+                  openLead({
+                    title: 'Получить смету в PDF',
+                    source: 'project_modal',
+                    context: `Проект ${project.name}, ${project.area} м², под ключ`,
+                    smeta: {
+                      area: project.area,
+                      terrace: project.terrace,
+                      style: project.style,
+                      tier: 'turnkey',
+                      addons: [],
+                      floors: project.floors,
+                      bathrooms: project.bathrooms,
+                      project: project.name,
+                    },
+                  })
                 }
               >
                 Получить смету в PDF

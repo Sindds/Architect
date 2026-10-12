@@ -29,7 +29,7 @@ export function Landing({ variant }: { variant: VariantKey }) {
         <Hero variant={variant} />
         <WhyUs />
         <Projects projects={projectsFor(variant)} />
-        <Pricing />
+        <Pricing defaultStyle={VARIANTS[variant].calcStyle} />
         <CalculatorSection defaultStyle={VARIANTS[variant].calcStyle} />
         <Process />
         <Team />

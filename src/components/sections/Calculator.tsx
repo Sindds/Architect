@@ -205,7 +205,7 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
           <button
             type="button"
             className="btn btn-light mt-5 w-full"
-            onClick={() => openLead({ title: 'Получить смету в PDF', source: 'calculator', estimate, context: estimate })}
+            onClick={() => openLead({ title: 'Получить смету в PDF', source: 'calculator', estimate, context: estimate, smeta: { area, terrace, style, tier, addons } })}
           >
             Получить смету в PDF
             <span className="btn-dot">

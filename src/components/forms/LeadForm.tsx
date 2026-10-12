@@ -1,18 +1,20 @@
 'use client'
 
-import { ArrowUpRight, Check } from 'lucide-react'
+import { ArrowUpRight, Check, FileDown } from 'lucide-react'
 import Link from 'next/link'
 import { startTransition, useActionState, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { issueLeadToken, submitLead } from '@/app/actions/lead'
 import { SITE } from '@/content/site'
 import { CONTACT_METHODS, HONEYPOT_FIELD, type LeadSource, type LeadState, SEND_FAILED } from '@/lib/lead-schema'
 import { maskRuPhoneEdit } from '@/lib/phone'
+import type { SmetaInput } from '@/lib/smeta-token'
 
 interface LeadFormProps {
   source: LeadSource
   variant: string
   context?: string
   estimate?: string
+  smeta?: SmetaInput
   quiz?: string
   extended?: boolean
   submitLabel?: string
@@ -54,6 +56,7 @@ export function LeadForm({
   variant,
   context,
   estimate,
+  smeta,
   quiz,
   extended = false,
   submitLabel = 'Отправить заявку',
@@ -116,6 +119,14 @@ export function LeadForm({
           <div>
             <p className="text-xl font-medium">Заявка №{state.id} принята.</p>
             <p className={`mt-1 ${muted}`}>{SITE.callbackPromise}</p>
+            {state.smeta && (
+              <a href={state.smeta} download className={`btn mt-4 ${dark ? 'btn-light' : 'btn-primary'}`} data-testid="smeta-download">
+                Скачать смету (PDF)
+                <span className="btn-dot">
+                  <FileDown aria-hidden className="size-4" />
+                </span>
+              </a>
+            )}
             {SITE.contentMode === 'concept' && (
               <p className={`mt-3 text-sm ${muted}`}>Это концепт-проект: данные формы не сохраняются и никуда не передаются.</p>
             )}
@@ -150,6 +161,7 @@ export function LeadForm({
       <input type="hidden" name="token" value={token} />
       {context && <input type="hidden" name="context" value={context} />}
       {estimate && <input type="hidden" name="estimate" value={estimate} />}
+      {smeta && <input type="hidden" name="estimateInput" value={JSON.stringify(smeta)} />}
       {quiz && <input type="hidden" name="quiz" value={quiz} />}
       {utm && <input type="hidden" name="utm" value={utm} />}
       {/* Ловушка для ботов: скрыта от людей и скринридеров */}

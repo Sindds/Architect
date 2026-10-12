@@ -36,7 +36,6 @@ export function Header() {
   }, [])
 
   const messenger = () => openLead({ title: 'Написать в мессенджер', source: 'messenger', extended: true, contactMethod: 'telegram' })
-  const calc = () => openLead({ title: 'Рассчитать стоимость', source: 'header' })
 
   const glass = !scrolled
   const iconBtn = glass ? 'border border-white/20 text-white hover:bg-white/15' : 'border border-line text-fg hover:bg-subtle'
@@ -85,12 +84,13 @@ export function Header() {
           <MessageCircle aria-hidden className="size-5" strokeWidth={1.6} />
         </button>
         <ThemeToggle className={iconBtn} />
-        <button type="button" onClick={calc} className={`btn hidden whitespace-nowrap lg:inline-flex ${glass ? 'btn-light' : 'btn-primary'}`}>
+        {/* Кнопка обещает расчёт — ведёт в калькулятор, а не в форму звонка. */}
+        <a href="#calculator" className={`btn hidden whitespace-nowrap lg:inline-flex ${glass ? 'btn-light' : 'btn-primary'}`}>
           Рассчитать стоимость
           <span className="btn-dot">
             <ArrowUpRight aria-hidden className="size-4" />
           </span>
-        </button>
+        </a>
         <button
           type="button"
           onClick={() => menuRef.current?.showModal()}
@@ -132,19 +132,12 @@ export function Header() {
               {SITE.phoneDisplay}
               <span className="mt-1 block text-sm font-normal text-[#b9bec6]">{SITE.hours}</span>
             </a>
-            <button
-              type="button"
-              className="btn btn-light w-full"
-              onClick={() => {
-                menuRef.current?.close()
-                calc()
-              }}
-            >
+            <a href="#calculator" className="btn btn-light w-full" onClick={() => menuRef.current?.close()}>
               Рассчитать стоимость
               <span className="btn-dot">
                 <ArrowUpRight aria-hidden className="size-4" />
               </span>
-            </button>
+            </a>
           </div>
         </div>
       </dialog>

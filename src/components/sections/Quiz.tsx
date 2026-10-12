@@ -94,7 +94,7 @@ export function Quiz() {
               <ArrowRight aria-hidden className="size-4" />
             </span>
           </button>
-          <p className="mt-3 text-sm text-muted">Мы перезвоним, уточним детали и пришлём смету в PDF.</p>
+          <p className="mt-3 text-sm text-muted">Мы перезвоним, уточним детали участка и подготовим смету под ваш проект.</p>
         </div>
       </div>
     )

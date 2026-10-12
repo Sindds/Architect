@@ -35,6 +35,8 @@ export const leadSchema = z.object({
   estimate: z.string().max(600).optional(),
   quiz: z.string().max(1000).optional(),
   utm: z.string().max(600).optional(),
+  /** Параметры дома для PDF-сметы (JSON), проверяет smetaInputSchema на сервере. */
+  estimateInput: z.string().max(400).optional(),
   /** Метка времени, подписанная сервером (src/lib/lead-token.ts): её проверяет server action. */
   token: z.string().max(100).optional(),
 })
@@ -43,7 +45,7 @@ export type LeadInput = z.infer<typeof leadSchema>
 
 export type LeadState =
   | { status: 'idle' }
-  | { status: 'ok'; id: number }
+  | { status: 'ok'; id: number; smeta?: string }
   | { status: 'error'; message: string; fieldErrors?: Partial<Record<'name' | 'phone' | 'consent' | 'comment', string>> }
 
 /** Заявка не дошла до сервера или сервер не смог её сохранить. Форма добавляет ссылку на телефон после двоеточия. */
@@ -69,6 +71,7 @@ export function readLeadForm(form: FormData) {
     estimate: get('estimate'),
     quiz: get('quiz'),
     utm: get('utm'),
+    estimateInput: get('estimateInput'),
     token: get('token'),
   }
 }

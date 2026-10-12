@@ -305,6 +305,41 @@ test.describe('Заявка', () => {
     await expect(modal.getByRole('alert')).toContainText('слишком быстро')
   })
 
+  test('«Получить смету в PDF» из калькулятора: после заявки скачивается PDF, испорченная ссылка — 403', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Получить смету в PDF' }).first().click()
+    const modal = page.getByTestId('lead-modal')
+    await expect(modal).toContainText('откроется сразу после отправки')
+    await modal.getByLabel('Имя').fill('Анна')
+    await modal.getByLabel('Телефон').fill('9161234567')
+    await modal.getByRole('checkbox').check()
+    await page.waitForTimeout(3100)
+    await modal.getByRole('button', { name: /Отправить|Получить/ }).click()
+
+    const link = modal.getByTestId('smeta-download')
+    await expect(link).toBeVisible()
+    const href = (await link.getAttribute('href')) as string
+    expect(href).toMatch(/^\/smeta\//)
+    const res = await page.request.get(href)
+    expect(res.status()).toBe(200)
+    expect(res.headers()['content-type']).toBe('application/pdf')
+    expect((await res.body()).subarray(0, 5).toString()).toBe('%PDF-')
+    expect((await page.request.get(`${href.slice(0, -3)}xyz`)).status()).toBe(403)
+  })
+
+  test('кнопка «Рассчитать стоимость» в шапке ведёт в калькулятор', async ({ page }) => {
+    await page.goto('/')
+    const desktop = page.getByRole('banner').getByRole('link', { name: 'Рассчитать стоимость' })
+    if (await desktop.isVisible()) await desktop.click()
+    else {
+      await page.getByRole('button', { name: 'Открыть меню' }).click()
+      await page.getByRole('dialog').getByRole('link', { name: 'Рассчитать стоимость' }).click()
+    }
+    await expect(page).toHaveURL(/#calculator$/)
+    await expect(page.locator('#calculator')).toBeInViewport()
+    await expect(page.getByTestId('lead-modal')).toBeHidden()
+  })
+
   test('FAQ раскрывается с клавиатуры', async ({ page }) => {
     await page.goto('/')
     const summary = page.locator('summary', { hasText: 'Можно ли через ипотеку или эскроу?' })
