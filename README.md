@@ -75,8 +75,8 @@ Playwright берёт Chromium из `CHROMIUM_PATH`, затем из `/opt/pw-br
 - админка Payload CMS и Postgres (контент сейчас в `src/content/*.ts`, структура повторяет будущие коллекции);
 - передача заявок в Битрикс24;
 - A/B-тест заголовка;
-- Docker и инструкция по деплою, замер Lighthouse и `docs/QA.md`.
+- Docker и инструкция по деплою (`docs/DEPLOY.md`). Замер скорости — `docs/QA.md`.
 
 ## Стек
 
-Next.js 16.3 (App Router, статическая генерация) · React 19 · TypeScript strict · Tailwind CSS 4 · zod · Vitest · Playwright + axe. Шрифты Onest, Cormorant Garamond и IBM Plex Mono лежат локально в `src/fonts` (лицензия OFL, кириллица проверена).
+Next.js 16.3 (App Router, статическая генерация) · React 19 · TypeScript strict · Tailwind CSS 4 · zod · Vitest · Playwright + axe. Шрифты Onest, Manrope и JetBrains Mono лежат локально в `src/fonts`: по одному файлу-подмножеству на семейство (лицензия OFL, кириллица проверена, сборка — `scripts/subset-fonts.py`).

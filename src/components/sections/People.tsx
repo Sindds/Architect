@@ -10,7 +10,7 @@ import { revealOrder } from "@/lib/reveal";
 export function Team() {
   const concept = SITE.contentMode === "concept";
   return (
-    <section aria-labelledby="team-title" className="border-t border-line">
+    <section aria-labelledby="team-title" className="lazy-section border-t border-line">
       <div className="shell py-16 sm:py-24">
         <SectionHead
           id="team-title"
@@ -89,7 +89,7 @@ export function Team() {
 
 export function Reviews() {
   return (
-    <section aria-labelledby="reviews-title" className="border-t border-line">
+    <section aria-labelledby="reviews-title" className="lazy-section border-t border-line">
       <div className="shell py-16 sm:py-24">
         <SectionHead id="reviews-title" copy={COPY.sections.reviews} />
         <ul className="mt-10 grid gap-4 lg:mt-14 lg:grid-cols-3">

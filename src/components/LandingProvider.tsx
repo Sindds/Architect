@@ -1,15 +1,21 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { getCase } from '@/content/cases'
 import { getProject } from '@/content/projects'
 import type { VariantKey } from '@/content/types'
-import type { LeadSource } from '@/lib/lead-schema'
-import { CaseModal } from './modals/CaseModal'
-import { LeadModal } from './modals/LeadModal'
-import { ProjectModal } from './modals/ProjectModal'
+import type { LeadSource } from '@/lib/lead-constants'
+
 import type { SmetaInput } from '@/lib/smeta-token'
 import { track } from '@/lib/analytics'
+import { fullLayout } from '@/lib/lazy-sections'
+
+// Окна грузятся отдельно, после гидратации: их кода нет в первой волне JS, первый экран рисуется быстрее.
+// Окна закрыты, пока человек их не откроет, поэтому серверная разметка им не нужна.
+const ProjectModal = dynamic(() => import('./modals/ProjectModal').then((m) => m.ProjectModal), { ssr: false })
+const CaseModal = dynamic(() => import('./modals/CaseModal').then((m) => m.CaseModal), { ssr: false })
+const LeadModal = dynamic(() => import('./modals/LeadModal').then((m) => m.LeadModal), { ssr: false })
 
 export interface LeadRequest {
   /** Заголовок формы = текст нажатой кнопки (правило CTA, CONTENT-SPEC §4). */
@@ -118,6 +124,7 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
     window.history.replaceState(null, '', urlWith({ project: null, case: null, calc: slug }, '#calculator'))
     setCalcPreset(slug)
     requestAnimationFrame(() => {
+      fullLayout()
       const target = document.getElementById('calculator')
       target?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
       target?.focus({ preventScroll: true })

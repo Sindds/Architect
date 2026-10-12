@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import AxeBuilder from '@axe-core/playwright'
 import type { Page, Route } from '@playwright/test'
 import { expect, test } from './fixtures'
@@ -393,4 +394,24 @@ test.describe('Нижняя панель на телефоне и мессенд
     await expect(modal.getByRole('heading', { name: 'Написать в MAX' })).toBeVisible()
     await expect(modal.getByRole('radio', { name: 'MAX' })).toBeChecked()
   })
+})
+
+// Шрифты — подмножества (scripts/subset-fonts.py). Символ вне набора браузер покажет запасным шрифтом.
+test('весь видимый текст есть в шрифтах сайта', async ({ page }) => {
+  const py = readFileSync('scripts/subset-fonts.py', 'utf8')
+  const ranges = [...(py.match(/UNICODES = \(([\s\S]*?)\)/)?.[1] ?? '').matchAll(/U\+([0-9A-F]+)(?:-([0-9A-F]+))?/g)].map((m) => [
+    parseInt(m[1]!, 16),
+    parseInt(m[2] ?? m[1]!, 16),
+  ])
+  expect(ranges.length).toBeGreaterThan(10)
+  const missing = new Set<string>()
+  for (const url of ['/', '/privacy', '/soglasie', '/cookies']) {
+    await page.goto(url)
+    for (const ch of await page.evaluate(() => document.body.innerText)) {
+      const code = ch.codePointAt(0)!
+      if (code < 0x20 || ranges.some(([a, b]) => code >= a! && code <= b!)) continue
+      missing.add(`${ch} U+${code.toString(16).toUpperCase().padStart(4, '0')} на ${url}`)
+    }
+  }
+  expect([...missing]).toEqual([])
 })

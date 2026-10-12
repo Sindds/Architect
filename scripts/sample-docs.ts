@@ -6,7 +6,7 @@
  *
  * Шрифты — статические TrueType из scripts/pdf-fonts. Вариативные woff2 сайта Chrome встраивает в PDF
  * как Type 3, а такие глифы ломаются в просмотрщиках iOS, Telegram, macOS Preview и Acrobat.
- * Как получены файлы: fontTools instancer (wght 400/600/700) из src/fonts/*-wght-normal.woff2,
+ * Как получены файлы: fontTools instancer (wght 400/600/700) из срезов Google Fonts (латиница, кириллица),
  * затем срезы latin, latin-ext и cyrillic склеены fontTools.merge в один файл на начертание.
  */
 import { readFileSync } from 'node:fs'

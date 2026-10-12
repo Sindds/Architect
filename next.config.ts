@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: { '/smeta/[token]': ['./scripts/pdf-fonts/*.ttf'] },
   images: {
     formats: ['image/avif', 'image/webp'],
+    // Next 16 принимает только качество из этого списка. 70 — фото первого экрана: под тёмным градиентом
+    // разницы не видно, а файл на телефоне легче (LCP).
+    qualities: [70, 75],
   },
   async rewrites() {
     return {

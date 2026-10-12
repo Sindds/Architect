@@ -11,7 +11,7 @@ export function Faq() {
     mainEntity: FAQ.map((f) => ({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer.join(' ') } })),
   }
   return (
-    <section id="faq" aria-labelledby="faq-title" className="border-t border-line">
+    <section id="faq" aria-labelledby="faq-title" className="lazy-section border-t border-line">
       <div className="shell py-16 sm:py-24">
         <SectionHead id="faq-title" copy={COPY.sections.faq} />
         <ul className="mt-10 grid gap-3 lg:mt-14 lg:ml-[25%]">

@@ -83,3 +83,37 @@ test('при «уменьшить движение» блоки видны ср�
   const hidden = await page.locator('.reveal').evaluateAll((els) => els.filter((el) => getComputedStyle(el).opacity !== '1').length)
   expect(hidden).toBe(0)
 })
+
+// Блоки ниже первого экрана с content-visibility: auto (src/lib/lazy-sections.ts): браузер раскладывает их у окна,
+// и первый экран на телефоне готов раньше. Переход по якорю должен вставать точно на блок, хотя высоты были оценкой.
+const settledOffset = (page: import('@playwright/test').Page, selector: string) =>
+  page.evaluate(async (sel) => {
+    let last = -1
+    let same = 0
+    while (same < 5) {
+      await new Promise((r) => setTimeout(r, 100))
+      same = scrollY === last ? same + 1 : 0
+      last = scrollY
+    }
+    const el = document.querySelector(sel)!
+    const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0
+    const margin = parseFloat(getComputedStyle(el).scrollMarginTop) || 0
+    return Math.round(el.getBoundingClientRect().top - pad - margin)
+  }, selector)
+
+test('блоки ниже первого экрана раскладываются у окна, переход по меню встаёт точно на блок', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('#process')).toHaveCSS('content-visibility', 'auto')
+  await expect(page.locator('#calculator')).toHaveCSS('content-visibility', 'visible')
+  const wide = (page.viewportSize()?.width ?? 0) >= 1280
+  if (!wide) await page.getByRole('button', { name: 'Открыть меню' }).click()
+  const nav = page.getByRole('navigation', { name: wide ? 'Разделы страницы' : 'Разделы страницы (мобильное меню)', exact: true })
+  await nav.getByRole('link', { name: 'Как строим' }).click()
+  expect(Math.abs(await settledOffset(page, '#process'))).toBeLessThanOrEqual(2)
+  // Заново, с неразложенными блоками: цель ниже «ленивого» блока «Проекты».
+  await page.goto('/')
+  await expect(page.locator('html')).not.toHaveAttribute('data-full-layout')
+  if (!wide) await page.getByRole('button', { name: 'Открыть меню' }).click()
+  await nav.getByRole('link', { name: 'Цены' }).click()
+  expect(Math.abs(await settledOffset(page, '#pricing'))).toBeLessThanOrEqual(2)
+})

@@ -21,7 +21,7 @@ export function Process() {
   const lead = `На примере ${STEPS_EXAMPLE.project} ${STEPS_EXAMPLE.area} м², ${PRICING.tiers[STEPS_EXAMPLE.tier].title.toLowerCase()}: от начала работ до ключей проходит ${formatDays(total)}.`
 
   return (
-    <section id="process" aria-labelledby="process-title" className="border-t border-line">
+    <section id="process" aria-labelledby="process-title" className="lazy-section border-t border-line">
       <div className="shell py-16 sm:py-24">
         <SectionHead id="process-title" copy={COPY.sections.process} lead={lead} />
 

@@ -20,7 +20,7 @@ export function Projects({ projects }: { projects: Project[] }) {
   const filters: { key: Style | 'all'; label: string }[] = [{ key: 'all', label: 'Все' }, ...STYLE_ORDER.map((s) => ({ key: s, label: PRICING.styles[s].title }))]
 
   return (
-    <section id="projects" aria-labelledby="projects-title" className="border-t border-line">
+    <section id="projects" aria-labelledby="projects-title" className="lazy-section border-t border-line">
       <div className="shell py-16 sm:py-24">
         <SectionHead id="projects-title" copy={COPY.sections.projects} />
 

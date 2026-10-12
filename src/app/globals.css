@@ -95,9 +95,9 @@
   --color-danger: var(--c-danger);
   --color-ok: var(--c-ok);
 
-  --font-sans: var(--font-onest-cyr), var(--font-onest-rub), var(--font-onest-lat), system-ui, sans-serif;
-  --font-display: var(--font-manrope-cyr), var(--font-manrope-rub), var(--font-manrope-lat), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains-cyr), var(--font-jetbrains-rub), var(--font-jetbrains-lat), ui-monospace, monospace;
+  --font-sans: var(--font-onest), system-ui, sans-serif;
+  --font-display: var(--font-manrope), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
 @theme {
@@ -175,6 +175,18 @@
     .shell {
       padding-inline: 2rem;
     }
+  }
+
+  /* Блок ниже первого экрана: браузер раскладывает его, только когда он подходит к окну, и первый экран
+     на телефоне готов раньше. Высота до раскладки — оценка. Не ставить на блоки с position: fixed внутри
+     и с тенью у края: изоляция делает блок опорой для fixed и обрезает рисование по его краю.
+     Перед переходом по якорю правило снимает скрипт в <head> (src/lib/lazy-sections.ts). */
+  .lazy-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1500px;
+  }
+  [data-full-layout] .lazy-section {
+    content-visibility: visible;
   }
 
   /* Метка: моноширинный кегль, прописные, разрядка */
