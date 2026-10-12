@@ -9,6 +9,7 @@ import { COPY } from "@/content/copy";
 import { WHY_US } from "@/content/process";
 import { SectionHead } from "../ui/SectionHead";
 import { DeliveredList } from "./DeliveredList";
+import { revealOrder } from "@/lib/reveal";
 
 const ICONS = [FileSignature, ClipboardCheck, Banknote, Calculator];
 
@@ -20,7 +21,7 @@ export function WhyUs() {
         {WHY_US.map((item, i) => {
           const Icon = ICONS[i] ?? FileSignature;
           return (
-            <li key={item.title} className="reveal">
+            <li key={item.title} className="reveal" style={revealOrder(i)}>
               <article className="card card-hover flex h-full flex-col p-6 sm:p-8">
                 <div className="flex items-center gap-3 text-accent">
                   <span className="flex size-10 items-center justify-center rounded-xl bg-accent-soft">

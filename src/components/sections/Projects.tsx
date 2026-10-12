@@ -11,6 +11,7 @@ import { nbsp } from '@/lib/typography'
 import { projectPrice } from '@/lib/pricing'
 import { useLanding } from '../LandingProvider'
 import { SectionHead } from '../ui/SectionHead'
+import { revealOrder } from '@/lib/reveal'
 
 export function Projects({ projects }: { projects: Project[] }) {
   const { openProject } = useLanding()
@@ -32,20 +33,20 @@ export function Projects({ projects }: { projects: Project[] }) {
         </div>
 
         <ul className="mt-8 grid gap-5 md:grid-cols-2" data-testid="projects-grid">
-          {visible.map((p) => {
+          {visible.map((p, i) => {
             const contour = projectPrice(p, 'contour')
             const turnkey = projectPrice(p, 'turnkey')
             return (
-              <li key={p.slug} className="reveal">
+              <li key={p.slug} className="reveal" style={revealOrder(i)}>
                 <article className="group relative">
-                  <div data-testid="project-card" className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-line bg-[#0a0b0d] shadow-lg sm:aspect-[16/11]">
+                  <div data-testid="project-card" className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-line bg-[#0a0b0d] shadow-lg transition-[transform,box-shadow] duration-500 ease-[var(--ease-out-soft)] group-hover:-translate-y-2 group-hover:shadow-2xl group-active:scale-[0.985] motion-reduce:transition-none sm:aspect-[16/11]">
                     <Image
                       src={p.cover.src}
                       alt={p.cover.alt}
                       fill
                       placeholder="blur"
                       sizes="(min-width: 1280px) 620px, (min-width: 768px) 50vw, 100vw"
-                      className="object-cover transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.04] motion-reduce:transition-none"
+                      className="object-cover transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.08] motion-reduce:transition-none"
                     />
                     <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/30" />
                     <div className="absolute inset-x-4 top-4 flex flex-wrap gap-2">

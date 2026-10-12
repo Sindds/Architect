@@ -9,6 +9,7 @@ import { daysFor, minPriceFor } from "@/lib/pricing";
 import { LeadButton } from "../LeadButton";
 import { PackageDetails } from "./PackageDetails";
 import { SectionHead } from "../ui/SectionHead";
+import { revealOrder } from "@/lib/reveal";
 
 export function Pricing() {
   const minArea = Math.min(...PROJECTS.map((p) => p.area));
@@ -31,8 +32,10 @@ export function Pricing() {
           return (
             <li
               key={tier}
-              className={`relative flex flex-col rounded-3xl border p-5 sm:p-8 ${featured ? "on-dark border-white/10 bg-inverse text-on-inverse shadow-2xl" : "card"}`}
+              style={revealOrder(i)}
+              className="reveal"
             >
+              <div className={`card-hover relative flex h-full flex-col rounded-3xl border p-5 sm:p-8 ${featured ? "on-dark border-white/10 bg-inverse text-on-inverse shadow-2xl" : "card"}`}>
               <div className="flex items-center justify-between gap-3">
                 <p
                   className={`label num ${featured ? "text-[#9fc0de]" : "text-accent"}`}
@@ -126,6 +129,7 @@ export function Pricing() {
               >
                 Получить смету в PDF
               </LeadButton>
+              </div>
             </li>
           );
         })}

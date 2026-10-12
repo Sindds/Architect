@@ -7,6 +7,7 @@ import type { Style } from '@/content/types'
 import { formatMln } from '@/lib/format'
 import { priceFor } from '@/lib/pricing'
 import { useLanding } from '../LandingProvider'
+import { revealOrder } from '@/lib/reveal'
 
 // Сроки старта — относительно текущей даты, без зашитых годов (PLAN P5.3).
 const AREAS = [
@@ -54,7 +55,7 @@ export function Quiz() {
     const { low, high } = range()
     return (
       <div className="grid gap-6 lg:grid-cols-12" data-testid="quiz-result">
-        <div className="card p-6 sm:p-8 lg:col-span-7">
+        <div className="reveal card p-6 sm:p-8 lg:col-span-7">
           <h3 ref={headingRef} tabIndex={-1} className="display text-2xl leading-tight font-bold outline-none sm:text-3xl">
             Ваша вилка: от {formatMln(low)} до {formatMln(high)}
           </h3>
@@ -101,7 +102,7 @@ export function Quiz() {
 
   const current = answers[step] ?? null
   return (
-    <div className="card p-6 sm:p-8" data-testid="quiz">
+    <div className="reveal card p-6 sm:p-8" style={revealOrder(1)} data-testid="quiz">
       <div className="flex items-center gap-4">
         <p className="label num font-medium text-muted">
           Вопрос {step + 1} из {QUESTIONS.length}

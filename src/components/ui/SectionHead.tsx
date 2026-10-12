@@ -1,4 +1,5 @@
 import type { SectionCopy } from '@/content/copy'
+import { revealOrder } from '@/lib/reveal'
 import { nbsp } from '@/lib/typography'
 
 interface SectionHeadProps {
@@ -15,10 +16,10 @@ export function SectionHead({ id, copy, lead, tone = 'light' }: SectionHeadProps
   const text = lead ?? copy.lead
   return (
     <div className="grid gap-4 lg:grid-cols-12 lg:gap-12">
-      <p data-testid="section-label" className={`label lg:col-span-3 lg:pt-3 ${dark ? 'text-[#9fc0de]' : 'text-accent'}`}>
+      <p data-testid="section-label" className={`reveal label lg:col-span-3 lg:pt-3 ${dark ? 'text-[#9fc0de]' : 'text-accent'}`}>
         {copy.label}
       </p>
-      <div className="lg:col-span-9">
+      <div className="reveal lg:col-span-9" style={revealOrder(1)}>
         <h2 id={id} className="display text-[1.6rem] leading-[1.12] font-normal sm:text-4xl lg:text-[2.9rem]">
           {nbsp(copy.title)}
         </h2>

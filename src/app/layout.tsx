@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { CookieBanner } from '@/components/CookieBanner'
 import { SITE } from '@/content/site'
+import { revealInitScript } from '@/lib/reveal'
 import { themeInitScript } from '@/lib/theme'
 import { fontVariables } from './fonts'
 import './globals.css'
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ru" className={fontVariables} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: revealInitScript }} />
       </head>
       <body>
         {children}

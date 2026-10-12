@@ -2,6 +2,7 @@ import { Plus } from 'lucide-react'
 import { COPY } from '@/content/copy'
 import { FAQ } from '@/content/process'
 import { SectionHead } from '../ui/SectionHead'
+import { revealOrder } from '@/lib/reveal'
 
 export function Faq() {
   const jsonLd = {
@@ -14,9 +15,9 @@ export function Faq() {
       <div className="shell py-16 sm:py-24">
         <SectionHead id="faq-title" copy={COPY.sections.faq} />
         <ul className="mt-10 grid gap-3 lg:mt-14 lg:ml-[25%]">
-          {FAQ.map((f) => (
-            <li key={f.question}>
-              <details className="group card open:border-line-strong">
+          {FAQ.map((f, i) => (
+            <li key={f.question} className="reveal" style={revealOrder(i)}>
+              <details className="group card open:border-line-strong hover:border-line-strong">
                 <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-6 px-5 py-4 text-lg font-semibold sm:px-6 [&::-webkit-details-marker]:hidden">
                   {f.question}
                   <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-subtle text-accent transition-transform duration-300 group-open:rotate-45 motion-reduce:transition-none">

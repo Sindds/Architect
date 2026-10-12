@@ -204,14 +204,38 @@
       box-shadow 300ms var(--ease-out-soft),
       border-color 200ms ease;
   }
-  @media (hover: hover) {
+  /* Ховер карточек: подъём, лёгкое увеличение, тень и рамка. Только для мыши; на касание — отклик нажатием. */
+  .card-hover {
+    transition:
+      transform 450ms var(--ease-out-soft),
+      box-shadow 450ms var(--ease-out-soft),
+      border-color 250ms ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
     .card-hover:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 18px 40px -24px rgb(17 19 21 / 0.35);
+      transform: translateY(-8px) scale(1.012);
+      box-shadow: 0 30px 60px -32px rgb(17 19 21 / 0.5);
+      border-color: color-mix(in oklab, var(--c-accent) 55%, var(--c-line));
+    }
+    .card-hover:hover img {
+      transform: scale(1.06);
     }
   }
+  .card-hover img {
+    transition: transform 700ms var(--ease-out-soft);
+  }
+  .card-hover:active {
+    transform: scale(0.985);
+    transition-duration: 150ms;
+  }
   @media (prefers-reduced-motion: reduce) {
-    .card-hover:hover {
+    .card-hover,
+    .card-hover img {
+      transition: none;
+    }
+    .card-hover:hover,
+    .card-hover:active,
+    .card-hover:hover img {
       transform: none;
     }
   }
@@ -380,16 +404,26 @@
     color: #ffffff;
   }
 
-  /* Появление при прокрутке — только CSS и только там, где браузер это умеет.
-     Без поддержки или при reduced motion контент виден сразу. */
-  /* Только для мыши: scroll-driven анимация держит каждую карточку отдельным GPU-слоем всё время. */
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
-      .reveal {
-        animation: reveal linear both;
-        animation-timeline: view();
-        animation-range: entry 0% entry 35%;
-      }
+  /* Появление при прокрутке в обе стороны (src/lib/reveal.ts): скрипт ставит data-in, когда блок в окне.
+     Вход — 650 мс с замедлением, уход — 350 мс (уход быстрее входа). Только transform и opacity, без 3D:
+     скрытый блок не держит GPU-слой. Без JS и при reduced motion атрибута data-reveal нет, всё видно сразу. */
+  @media (prefers-reduced-motion: no-preference) {
+    html[data-reveal] .reveal {
+      opacity: 0;
+      transform: translateY(var(--reveal-y, 28px)) scale(0.985);
+      transition:
+        opacity 350ms cubic-bezier(0.4, 0, 1, 1),
+        transform 350ms cubic-bezier(0.4, 0, 1, 1);
+    }
+    html[data-reveal] .reveal[data-from='top'] {
+      --reveal-y: -28px;
+    }
+    html[data-reveal] .reveal[data-in] {
+      opacity: 1;
+      transform: none;
+      transition-duration: 650ms;
+      transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+      transition-delay: calc(min(var(--i, 0), 8) * 45ms);
     }
   }
 
@@ -418,16 +452,6 @@
   }
 }
 
-@keyframes reveal {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
 
 @keyframes cookie-in {
   from {

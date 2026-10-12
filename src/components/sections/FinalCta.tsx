@@ -3,6 +3,7 @@ import { COPY } from "@/content/copy";
 import { SITE } from "@/content/site";
 import type { VariantKey } from "@/content/types";
 import { LeadForm } from "../forms/LeadForm";
+import { revealOrder } from "@/lib/reveal";
 
 export function FinalCta({ variant }: { variant: VariantKey }) {
   const copy = COPY.sections.contacts;
@@ -66,7 +67,8 @@ export function FinalCta({ variant }: { variant: VariantKey }) {
             {contacts.map(({ icon: Icon, node }, i) => (
               <li
                 key={i}
-                className="flex items-center gap-3 rounded-2xl bg-white/[0.06] px-4 py-2"
+                style={revealOrder(i)}
+                className="reveal flex items-center gap-3 rounded-2xl bg-white/[0.06] px-4 py-2"
               >
                 <Icon
                   aria-hidden

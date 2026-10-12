@@ -6,6 +6,7 @@ import { PRICING } from '@/content/pricing'
 import { STEPS, STEPS_EXAMPLE } from '@/content/process'
 import { formatDays } from '@/lib/format'
 import { SectionHead } from '../ui/SectionHead'
+import { revealOrder } from '@/lib/reveal'
 
 const CONTROL = [
   { icon: Camera, text: 'Раз в неделю мы присылаем фотоотчёт и обновлённый график.' },
@@ -49,7 +50,8 @@ export function Process() {
 
         <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {STEPS.map((s, i) => (
-            <li key={s.title} className="reveal card grid gap-x-4 p-5 min-[360px]:grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-1 lg:flex lg:flex-col">
+            <li key={s.title} style={revealOrder(i)} className="reveal">
+              <div className="card card-hover grid h-full gap-x-4 p-5 min-[360px]:grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-1 lg:flex lg:flex-col">
               <div className="col-span-full flex items-center justify-between gap-3">
                 <span className="label num text-accent">Этап {i + 1}</span>
                 <span className="label num rounded-full bg-subtle px-2.5 py-1 font-medium text-muted">{formatDays(s.days)}</span>
@@ -62,6 +64,7 @@ export function Process() {
                 <span className="display text-3xl font-bold lg:text-4xl">{s.paymentPercent}%</span>
                 <span className="block text-sm text-muted">оплаты после акта</span>
               </p>
+              </div>
             </li>
           ))}
         </ol>
@@ -71,7 +74,7 @@ export function Process() {
             <Image src={MEDIA.processFrame.src} alt={MEDIA.processFrame.alt} placeholder="blur" sizes="(min-width: 1024px) 720px, 100vw" className="aspect-[16/9] w-full object-cover" />
             <figcaption className="label absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1.5 font-medium text-[#d4d8dd]">{MEDIA.processFrame.caption}</figcaption>
           </figure>
-          <div className="card p-6 sm:p-8 lg:col-span-5">
+          <div className="reveal card p-6 sm:p-8 lg:col-span-5">
             <h3 className="display text-2xl font-bold">Как следить за стройкой из города</h3>
             <ul className="mt-5 grid gap-4">
               {CONTROL.map(({ icon: Icon, text }) => (

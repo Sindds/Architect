@@ -5,6 +5,7 @@ import { SITE } from '@/content/site'
 import { formatRub, plural } from '@/lib/format'
 import { estimateFor } from '@/lib/pricing'
 import { SectionHead } from '../ui/SectionHead'
+import { revealOrder } from '@/lib/reveal'
 
 const sheet = estimateFor(ESTIMATE_SAMPLE)
 const lines = sheet.sections.reduce((n, s) => n + s.lines.length, 0)
@@ -28,8 +29,8 @@ export function Documents() {
       <div className="shell py-16 sm:py-24">
         <SectionHead id="docs-title" copy={COPY.sections.documents} />
         <ul className="mt-10 grid gap-4 md:grid-cols-2 lg:mt-14">
-          {DOCS.map((d) => (
-            <li key={d.href}>
+          {DOCS.map((d, i) => (
+            <li key={d.href} className="reveal" style={revealOrder(i)}>
               <a href={d.href} target="_blank" rel="noopener" className="card card-hover group flex h-full gap-5 p-6 sm:p-8">
                 <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-accent">
                   <FileText aria-hidden className="size-6" strokeWidth={1.5} />

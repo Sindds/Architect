@@ -5,6 +5,7 @@ import { REVIEWS, TEAM, visiblePhoto } from "@/content/people";
 import { SITE } from "@/content/site";
 import { LeadButton } from "../LeadButton";
 import { SectionHead } from "../ui/SectionHead";
+import { revealOrder } from "@/lib/reveal";
 
 export function Team() {
   const concept = SITE.contentMode === "concept";
@@ -20,13 +21,15 @@ export function Team() {
           data-testid="team"
           className="mt-10 grid gap-4 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4"
         >
-          {TEAM.map((m) => {
+          {TEAM.map((m, i) => {
             const photo = visiblePhoto(m, SITE.contentMode);
             return (
               <li
                 key={m.name}
-                className="reveal card card-hover flex flex-col overflow-hidden"
+                style={revealOrder(i)}
+                className="reveal"
               >
+                <div className="card card-hover flex h-full flex-col overflow-hidden">
                 {photo ? (
                   <div className="relative aspect-[4/5] overflow-hidden bg-subtle">
                     <Image
@@ -55,6 +58,7 @@ export function Team() {
                   <p className="label num mt-auto pt-5 font-medium text-muted">
                     {m.stages}
                   </p>
+                </div>
                 </div>
               </li>
             );
@@ -89,9 +93,9 @@ export function Reviews() {
       <div className="shell py-16 sm:py-24">
         <SectionHead id="reviews-title" copy={COPY.sections.reviews} />
         <ul className="mt-10 grid gap-4 lg:mt-14 lg:grid-cols-3">
-          {REVIEWS.map((r) => (
-            <li key={r.id} className="reveal">
-              <figure className="card flex h-full flex-col p-6 sm:p-8">
+          {REVIEWS.map((r, i) => (
+            <li key={r.id} className="reveal" style={revealOrder(i)}>
+              <figure className="card card-hover flex h-full flex-col p-6 sm:p-8">
                 <Quote
                   aria-hidden
                   className="size-7 text-accent-deco"
