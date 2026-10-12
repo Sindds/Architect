@@ -10,7 +10,11 @@ export const CONSENT_KEY = 'arcline-cookies'
  * визите в сессии (design.spec.ts), баннер — пока человек не сделал выбор (consent.spec.ts).
  */
 export const test = base.extend({
-  page: async ({ page }, provide) => {
+  page: async ({ page }, provide, testInfo) => {
+    // Свой IP у каждого теста: лимит частоты (5 заявок за 10 минут, src/lib/rate-limit.ts) не должен
+    // зависеть от порядка тестов. Перед next start нет прокси, поэтому X-Forwarded-For — единственный источник IP.
+    const n = [...testInfo.testId].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7)
+    await page.setExtraHTTPHeaders({ 'x-forwarded-for': `10.${(n >>> 16) & 255}.${(n >>> 8) & 255}.${n & 255}` })
     await page.addInitScript(
       ({ loader, consent }) => {
         sessionStorage.setItem(loader, '1')

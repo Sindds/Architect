@@ -16,6 +16,7 @@ import { Process } from './sections/Process'
 import { Projects } from './sections/Projects'
 import { Reviews, Team } from './sections/People'
 import { WhyUs } from './sections/WhyUs'
+import { Metrika } from './Metrika'
 
 /** Одна страница, порядок блоков фиксирован (CONTENT-SPEC §4). */
 export function Landing({ variant }: { variant: VariantKey }) {
@@ -41,6 +42,7 @@ export function Landing({ variant }: { variant: VariantKey }) {
       </main>
       <Footer />
       <MobileActionBar />
+      <Metrika variant={variant} />
     </LandingProvider>
   )
 }

@@ -69,3 +69,15 @@ describe('готовность к режиму client', () => {
     if (SITE.contentMode === 'client') expect(legalReadiness(SITE)).toEqual([])
   })
 })
+
+describe('Яндекс Метрика в текстах', () => {
+  it('без счётчика — «счётчиков нет»; со счётчиком — Метрика после согласия, Вебвизор выключен, ClientID в перечне данных', () => {
+    const without = text(legalDocs({ ...CLIENT, metrikaId: '' }), 'cookies')
+    expect(without).toContain('аналитических счётчиков на сайте нет')
+    const docs = legalDocs({ ...CLIENT, metrikaId: '12345678' })
+    expect(text(docs, 'cookies')).toContain('Яндекс Метрика (ООО «Яндекс») загружается только после «Принять все»')
+    expect(text(docs, 'cookies')).toContain('Вебвизор, который записывает ввод в формы, выключен')
+    expect(text(docs, 'soglasie')).toContain('номер посещения в Яндекс Метрике (ClientID)')
+    expect(text(docs, 'privacy')).toContain('передаём вместе с заявкой в систему учёта клиентов')
+  })
+})

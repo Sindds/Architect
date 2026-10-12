@@ -9,6 +9,7 @@ import { CaseModal } from './modals/CaseModal'
 import { LeadModal } from './modals/LeadModal'
 import { ProjectModal } from './modals/ProjectModal'
 import type { SmetaInput } from '@/lib/smeta-token'
+import { track } from '@/lib/analytics'
 
 export interface LeadRequest {
   /** Заголовок формы = текст нажатой кнопки (правило CTA, CONTENT-SPEC §4). */
@@ -86,6 +87,11 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
     return () => window.removeEventListener('popstate', onPop)
   }, [])
 
+  // Цель «открыл проект/дом» — и по клику, и по прямой ссылке, и по «Вперёд» в браузере.
+  useEffect(() => {
+    if (overlay) track(overlay.kind === 'project' ? 'project_open' : 'case_open', { slug: overlay.slug })
+  }, [overlay])
+
   const openOverlay = useCallback((next: NonNullable<Overlay>) => {
     const key = next.kind
     const other = key === 'project' ? 'case' : 'project'
@@ -121,7 +127,10 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
   const value = useMemo<LandingContextValue>(
     () => ({
       variant,
-      openLead: setLead,
+      openLead: (req) => {
+        if (req.source === 'excursion') track('excursion_click')
+        setLead(req)
+      },
       openProject: (slug) => openOverlay({ kind: 'project', slug }),
       openCase: (slug) => openOverlay({ kind: 'case', slug }),
       calcPreset,

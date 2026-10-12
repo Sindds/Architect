@@ -1,13 +1,14 @@
 'use client'
 
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { PRICING, STYLE_ORDER } from '@/content/pricing'
 import type { Style } from '@/content/types'
 import { formatMln } from '@/lib/format'
 import { priceFor } from '@/lib/pricing'
 import { useLanding } from '../LandingProvider'
 import { revealOrder } from '@/lib/reveal'
+import { track } from '@/lib/analytics'
 
 // Сроки старта — относительно текущей даты, без зашитых годов (PLAN P5.3).
 const AREAS = [
@@ -32,6 +33,11 @@ export function Quiz() {
   const [answers, setAnswers] = useState<(number | null)[]>([null, null, null, null])
   const headingRef = useRef<HTMLHeadingElement>(null)
   const done = step === QUESTIONS.length
+  const started = useRef(false)
+
+  useEffect(() => {
+    if (done) track('quiz_complete')
+  }, [done])
 
   const options: string[][] = [AREAS.map((a) => a.label), STYLES.map((s) => s.label), START, LAND]
 
@@ -127,7 +133,13 @@ export function Quiz() {
                 type="radio"
                 name={`${uid}-q${step}`}
                 checked={current === i}
-                onChange={() => setAnswers((a) => a.map((x, j) => (j === step ? i : x)))}
+                onChange={() => {
+                  if (!started.current) {
+                    started.current = true
+                    track('quiz_start')
+                  }
+                  setAnswers((a) => a.map((x, j) => (j === step ? i : x)))
+                }}
                 className="size-4 accent-[var(--c-accent-deco)]"
               />
               {label}

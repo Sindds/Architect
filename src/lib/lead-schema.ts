@@ -37,6 +37,8 @@ export const leadSchema = z.object({
   utm: z.string().max(600).optional(),
   /** Параметры дома для PDF-сметы (JSON), проверяет smetaInputSchema на сервере. */
   estimateInput: z.string().max(400).optional(),
+  /** ClientID Яндекс Метрики (для офлайн-конверсий), если счётчик загружен. */
+  clientId: z.string().regex(/^\d{1,40}$/).optional(),
   /** Метка времени, подписанная сервером (src/lib/lead-token.ts): её проверяет server action. */
   token: z.string().max(100).optional(),
 })
@@ -72,6 +74,7 @@ export function readLeadForm(form: FormData) {
     quiz: get('quiz'),
     utm: get('utm'),
     estimateInput: get('estimateInput'),
+    clientId: get('clientId'),
     token: get('token'),
   }
 }

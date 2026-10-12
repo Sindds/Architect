@@ -54,6 +54,7 @@ export function MobileActionBar() {
       <button
         type="button"
         aria-label="Написать в мессенджер"
+        data-messenger="form"
         onClick={() => openLead({ title: 'Написать в мессенджер', source: 'messenger', extended: true, contactMethod: 'telegram' })}
         className="inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/20 active:bg-white/15"
       >

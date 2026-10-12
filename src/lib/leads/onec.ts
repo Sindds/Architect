@@ -46,6 +46,7 @@ export async function sendToOneC(lead: LeadRecord, config: OneCConfig, fetchImpl
       estimate: lead.estimate ?? null,
       quiz: lead.quiz ?? null,
       utm: lead.utm,
+      clientId: lead.clientId ?? null,
       consentVersion: lead.consentVersion,
       summary: leadSummary(lead),
     }),

@@ -80,7 +80,7 @@ export function Header() {
         <a href={SITE.phoneHref} className={`inline-flex size-11 shrink-0 items-center justify-center rounded-full transition-colors md:hidden ${iconBtn}`} aria-label={`Позвонить: ${SITE.phoneDisplay}`} data-testid="header-phone-icon">
           <Phone aria-hidden className="size-5" strokeWidth={1.6} />
         </a>
-        <button type="button" onClick={messenger} className={`inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors ${iconBtn}`} aria-label="Написать в мессенджер">
+        <button type="button" onClick={messenger} data-messenger="form" className={`inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors ${iconBtn}`} aria-label="Написать в мессенджер">
           <MessageCircle aria-hidden className="size-5" strokeWidth={1.6} />
         </button>
         <ThemeToggle className={iconBtn} />

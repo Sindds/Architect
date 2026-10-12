@@ -8,6 +8,7 @@ import type { AddonKey, Style, Tier } from '@/content/types'
 import { formatDays, formatRub, groupDigits } from '@/lib/format'
 import { breakdown, minPriceFor, ROUNDING_STEP } from '@/lib/pricing'
 import { useLanding } from '../LandingProvider'
+import { track } from '@/lib/analytics'
 
 const AREA = { min: 100, max: 800, step: 10 }
 const TERRACE = { min: 0, max: 200, step: 5 }
@@ -26,6 +27,13 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
   const [presetName, setPresetName] = useState<string | null>(null)
   // Мобильная панель итога: видна, пока человек двигает параметры, а карточка результата за экраном.
   const controlsRef = useRef<HTMLDivElement>(null)
+  // Цель «начал считать» — один раз, при первом изменении любого параметра.
+  const interacted = useRef(false)
+  const onInteract = () => {
+    if (interacted.current) return
+    interacted.current = true
+    track('calc_interact')
+  }
   const resultRef = useRef<HTMLElement>(null)
   const [controlsInView, setControlsInView] = useState(false)
   const [resultInView, setResultInView] = useState(false)
@@ -79,7 +87,7 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-12" data-testid="calculator">
-      <div ref={controlsRef} className="card grid gap-7 p-5 sm:p-8 lg:col-span-7">
+      <div ref={controlsRef} onChange={onInteract} className="card grid gap-7 p-5 sm:p-8 lg:col-span-7">
         {presetName && (
           <p className="label text-accent" role="status">
             Подставили параметры проекта {presetName}. Меняйте их как хотите.

@@ -8,6 +8,7 @@ import { SITE } from '@/content/site'
 import { CONTACT_METHODS, HONEYPOT_FIELD, type LeadSource, type LeadState, SEND_FAILED } from '@/lib/lead-schema'
 import { maskRuPhoneEdit } from '@/lib/phone'
 import type { SmetaInput } from '@/lib/smeta-token'
+import { getClientId, track } from '@/lib/analytics'
 
 interface LeadFormProps {
   source: LeadSource
@@ -75,6 +76,8 @@ export function LeadForm({
   // Метка времени от сервера: запрашивается при первом фокусе в форме, проверяется при отправке (не быстрее 3 секунд).
   const [token, setToken] = useState('')
   const tokenRequested = useRef(false)
+  // ClientID Метрики уходит с заявкой в CRM: по нему загружаются офлайн-конверсии. Без счётчика — пусто.
+  const [clientId, setClientId] = useState('')
   const [utm, setUtm] = useState<string | undefined>()
   const uid = useId()
   const statusRef = useRef<HTMLDivElement>(null)
@@ -92,11 +95,14 @@ export function LeadForm({
     if (tokenRequested.current) return
     tokenRequested.current = true
     issueLeadToken().then(setToken, () => setToken('none'))
+    void getClientId().then((id) => id && setClientId(id))
   }
 
   useEffect(() => {
     if (state.status !== 'idle') statusRef.current?.focus()
-  }, [state])
+    // Цель — только при ответе сервера «принято», не при ошибке.
+    if (state.status === 'ok') track('lead_submit', { source, variant })
+  }, [state, source, variant])
 
   // React ставит курсор в конец, когда меняет значение поля; возвращаем его туда, где набирал человек.
   useLayoutEffect(() => {
@@ -159,6 +165,7 @@ export function LeadForm({
       <input type="hidden" name="source" value={source} />
       <input type="hidden" name="variant" value={variant} />
       <input type="hidden" name="token" value={token} />
+      {clientId && <input type="hidden" name="clientId" value={clientId} />}
       {context && <input type="hidden" name="context" value={context} />}
       {estimate && <input type="hidden" name="estimate" value={estimate} />}
       {smeta && <input type="hidden" name="estimateInput" value={JSON.stringify(smeta)} />}

@@ -39,6 +39,8 @@ export interface LeadRecord {
   estimate?: string
   quiz?: string
   utm: Partial<Record<UtmKey, string>>
+  /** ClientID Яндекс Метрики: связывает заявку с визитом для офлайн-конверсий. */
+  clientId?: string
 }
 
 function parseUtm(raw?: string): LeadRecord['utm'] {
@@ -73,6 +75,7 @@ export function toLeadRecord(id: number, input: LeadInput, now = new Date()): Le
     estimate: input.estimate,
     quiz: input.quiz,
     utm: parseUtm(input.utm),
+    clientId: input.clientId,
   }
 }
 
@@ -86,6 +89,7 @@ export function leadSummary(lead: LeadRecord): string {
     lead.context && `Откуда заявка: ${lead.context}`,
     lead.estimate && `Расчёт: ${lead.estimate}`,
     lead.quiz && `Ответы квиза: ${lead.quiz}`,
+    lead.clientId && `ClientID Метрики: ${lead.clientId}`,
     `Согласие на обработку данных: версия ${lead.consentVersion}`,
   ]
   return lines.filter(Boolean).join('\n')
