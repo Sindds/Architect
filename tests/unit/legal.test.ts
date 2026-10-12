@@ -6,7 +6,7 @@ const CLIENT: LegalSite = {
   ...SITE,
   contentMode: 'client',
   email: 'pd@arcline.test',
-  operator: { name: 'ООО «Тест»', inn: '0000000000', ogrn: '0000000000000', address: '000000, г. Москва, ул. Тестовая, д. 1' },
+  operator: { name: 'ООО «Тест»', inn: '1234567890', kpp: '123456789', ogrn: '1234567890123', address: '000000, г. Москва, ул. Тестовая, д. 1' },
   processors: [
     SITE.processors[0],
     { name: 'ООО «Хостинг»', details: 'ОГРН 0, ИНН 0', address: 'г. Москва', purpose: 'хостинг сайта и хранение заявок на сервере' },
@@ -20,7 +20,7 @@ describe('согласие: состав по ч. 4 ст. 9 152-ФЗ', () => {
   const consent = text(legalDocs(CLIENT), 'soglasie')
 
   it.each([
-    ['оператор с адресом', 'ООО «Тест», ИНН 0000000000, ОГРН 0000000000000, адрес: 000000, г. Москва'],
+    ['оператор с адресом', 'ООО «Тест», ИНН 1234567890, КПП 123456789, ОГРН 1234567890123, адрес: 000000, г. Москва'],
     ['цель', 'Цель обработки: связаться со мной по заявке'],
     ['перечень данных', 'Перечень данных: имя, номер телефона'],
     ['обработчик с адресом', 'ООО «1С-Битрикс», ОГРН 5077746476209, ИНН 7717586110, адрес: 109544'],
@@ -60,7 +60,7 @@ describe('режим concept', () => {
 describe('готовность к режиму client', () => {
   it('пустые реквизиты оператора и хостинга не пропускаются', () => {
     expect(legalReadiness({ ...SITE, contentMode: 'client' })).toEqual(
-      expect.arrayContaining(['operator.name', 'operator.inn', 'operator.ogrn', 'operator.address', 'processors[1].name', 'email']),
+      expect.arrayContaining(['operator.inn', 'operator.kpp', 'operator.ogrn', 'processors[1].name', 'email']),
     )
     expect(legalReadiness(CLIENT)).toEqual([])
   })

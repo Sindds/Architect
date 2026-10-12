@@ -21,7 +21,7 @@ export interface LegalSite {
   contentMode: 'concept' | 'client'
   brandFull: string
   email: string
-  operator: { name: string; inn: string; ogrn: string; address: string }
+  operator: { name: string; inn: string; kpp: string; ogrn: string; address: string }
   processors: readonly Party[]
   leadRetention: string
   legalVersion: { version: string; date: string }
@@ -32,13 +32,14 @@ const LAW = 'закона № 152-ФЗ «О персональных данны�
 /** Реквизиты оператора одной строкой: футер, юридические страницы. */
 export function operatorRequisites(site: LegalSite): string {
   const o = site.operator
-  return `${o.name}, ИНН ${o.inn}, ОГРН ${o.ogrn}, адрес: ${o.address}`
+  return `${o.name}, ИНН ${o.inn}, КПП ${o.kpp}, ОГРН ${o.ogrn}, адрес: ${o.address}`
 }
 
 /** Что не заполнено для режима client. Пустой список — тексты можно публиковать. */
 export function legalReadiness(site: LegalSite): string[] {
   const missing: string[] = []
-  for (const [key, value] of Object.entries(site.operator)) if (!value.trim()) missing.push(`operator.${key}`)
+  // Пусто или нули концепта — не заполнено.
+  for (const [key, value] of Object.entries(site.operator)) if (!value.trim() || /^0+$/.test(value.trim())) missing.push(`operator.${key}`)
   site.processors.forEach((p, i) => {
     for (const key of ['name', 'details', 'address', 'purpose'] as const) if (!p[key].trim()) missing.push(`processors[${i}].${key}`)
   })
@@ -49,7 +50,7 @@ export function legalReadiness(site: LegalSite): string[] {
 export function legalDocs(site: LegalSite): Record<LegalDoc['slug'], LegalDoc> {
   const concept = site.contentMode === 'concept'
   const operator = concept
-    ? `Оператор персональных данных — вымышленная компания концепт-проекта ${site.brandFull}. Реквизиты в концепт-проекте не указываются.`
+    ? `Оператор персональных данных — вымышленная компания концепт-проекта ${site.brandFull}. Реквизиты в концепт-проекте условные: номера заполнены нулями.`
     : `Оператор персональных данных — ${operatorRequisites(site)}.`
   const processors = site.processors.map((p) => `${p.name}, ${p.details}, адрес: ${p.address}. Задача: ${p.purpose}.`)
   const notShared = 'В концепт-проекте данные форм не сохраняются и никуда не передаются.'

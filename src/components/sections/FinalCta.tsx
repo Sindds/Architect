@@ -1,4 +1,5 @@
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { Fragment } from "react";
 import { COPY } from "@/content/copy";
 import { SITE } from "@/content/site";
 import type { VariantKey } from "@/content/types";
@@ -7,6 +8,15 @@ import { revealOrder } from "@/lib/reveal";
 
 export function FinalCta({ variant }: { variant: VariantKey }) {
   const copy = COPY.sections.contacts;
+  const o = SITE.operator;
+  // Реквизиты для договора и проверки компании (ЗоЗПП ст. 9, 149-ФЗ ст. 10 ч. 2). В концепте номера — нули.
+  const requisites = [
+    ["Компания", o.name],
+    ["ИНН", o.inn],
+    ["КПП", o.kpp],
+    ["ОГРН", o.ogrn],
+    ["Юридический адрес", o.address],
+  ];
   const contacts = [
     {
       icon: Phone,
@@ -79,6 +89,26 @@ export function FinalCta({ variant }: { variant: VariantKey }) {
               </li>
             ))}
           </ul>
+          <div
+            data-testid="requisites"
+            style={revealOrder(contacts.length)}
+            className="reveal rounded-2xl border border-white/10 p-5"
+          >
+            <p className="label text-[#9fc0de]">Реквизиты</p>
+            <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
+              {requisites.map(([term, value]) => (
+                <Fragment key={term}>
+                  <dt className="text-on-inverse-muted">{term}</dt>
+                  <dd className="num break-words">{value}</dd>
+                </Fragment>
+              ))}
+            </dl>
+            {SITE.contentMode === "concept" && (
+              <p className="mt-3 text-xs text-on-inverse-muted">
+                Компания концепт-проекта вымышлена, номера условные.
+              </p>
+            )}
+          </div>
           <p className="text-sm text-on-inverse-muted">
             Карта с отметкой офиса — внизу страницы.
           </p>

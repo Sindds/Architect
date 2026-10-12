@@ -38,6 +38,14 @@ test.describe('Первый экран и варианты', () => {
     await expect(page.getByTestId('office-map')).toHaveCount(1)
   })
 
+  test('в контактах реквизиты компании; в концепте номера условные', async ({ page }) => {
+    await page.goto('/')
+    const req = page.getByTestId('requisites')
+    for (const term of ['Компания', 'ИНН', 'КПП', 'ОГРН', 'Юридический адрес']) await expect(req.getByText(term, { exact: true })).toBeVisible()
+    await expect(req).toContainText(SITE.operator.inn)
+    await expect(req).toContainText('номера условные')
+  })
+
   test('несуществующий адрес — 404', async ({ request }) => {
     expect((await request.get('/net-takoy-stranicy')).status()).toBe(404)
   })
