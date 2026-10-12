@@ -49,7 +49,7 @@ const portrait = (src: Picture["src"], alt: string): Picture => ({
 export const MEDIA = {
   teamAlexey: portrait(teamAlexey, "Алексей Воронов, главный архитектор"),
   teamMikhail: portrait(teamMikhail, "Михаил Седов, инженер-конструктор"),
-  teamEkaterina: portrait(teamEkaterina, "Екатерина Лаврова, BIM-координатор"),
+  teamEkaterina: portrait(teamEkaterina, "Екатерина Лаврова, координатор информационной модели"),
   teamDmitry: portrait(
     teamDmitry,
     "Дмитрий Орлов, руководитель строительного контроля",

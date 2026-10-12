@@ -72,7 +72,7 @@ export const PRICING: PricingModel = {
   },
   addons: {
     knx: {
-      title: 'Умный дом KNX',
+      title: 'Умный дом на стандарте KNX',
       price: 1_400_000,
       days: 10,
       note: 'Светом, климатом и шторами вы управляете из одного приложения',
@@ -84,7 +84,7 @@ export const PRICING: PricingModel = {
       note: 'Дом греет тепло грунта, газовый котёл не нужен',
     },
     spa: {
-      title: 'SPA с бассейном',
+      title: 'Бассейн и спа-зона',
       price: 2_900_000,
       days: 21,
       note: 'Бассейн, хамам и зона отдыха в отдельном объёме',
