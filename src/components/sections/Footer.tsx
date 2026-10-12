@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { operatorRequisites } from '@/content/legal'
 import { SITE } from '@/content/site'
+import { CookieSettingsButton } from '../CookieSettingsButton'
 import { OfficeMap } from '../OfficeMap'
 import { Logo } from '../ui/Logo'
 
@@ -75,6 +76,9 @@ export function Footer() {
               <Link href="/cookies" className="link inline-flex min-h-11 items-center">
                 Файлы cookie
               </Link>
+            </li>
+            <li>
+              <CookieSettingsButton />
             </li>
           </ul>
         </div>

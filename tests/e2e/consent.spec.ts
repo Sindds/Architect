@@ -44,8 +44,11 @@ test('«Только необходимые»: баннер исчезает и 
   const map = page.getByTestId('office-map')
   await map.scrollIntoViewIfNeeded()
   await expect(map.locator('iframe')).toHaveCount(0)
+  // Карта района видна и без согласия: картинка с нашего сервера, подпись OpenStreetMap по лицензии.
+  await expect(map.getByRole('img', { name: /Карта района/ })).toBeVisible()
+  await expect(map.getByRole('link', { name: /OpenStreetMap/ })).toHaveAttribute('href', 'https://www.openstreetmap.org/copyright')
   await expect(map.getByRole('link', { name: /Открыть в Яндекс Картах/ })).toHaveAttribute('href', /yandex\.ru\/maps/)
-  await map.getByRole('button', { name: 'Показать карту' }).click()
+  await map.getByRole('button', { name: 'Интерактивная карта' }).click()
   await expect(map.locator('iframe')).toHaveAttribute('src', /yandex\.ru\/map-widget\/v1\//)
   await expect(map.locator('iframe')).toHaveAttribute('title', /Карта/)
 })
@@ -66,4 +69,14 @@ test('без выбора карта не грузится, а баннер не
   const b = await banner(page).boundingBox()
   const cta = await page.getByTestId('hero').getByRole('link', { name: /Узнать цену/ }).boundingBox()
   expect(b && cta && cta.y + cta.height <= b.y).toBe(true)
+})
+
+test('«Настройки cookie» в футере возвращают баннер: выбор можно изменить', async ({ page }) => {
+  await page.goto('/')
+  await banner(page).getByRole('button', { name: 'Только необходимые' }).click()
+  await expect(banner(page)).toBeHidden()
+  await page.getByRole('button', { name: 'Настройки cookie' }).click()
+  await expect(banner(page)).toBeVisible()
+  await banner(page).getByRole('button', { name: 'Принять все' }).click()
+  await expect(page.getByTestId('office-map').locator('iframe')).toHaveAttribute('src', /yandex\.ru\/map-widget/)
 })

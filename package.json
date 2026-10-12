@@ -17,6 +17,7 @@
     "e2e": "playwright test",
     "docs:pdf": "tsx --import ./scripts/assets-hook.mjs scripts/make-sample-pdfs.ts",
     "leads:check": "tsx --env-file-if-exists=.env.local scripts/leads-check.ts",
+    "map:preview": "node scripts/make-map-preview.mjs",
     "check": "pnpm typecheck && pnpm lint && pnpm lint:content && pnpm test"
   },
   "pnpm": {
@@ -43,6 +44,7 @@
     "@types/react-dom": "19.3.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.3.8",
+    "sharp": "0.35.5",
     "tailwindcss": "4.3.3",
     "tsx": "4.23.15",
     "typescript": "5.9.3",

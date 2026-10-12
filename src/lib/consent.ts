@@ -6,13 +6,15 @@ import { useCallback, useSyncExternalStore } from 'react'
 export const CONSENT_KEY = 'arcline-cookies'
 export type Consent = 'all' | 'necessary'
 const EVENT = 'arcline:consent'
+/** Запасная копия выбора в памяти страницы: если хранилище недоступно (приватный режим), выбор действует до перезагрузки. */
+let memory: Consent | null = null
 
 function read(): Consent | null {
   try {
     const v = localStorage.getItem(CONSENT_KEY)
-    return v === 'all' || v === 'necessary' ? v : null
+    return v === 'all' || v === 'necessary' ? v : memory
   } catch {
-    return null
+    return memory
   }
 }
 
@@ -29,6 +31,7 @@ function subscribe(onChange: () => void) {
 export function useConsent(): [Consent | null | undefined, (v: Consent) => void] {
   const consent = useSyncExternalStore<Consent | null | undefined>(subscribe, read, () => undefined)
   const save = useCallback((v: Consent) => {
+    memory = v
     try {
       localStorage.setItem(CONSENT_KEY, v)
     } catch {
@@ -37,4 +40,15 @@ export function useConsent(): [Consent | null | undefined, (v: Consent) => void]
     window.dispatchEvent(new Event(EVENT))
   }, [])
   return [consent, save]
+}
+
+/** «Настройки cookie» в футере: стираем выбор, баннер появляется снова. */
+export function resetConsent() {
+  memory = null
+  try {
+    localStorage.removeItem(CONSENT_KEY)
+  } catch {
+    // Хранилище недоступно: баннер и так показывается при каждом входе.
+  }
+  window.dispatchEvent(new Event(EVENT))
 }

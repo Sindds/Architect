@@ -1,20 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
 import { useConsent } from '@/lib/consent'
 
 /** Баннер при первом входе. Не перекрывает страницу целиком и не держит фокус: это выбор, а не стена. */
 export function CookieBanner() {
+  // Если хранилище недоступно, выбор держится в памяти страницы (src/lib/consent.ts) и тоже скрывает баннер.
   const [consent, save] = useConsent()
-  // Если хранилище недоступно, выбор всё равно скрывает баннер до перезагрузки.
-  const [closed, setClosed] = useState(false)
-  if (consent !== null || closed) return null
+  if (consent !== null) return null
 
-  const choose = (v: 'all' | 'necessary') => {
-    save(v)
-    setClosed(true)
-  }
+  const choose = (v: 'all' | 'necessary') => save(v)
 
   return (
     <section
