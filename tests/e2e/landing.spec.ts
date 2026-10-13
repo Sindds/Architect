@@ -363,7 +363,7 @@ test.describe('Доступность (axe)', () => {
 })
 
 test.describe('Нижняя панель на телефоне и мессенджеры', () => {
-  test('панель появляется после первого экрана, прячется у калькулятора и в контактах; цели ≥ 44 px', async ({ page }) => {
+  test('кнопка расчёта появляется после первого экрана, прячется у калькулятора и в контактах; компактная, цель ≥ 44 px', async ({ page }) => {
     await page.goto('/')
     const bar = page.getByTestId('mobile-action-bar')
     if (!isMobile(page)) {
@@ -374,12 +374,16 @@ test.describe('Нижняя панель на телефоне и мессенд
     await page.locator('#projects').scrollIntoViewIfNeeded()
     await page.evaluate(() => window.scrollBy(0, 400))
     await expect(bar).toHaveAttribute('data-shown', '')
-    for (const target of await bar.locator('a, button').all()) {
-      const box = await target.boundingBox()
-      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44)
-      expect(box?.width ?? 0).toBeGreaterThanOrEqual(44)
-    }
-    await bar.getByRole('link', { name: 'Рассчитать стоимость' }).click()
+    // Позвонить и написать — в шапке; внизу только расчёт, капсула не шире 2/3 экрана и целиком в окне.
+    await expect(bar).toHaveAccessibleName('Рассчитать стоимость')
+    await expect(bar.locator('a, button')).toHaveCount(0)
+    const box = (await bar.boundingBox())!
+    const width = page.viewportSize()!.width
+    expect(box.height).toBeGreaterThanOrEqual(44)
+    expect(box.height).toBeLessThanOrEqual(52)
+    expect(box.width).toBeLessThanOrEqual(width * (2 / 3))
+    expect(box.x + box.width).toBeLessThanOrEqual(width)
+    await bar.click()
     await expect(page).toHaveURL(/#calculator$/)
     await expect(bar).not.toHaveAttribute('data-shown', /.*/)
     await page.locator('#contacts').scrollIntoViewIfNeeded()

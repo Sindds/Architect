@@ -1,20 +1,18 @@
 'use client'
 
-import { ArrowUpRight, MessageCircle, Phone } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { SITE } from '@/content/site'
 import { useConsent } from '@/lib/consent'
-import { useLanding } from './LandingProvider'
 
-/** Блоки, где панель мешает: свои кнопки есть на первом экране, у калькулятора — своя панель итога, в контактах — форма. */
+/** Блоки, где кнопка мешает: свои кнопки есть на первом экране, у калькулятора — своя панель итога, в контактах — форма. */
 const QUIET = ['[data-testid="hero"]', '#calculator', '#contacts']
 
 /**
- * Нижняя панель на телефоне: позвонить, написать, рассчитать — действие под рукой на любом экране.
- * Плотный фон без размытия (производительность на сенсорных экранах), цели 44×44 px, учёт выреза снизу.
+ * Кнопка «Рассчитать стоимость» внизу экрана на телефоне: расчёт под рукой на любом экране.
+ * Позвонить и написать — в шапке, здесь не повторяются. Компактная капсула справа, чтобы не закрывать текст:
+ * высота 44 px (цель касания), плотный фон без размытия (производительность на сенсорных экранах), учёт выреза снизу.
  */
 export function MobileActionBar() {
-  const { openLead } = useLanding()
   const [consent] = useConsent()
   const [quiet, setQuiet] = useState(true)
 
@@ -34,38 +32,24 @@ export function MobileActionBar() {
     return () => io.disconnect()
   }, [])
 
-  // Пока виден баннер cookie (выбор не сделан), панель не перекрывает его.
+  // Пока виден баннер cookie (выбор не сделан), кнопка его не перекрывает.
   const shown = !quiet && consent !== null && consent !== undefined
 
   return (
-    <nav
-      aria-label="Быстрые действия"
+    <a
+      href="#calculator"
       data-testid="mobile-action-bar"
       data-shown={shown ? '' : undefined}
       inert={!shown}
-      className={`on-dark fixed inset-x-2 z-30 flex items-center gap-2 rounded-full border border-white/10 bg-inverse p-1.5 text-on-inverse shadow-2xl transition-[translate,opacity,visibility] duration-300 ease-[var(--ease-out-soft)] motion-reduce:transition-none lg:hidden ${
+      className={`on-dark fixed right-3 z-30 inline-flex min-h-11 items-center gap-2.5 rounded-full border border-white/20 bg-inverse py-1.5 pr-1.5 pl-4 font-display text-xs font-bold tracking-[0.05em] whitespace-nowrap text-on-inverse uppercase shadow-xl transition-[translate,opacity,visibility] duration-300 ease-[var(--ease-out-soft)] active:scale-[0.98] motion-reduce:transition-none lg:hidden ${
         shown ? 'visible translate-y-0 opacity-100' : 'pointer-events-none invisible translate-y-[150%] opacity-0'
       }`}
-      style={{ bottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+      style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
     >
-      <a href={SITE.phoneHref} aria-label={`Позвонить: ${SITE.phoneDisplay}`} className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-white/20 active:bg-white/15">
-        <Phone aria-hidden className="size-5" strokeWidth={1.6} />
-      </a>
-      <button
-        type="button"
-        aria-label="Написать в мессенджер"
-        data-messenger="form"
-        onClick={() => openLead({ title: 'Написать в мессенджер', source: 'messenger', extended: true, contactMethod: 'telegram' })}
-        className="inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/20 active:bg-white/15"
-      >
-        <MessageCircle aria-hidden className="size-5" strokeWidth={1.6} />
-      </button>
-      <a href="#calculator" className="btn btn-light min-h-11 flex-1 justify-between px-4 text-sm whitespace-nowrap">
-        Рассчитать стоимость
-        <span className="btn-dot">
-          <ArrowUpRight aria-hidden className="size-4" />
-        </span>
-      </a>
-    </nav>
+      Рассчитать стоимость
+      <span aria-hidden className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-on-inverse text-inverse">
+        <ArrowUpRight className="size-4" />
+      </span>
+    </a>
   )
 }
