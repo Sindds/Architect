@@ -1,7 +1,34 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { useEffect, useId, useRef } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef } from 'react'
+
+/**
+ * Пока открыто хотя бы одно окно, страница зафиксирована на месте: body — position: fixed со сдвигом
+ * на текущую прокрутку, прокрутка документа — 0, вид не меняется. Зачем:
+ * - iOS 26 рисует курсор в поле фиксированного окна ниже поля, если страница прокручена далеко
+ *   (WebKit 300690 → 300952): квиз и формы находятся в тысячах пикселей от верха;
+ * - на iOS фон под окном иначе прокручивается, overflow: hidden у body там не помогает.
+ * Счётчик — для окна поверх окна (заявка из окна проекта): фиксируем при первом, отпускаем при последнем.
+ */
+let locks = 0
+let saved: { y: number; style: string } | null = null
+
+function lockPage() {
+  if (locks++ > 0) return
+  const { body } = document
+  saved = { y: window.scrollY, style: body.getAttribute('style') ?? '' }
+  Object.assign(body.style, { position: 'fixed', top: `-${saved.y}px`, left: '0', right: '0', overflow: 'hidden' })
+}
+
+function unlockPage() {
+  if (--locks > 0 || !saved) return
+  const { y, style } = saved
+  saved = null
+  if (style) document.body.setAttribute('style', style)
+  else document.body.removeAttribute('style')
+  window.scrollTo({ top: y, behavior: 'instant' })
+}
 
 interface ModalProps {
   open: boolean
@@ -29,13 +56,11 @@ export function Modal({ open, onClose, title, hideTitle, size = 'lg', children, 
     if (!open && dialog.open) dialog.close()
   }, [open])
 
-  useEffect(() => {
+  // Синхронно с отрисовкой: прокрутка возвращается до кода, который после закрытия окна прокручивает к калькулятору.
+  useLayoutEffect(() => {
     if (!open) return
-    const { overflow } = document.body.style
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = overflow
-    }
+    lockPage()
+    return unlockPage
   }, [open])
 
   return (

@@ -51,7 +51,7 @@ function edit(withCaret: string, action: { type: string } | 'backspace') {
     action === 'backspace'
       ? { value: value.slice(0, at - 1) + value.slice(at), caret: at - 1 }
       : { value: value.slice(0, at) + action.type + value.slice(at), caret: at + action.type.length }
-  const masked = maskRuPhoneEdit(next.value, next.caret)
+  const masked = maskRuPhoneEdit(next.value, next.caret, value)
   return `${masked.value.slice(0, masked.caret)}|${masked.value.slice(masked.caret)}`
 }
 
@@ -91,6 +91,25 @@ describe('маска телефона при наборе', () => {
 
   it('стирание дефиса сдвигает курсор к цифре перед ним', () => {
     expect(edit('+7 (916) 123-|45-67', 'backspace')).toBe('+7 (916) 123|-45-67')
+  })
+})
+
+describe('полный номер: лишние цифры не принимаются', () => {
+  it('цифра в конце, в начале или в середине полного номера ничего не меняет, курсор на месте', () => {
+    expect(edit('+7 (916) 123-45-67|', { type: '8' })).toBe('+7 (916) 123-45-67|')
+    expect(edit('+7 (|916) 123-45-67', { type: '5' })).toBe('+7 (|916) 123-45-67')
+    expect(edit('+7 (916) 12|3-45-67', { type: '0' })).toBe('+7 (916) 12|3-45-67')
+  })
+
+  it('после стирания цифры можно набрать новую', () => {
+    const erased = edit('+7 (916) 123-45-67|', 'backspace')
+    expect(erased).toBe('+7 (916) 123-45-6|')
+    expect(edit(erased, { type: '9' })).toBe('+7 (916) 123-45-69|')
+  })
+
+  it('автозаполнение или вставка другого номера целиком заменяет полный номер', () => {
+    expect(maskRuPhoneEdit('+79031112233', 12, '+7 (916) 123-45-67').value).toBe('+7 (903) 111-22-33')
+    expect(maskRuPhoneEdit('8 903 111-22-33', 15, '+7 (916) 123-45-67').value).toBe('+7 (903) 111-22-33')
   })
 })
 

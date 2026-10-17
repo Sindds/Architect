@@ -18,9 +18,16 @@ export function maskRuPhone(input: string): string {
  * поэтому правка в середине не уводит его в конец.
  * Первая 7 или 8 — код страны: так можно набрать «8 812…», а коды на 8 не теряются.
  * Разделитель появляется только вместе со следующей цифрой, иначе стёртая скобка вернулась бы сразу.
+ * prev — значение поля до правки: в полный номер новые цифры не принимаются, где бы ни стоял курсор,
+ * иначе цифра в начале вытесняла бы последнюю и номер сдвигался.
  */
-export function maskRuPhoneEdit(input: string, caret: number): { value: string; caret: number } {
+export function maskRuPhoneEdit(input: string, caret: number, prev = ''): { value: string; caret: number } {
   const all = input.replace(/\D/g, '')
+  const prevDigits = prev.replace(/\D/g, '')
+  if (prevDigits.length === 11 && all.length > prevDigits.length) {
+    const inserted = input.length - prev.length
+    return { value: prev, caret: Math.max(0, Math.min(prev.length, caret - inserted)) }
+  }
   const hasCountry = input.trimStart().startsWith('+') || (all.length > 10 && /^[78]/.test(all)) || /^[78]$/.test(input.trim())
   const national = (hasCountry ? all.slice(1) : all).slice(0, 10)
 

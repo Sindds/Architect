@@ -188,3 +188,36 @@ test('весь контент становится видимым при про�
   })
   expect(hidden).toEqual([])
 })
+
+// iOS 26 рисует курсор в поле фиксированного окна ниже поля, если страница под окном прокручена далеко
+// (WebKit 300690 → 300952). Пока окно открыто, страница зафиксирована на месте: её прокрутка — 0, вид не меняется.
+test('окно над прокрученной страницей: страница под окном зафиксирована, после закрытия прокрутка та же', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('link', { name: 'Узнать цену за 2 минуты' }).click()
+  await answerQuiz(page, ['250–350 м²', 'Скандинавский', 'В течение года', 'Участок есть'])
+  const result = page.getByTestId('quiz-result')
+  const button = result.getByRole('button', { name: 'Получить расчёт' })
+  await expectSeen(button)
+  await page.waitForTimeout(800) // плавная прокрутка закончилась
+  const before = await page.evaluate(() => ({ y: Math.round(scrollY), top: Math.round(document.querySelector('[data-testid=quiz-result]')!.getBoundingClientRect().top) }))
+  expect(before.y).toBeGreaterThan(2000)
+
+  await button.click()
+  const modal = page.getByTestId('lead-modal')
+  await expectSeen(modal.getByLabel('Имя'))
+  const open = await page.evaluate(() => ({ y: Math.round(scrollY), top: Math.round(document.querySelector('[data-testid=quiz-result]')!.getBoundingClientRect().top) }))
+  expect(open.y).toBe(0)
+  expect(open.top).toBe(before.top)
+
+  // Полный номер: лишняя цифра в начале ничего не меняет.
+  const phone = modal.getByLabel('Телефон')
+  await phone.pressSequentially('9161234567')
+  await phone.press('Home')
+  for (let i = 0; i < 4; i++) await phone.press('ArrowRight')
+  await phone.press('5')
+  await expect(phone).toHaveValue('+7 (916) 123-45-67')
+
+  await page.keyboard.press('Escape')
+  await expect(modal).toBeHidden()
+  await expect.poll(() => page.evaluate(() => Math.round(scrollY))).toBe(before.y)
+})

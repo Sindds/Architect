@@ -204,7 +204,7 @@ export function LeadForm({
             placeholder="+7 (___) ___-__-__"
             ref={phoneRef}
             value={phone.value}
-            onChange={(e) => setPhone(maskRuPhoneEdit(e.target.value, e.target.selectionStart ?? e.target.value.length))}
+            onChange={(e) => setPhone(maskRuPhoneEdit(e.target.value, e.target.selectionStart ?? e.target.value.length, phone.value))}
             className="field num"
           />
           {errors.phone && (
