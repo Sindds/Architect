@@ -6,7 +6,7 @@ import { startTransition, useActionState, useEffect, useId, useLayoutEffect, use
 import { issueLeadToken, submitLead } from '@/app/actions/lead'
 import { SITE } from '@/content/site'
 import { CONTACT_METHODS, HONEYPOT_FIELD, type LeadSource, type LeadState, SEND_FAILED } from '@/lib/lead-constants'
-import { maskRuPhoneEdit } from '@/lib/phone'
+import { maskRuPhoneEdit, phoneProblem } from '@/lib/phone'
 import type { SmetaInput } from '@/lib/smeta-token'
 import { getClientId, track } from '@/lib/analytics'
 
@@ -111,7 +111,10 @@ export function LeadForm({
   }, [phone])
 
   const dark = tone === 'dark'
-  const errors = state.status === 'error' ? (state.fieldErrors ?? {}) : {}
+  const serverErrors = state.status === 'error' ? (state.fieldErrors ?? {}) : {}
+  // Набран полный номер — проверяем его сразу: нероссийский код виден до отправки, исправленный номер снимает ошибку сервера.
+  const phoneComplete = phone.value.replace(/\D/g, '').length === 11
+  const errors = { ...serverErrors, phone: phoneComplete ? (phoneProblem(phone.value) ?? undefined) : serverErrors.phone }
   const muted = dark ? 'text-on-inverse-muted' : 'text-muted'
   const errorText = dark ? 'text-[#ffb59c]' : 'text-danger'
 

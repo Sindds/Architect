@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { CONTACT_METHODS, HONEYPOT_FIELD, LEAD_SOURCES, type LeadState } from './lead-constants'
-import { normalizeRuPhone } from './phone'
+import { normalizeRuPhone, phoneProblem } from './phone'
 
 export { CONTACT_METHODS, HONEYPOT_FIELD, LEAD_SOURCES, SEND_FAILED, type LeadSource, type LeadState } from './lead-constants'
 
@@ -8,7 +8,10 @@ export const leadSchema = z.object({
   name: z.string().trim().min(2, 'Укажите имя — не короче 2 символов').max(60, 'Имя — не длиннее 60 символов'),
   phone: z
     .string()
-    .refine((v) => normalizeRuPhone(v) !== null, 'Проверьте номер: нужен российский, 10 цифр после +7')
+    .superRefine((v, ctx) => {
+      const problem = phoneProblem(v)
+      if (problem) ctx.addIssue({ code: 'custom', message: problem })
+    })
     .transform((v) => normalizeRuPhone(v) as string),
   consent: z.literal('on', { message: 'Без согласия на обработку данных отправить заявку нельзя' }),
   contactMethod: z.enum(Object.keys(CONTACT_METHODS) as [keyof typeof CONTACT_METHODS]).default('call'),

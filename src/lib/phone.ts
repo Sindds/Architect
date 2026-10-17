@@ -8,6 +8,20 @@ export function normalizeRuPhone(input: string): string | null {
   return `+7${digits}`
 }
 
+/**
+ * Почему номер не подходит — текст под полем формы; null — номер верный.
+ * Код после +7 с цифры 6 или 7 — Казахстан (соглашение России и Казахстана 2024 года), 0, 1, 2 и 5 сейчас не выдаются.
+ */
+export function phoneProblem(input: string): string | null {
+  if (normalizeRuPhone(input)) return null
+  let digits = input.replace(/\D/g, '')
+  if (!digits) return 'Укажите телефон'
+  if (digits.length === 11 && /^[78]/.test(digits)) digits = digits.slice(1)
+  if (digits.length < 10) return 'Номер неполный: нужно 10 цифр после +7'
+  if (digits.length > 10) return 'Лишние цифры: после +7 нужно ровно 10'
+  return `Код ${digits.slice(0, 3)} не российский. Номера в России начинаются после +7 с цифры 3, 4, 8 или 9`
+}
+
 /** Маска ввода: «+7 (999) 123-45-67». */
 export function maskRuPhone(input: string): string {
   return maskRuPhoneEdit(input, input.length).value
