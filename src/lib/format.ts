@@ -36,26 +36,9 @@ export function plural(n: number, forms: [string, string, string]): string {
 
 export const formatDays = (n: number) => `${n}${NBSP}${plural(n, ['день', 'дня', 'дней'])}`
 
-/** Отклонение факта от плана в процентах со знаком: «+2,7%», «0%». */
-export function formatDeviation(plan: number, fact: number): string {
-  const pct = Math.round(((fact - plan) / plan) * 1000) / 10
-  if (pct === 0) return '0%'
-  return `${pct > 0 ? '+' : '−'}${String(Math.abs(pct)).replace('.', ',')}%`
-}
-
-export function formatDayDelta(plan: number, fact: number): string {
-  const d = fact - plan
-  if (d === 0) return 'в срок'
-  return d < 0 ? `на ${formatDays(-d)} раньше` : `+${formatDays(d)}`
-}
-
 /** Срок после предлога «от»: родительный падеж — «от 254 дней», «от 121 дня». */
 export function formatDaysFrom(n: number): string {
   const word = n % 10 === 1 && n % 100 !== 11 ? 'дня' : 'дней'
   return `от ${n}${NBSP}${word}`
 }
 
-/** Отклонение факта от сметы словами для карточек кейсов. */
-export function formatPriceDelta(plan: number, fact: number): string {
-  return plan === fact ? 'смета не изменилась' : `${formatDeviation(plan, fact)} к смете`
-}

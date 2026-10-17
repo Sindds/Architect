@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { CASES } from '@/content/cases'
 import { STEPS, STEPS_EXAMPLE, FAQ } from '@/content/process'
 import { CALC_LIMITS, STYLE_ORDER } from '@/content/pricing'
 import { PROJECTS } from '@/content/projects'
 import type { Style, Tier } from '@/content/types'
-import { formatDeviation, formatMln, formatMlnFrom, formatRub } from '@/lib/format'
+import { formatMln, formatMlnFrom, formatRub } from '@/lib/format'
 import { breakdown, daysFor, minCalc, minContour, minPriceFor, minTurnkey, priceFor, projectPrice } from '@/lib/pricing'
 import { heroFor, projectsFor } from '@/lib/variant'
 
@@ -74,25 +73,6 @@ describe('CONTENT-SPEC §5.2 — цены и сроки проектов', () =>
 })
 
 const round10kFloor = (x: number) => Math.floor(x / 10_000) * 10_000
-
-describe('CONTENT-SPEC §5.3 — кейсы', () => {
-  const plans: Record<string, [number, number]> = {
-    'dom-u-vody': [57_100_000, 139],
-    'rezidenciya-na-sklone': [137_200_000, 195],
-    'dom-sredi-sosen': [28_160_000, 95],
-  }
-  for (const c of CASES) {
-    it(`план «${c.title}» по модели`, () => {
-      const [price, days] = plans[c.slug] ?? [0, 0]
-      expect(priceFor(c)).toBe(price)
-      expect(daysFor(c.area, c.tier, c.addons)).toBe(days)
-    })
-  }
-  it('отклонение кейса 2 — +2,7%', () => {
-    const c = CASES[1]!
-    expect(formatDeviation(priceFor(c), c.factPrice)).toBe('+2,7%')
-  })
-})
 
 describe('CONTENT-SPEC §5.4 — этапы', () => {
   it('сумма дней = daysFor(VISTA, под ключ) = 158, сумма оплат = 100%', () => {

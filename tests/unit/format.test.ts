@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDaysFrom, formatPriceDelta } from '@/lib/format'
+import { formatDaysFrom } from '@/lib/format'
 import { nbsp } from '@/lib/typography'
 import { heroFor } from '@/lib/variant'
 
@@ -18,15 +18,6 @@ describe('Срок после «от» — родительный падеж', (
   it('подзаголовок первого экрана: «от 130 дней», а не «от 130 дня»', () => {
     expect(heroFor('default').subtitle).toContain(`от 130${NB}дней`)
     expect(heroFor('default').subtitle).not.toMatch(/от \d+\s(дня|день)\b/)
-  })
-})
-
-describe('Отклонение сметы словами', () => {
-  it('без отклонения пишем по-человечески, без «0%»', () => {
-    expect(formatPriceDelta(57_100_000, 57_100_000)).toBe('смета не изменилась')
-  })
-  it('с отклонением — процент со знаком', () => {
-    expect(formatPriceDelta(137_200_000, 140_950_000)).toBe('+2,7% к смете')
   })
 })
 

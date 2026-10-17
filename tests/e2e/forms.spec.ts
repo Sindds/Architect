@@ -163,16 +163,6 @@ test.describe('Отправка заявок', () => {
     await submitLead(page, modal, /Отправить|Получить/)
     await expectSeen(modal.getByTestId('smeta-download'))
   })
-
-  test('окно сданного дома: запись на экскурсию', async ({ page }) => {
-    await page.goto('/')
-    const button = page.getByTestId('delivered').getByRole('button', { name: /Дом у воды/ })
-    await button.scrollIntoViewIfNeeded()
-    await button.click()
-    const modal = page.getByTestId('case-modal')
-    await expectSeen(modal)
-    await submitLead(page, modal, 'Записаться на экскурсию')
-  })
 })
 
 test('весь контент становится видимым при прокрутке страницы сверху вниз', async ({ page }) => {

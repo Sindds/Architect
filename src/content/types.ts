@@ -68,25 +68,6 @@ export interface Project {
   gallery: Picture[]
 }
 
-export interface Case {
-  slug: string
-  title: string
-  place: string
-  style: Style
-  area: number
-  terrace: number
-  tier: Tier
-  addons: AddonKey[]
-  factPrice: number
-  factDays: number
-  deviationNote: string
-  task: string
-  solution: string
-  result: string
-  photos: { stage: string; picture: Picture }[]
-  reviewId: string
-}
-
 export interface Review {
   id: string
   author: string

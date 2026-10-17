@@ -89,7 +89,7 @@ export function Team() {
 
 export function Reviews() {
   return (
-    <section aria-labelledby="reviews-title" className="lazy-section border-t border-line">
+    <section id="reviews" aria-labelledby="reviews-title" className="lazy-section border-t border-line">
       <div className="shell py-16 sm:py-24">
         <SectionHead id="reviews-title" copy={COPY.sections.reviews} />
         <ul className="mt-10 grid gap-4 lg:mt-14 lg:grid-cols-3">

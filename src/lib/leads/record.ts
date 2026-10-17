@@ -5,11 +5,9 @@ import { CONTACT_METHODS, type LeadInput, type LeadSource } from '@/lib/lead-sch
 export const SOURCE_LABELS: Record<LeadSource, string> = {
   header: 'шапка',
   hero: 'первый экран',
-  excursion: 'экскурсия на объект',
   messenger: 'мессенджер',
   project_card: 'карточка проекта',
   project_modal: 'окно проекта',
-  case_modal: 'окно кейса',
   pricing_pdf: 'смета из блока цен',
   calculator: 'калькулятор',
   quiz: 'квиз',

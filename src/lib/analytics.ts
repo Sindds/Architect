@@ -10,8 +10,6 @@ export type Goal =
   | 'phone_click'
   | 'messenger_click'
   | 'project_open'
-  | 'case_open'
-  | 'excursion_click'
 
 type Params = Record<string, string | number | boolean>
 

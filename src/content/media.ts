@@ -1,11 +1,5 @@
 import type { Picture } from "./types";
 
-import casePinesBuild from "@/assets/images/case-pines-build.webp";
-import casePinesDone from "@/assets/images/case-pines-done.webp";
-import caseSlopeBuild from "@/assets/images/case-slope-build.webp";
-import caseSlopeDone from "@/assets/images/case-slope-done.webp";
-import caseWaterBuild from "@/assets/images/case-water-build.webp";
-import caseWaterDone from "@/assets/images/case-water-done.webp";
 import chaletExterior from "@/assets/images/chalet-exterior.webp";
 import chaletInterior from "@/assets/images/chalet-interior.webp";
 import chaletScheme from "@/assets/images/chalet-scheme.webp";
@@ -116,22 +110,4 @@ export const MEDIA = {
     "Схема информационной модели дома в стиле шале, иллюстрация",
   ),
 
-  caseWaterBuild: viz(
-    caseWaterBuild,
-    "Стройплощадка фахверкового дома на этапе монтажа каркаса, визуализация",
-  ),
-  caseWaterDone: viz(caseWaterDone, "Готовый фахверковый дом, визуализация"),
-  caseSlopeBuild: viz(
-    caseSlopeBuild,
-    "Стройплощадка монолитного дома, визуализация",
-  ),
-  caseSlopeDone: viz(caseSlopeDone, "Готовый монолитный дом, визуализация"),
-  casePinesBuild: viz(
-    casePinesBuild,
-    "Стройплощадка дома из клееного бруса, визуализация",
-  ),
-  casePinesDone: viz(
-    casePinesDone,
-    "Готовый дом в скандинавском стиле, визуализация",
-  ),
 } satisfies Record<string, Picture>;

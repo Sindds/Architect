@@ -40,17 +40,13 @@ test('образец PDF и телефон', async ({ page }) => {
   await expect.poll(() => names(page)).toContain('phone_click')
 })
 
-test('окно проекта и окно сданного дома', async ({ page }) => {
+test('окно проекта: project_open', async ({ page }) => {
   await page.goto('/')
   await page.getByTestId('projects-grid').getByRole('button', { name: 'VISTA' }).click()
   await expect(page.getByTestId('project-modal')).toBeVisible()
   await expect.poll(() => goals(page)).toEqual(expect.arrayContaining([{ goal: 'project_open', params: { slug: 'vista' } }]))
   await page.keyboard.press('Escape')
   await expect(page.getByTestId('project-modal')).toBeHidden()
-  const house = page.getByTestId('delivered').getByRole('button', { name: /Дом у воды/ })
-  await house.scrollIntoViewIfNeeded()
-  await house.click()
-  await expect.poll(() => goals(page)).toEqual(expect.arrayContaining([{ goal: 'case_open', params: { slug: 'dom-u-vody' } }]))
 })
 
 test('lead_submit — только когда сервер принял заявку, с источником и вариантом; при ошибке — нет', async ({ page }) => {

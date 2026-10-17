@@ -3,11 +3,9 @@
 export const LEAD_SOURCES = [
   'header',
   'hero',
-  'excursion',
   'messenger',
   'project_card',
   'project_modal',
-  'case_modal',
   'pricing_pdf',
   'calculator',
   'quiz',

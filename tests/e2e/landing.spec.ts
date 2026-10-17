@@ -170,27 +170,17 @@ test.describe('Окна проектов и кейсов', () => {
     await expect(card).toBeFocused()
   })
 
-  test('отдельного блока «Кейсы» нет: сданные дома — доказательство в «Как мы работаем»', async ({ page }) => {
-    await page.goto('/')
-    await expect(page.locator('#cases')).toHaveCount(0)
-    await expect(page.getByRole('navigation', { name: 'Разделы страницы' }).getByRole('link', { name: 'Кейсы' })).toHaveCount(0)
-    const delivered = page.getByTestId('delivered')
-    await expect(delivered.getByRole('listitem')).toHaveCount(3)
-    // В списке только названия: строки отклонений («+9 дней к сроку») убраны, план и факт — в окне дома.
-    await expect(delivered).not.toContainText(/к сроку|к смете|смета не изменилась|раньше/)
-    const button = delivered.getByRole('button', { name: /Дом у воды/ })
-    await button.scrollIntoViewIfNeeded()
-    await button.click()
-    await expect(page.getByTestId('case-modal')).toBeVisible()
-    await expect(page).toHaveURL(/case=dom-u-vody/)
-  })
-
-  test('окно кейса: план и факт, +2,7%', async ({ page }) => {
-    await page.goto('/?case=rezidenciya-na-sklone')
-    const modal = page.getByTestId('case-modal')
-    await expect(modal).toBeVisible()
-    await expect(modal).toContainText('+2,7% к смете')
-    await expect(modal).toContainText(formatRub(140_950_000))
+  // Решение заказчика 17.10.2026: списка сданных домов и их окон нет. Старые ссылки /?case=… открывают главную.
+  test('нет блока «Кейсы», списка сданных домов и их окон', async ({ page }) => {
+    await page.goto('/?case=dom-u-vody')
+    await expect(page.locator('#cases, #delivered, [data-testid=delivered], [data-testid=case-modal]')).toHaveCount(0)
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    // Названия домов остаются только в подписях отзывов; кнопок-блоков с ними нет.
+    await expect(page.getByRole('button', { name: /Дом у воды|Резиденция на склоне|Дом среди сосен/ })).toHaveCount(0)
+    // Доказательство в карточке «Показываем реальные результаты» ведёт к отзывам.
+    const proof = page.getByRole('link', { name: 'Отзывы владельцев' })
+    await expect(proof).toHaveAttribute('href', '#reviews')
+    await expect(page.locator('#reviews')).toHaveCount(1)
   })
 
   test('«Рассчитать этот проект» подставляет параметры в калькулятор', async ({ page }) => {

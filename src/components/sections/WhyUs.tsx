@@ -8,7 +8,6 @@ import {
 import { COPY } from "@/content/copy";
 import { WHY_US } from "@/content/process";
 import { SectionHead } from "../ui/SectionHead";
-import { DeliveredList } from "./DeliveredList";
 import { revealOrder } from "@/lib/reveal";
 
 const ICONS = [FileSignature, ClipboardCheck, Banknote, Calculator];
@@ -33,20 +32,16 @@ export function WhyUs() {
                   {item.title}
                 </h3>
                 <p className="mt-3 text-muted">{item.fact}</p>
-                {item.proof.href === "#delivered" ? (
-                  <DeliveredList />
-                ) : (
-                  <a
-                    href={item.proof.href}
-                    {...(item.proof.href.endsWith(".pdf")
-                      ? { target: "_blank", rel: "noopener" }
-                      : {})}
-                    className="mt-auto inline-flex min-h-11 items-center gap-1.5 self-start pt-5 text-sm font-semibold text-accent hover:underline"
-                  >
-                    {item.proof.label}
-                    <ArrowUpRight aria-hidden className="size-4" />
-                  </a>
-                )}
+                <a
+                  href={item.proof.href}
+                  {...(item.proof.href.endsWith(".pdf")
+                    ? { target: "_blank", rel: "noopener" }
+                    : {})}
+                  className="mt-auto inline-flex min-h-11 items-center gap-1.5 self-start pt-5 text-sm font-semibold text-accent hover:underline"
+                >
+                  {item.proof.label}
+                  <ArrowUpRight aria-hidden className="size-4" />
+                </a>
               </article>
             </li>
           );

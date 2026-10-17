@@ -31,8 +31,6 @@ export const REVIEWS: Review[] = [
   },
 ];
 
-export const getReview = (id: string) => REVIEWS.find((r) => r.id === id);
-
 export const TEAM: TeamMember[] = [
   {
     name: "Алексей Воронов",

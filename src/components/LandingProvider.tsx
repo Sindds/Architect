@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { getCase } from '@/content/cases'
 import { getProject } from '@/content/projects'
 import type { VariantKey } from '@/content/types'
 import type { CONTACT_METHODS, LeadSource } from '@/lib/lead-constants'
@@ -14,7 +13,6 @@ import { fullLayout } from '@/lib/lazy-sections'
 // Окна грузятся отдельно, после гидратации: их кода нет в первой волне JS, первый экран рисуется быстрее.
 // Окна закрыты, пока человек их не откроет, поэтому серверная разметка им не нужна.
 const ProjectModal = dynamic(() => import('./modals/ProjectModal').then((m) => m.ProjectModal), { ssr: false })
-const CaseModal = dynamic(() => import('./modals/CaseModal').then((m) => m.CaseModal), { ssr: false })
 const LeadModal = dynamic(() => import('./modals/LeadModal').then((m) => m.LeadModal), { ssr: false })
 
 export interface LeadRequest {
@@ -33,13 +31,12 @@ export interface LeadRequest {
   contactMethod?: keyof typeof CONTACT_METHODS
 }
 
-type Overlay = { kind: 'project'; slug: string } | { kind: 'case'; slug: string } | null
+type Overlay = { kind: 'project'; slug: string } | null
 
 interface LandingContextValue {
   variant: VariantKey
   openLead: (req: LeadRequest) => void
   openProject: (slug: string) => void
-  openCase: (slug: string) => void
   calcPreset: string | null
   calculateProject: (slug: string) => void
 }
@@ -56,8 +53,6 @@ function readOverlay(): Overlay {
   const params = new URLSearchParams(window.location.search)
   const project = params.get('project')
   if (getProject(project)) return { kind: 'project', slug: project as string }
-  const kase = params.get('case')
-  if (getCase(kase)) return { kind: 'case', slug: kase as string }
   return null
 }
 
@@ -83,15 +78,13 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
   const queued = useRef<Overlay>(null)
 
   const push = useCallback((next: NonNullable<Overlay>) => {
-    const key = next.kind
-    const other = key === 'project' ? 'case' : 'project'
-    window.history.pushState(null, '', urlWith({ [key]: next.slug, [other]: null, calc: null }))
+    window.history.pushState(null, '', urlWith({ project: next.slug, calc: null }))
     pushed.current = true
     setOverlay(next)
   }, [])
 
   useEffect(() => {
-    // Прямой заход по ссылке /?project=slug или /?case=slug открывает окно сразу.
+    // Прямой заход по ссылке /?project=slug открывает окно сразу.
     const initial = readOverlay()
     const preset = new URLSearchParams(window.location.search).get('calc')
     // Состояние из URL доступно только в браузере, поэтому читаем его после монтирования.
@@ -116,9 +109,9 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
     return () => window.removeEventListener('popstate', onPop)
   }, [push])
 
-  // Цель «открыл проект/дом» — и по клику, и по прямой ссылке, и по «Вперёд» в браузере.
+  // Цель «открыл проект» — и по клику, и по прямой ссылке, и по «Вперёд» в браузере.
   useEffect(() => {
-    if (overlay) track(overlay.kind === 'project' ? 'project_open' : 'case_open', { slug: overlay.slug })
+    if (overlay) track('project_open', { slug: overlay.slug })
   }, [overlay])
 
   const openOverlay = useCallback((next: NonNullable<Overlay>) => {
@@ -142,7 +135,7 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
       window.history.back()
       setOverlay(null)
     } else {
-      window.history.replaceState(null, '', urlWith({ project: null, case: null }))
+      window.history.replaceState(null, '', urlWith({ project: null }))
       setOverlay(null)
     }
   }, [])
@@ -150,7 +143,7 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
   const calculateProject = useCallback((slug: string) => {
     pushed.current = false
     setOverlay(null)
-    window.history.replaceState(null, '', urlWith({ project: null, case: null, calc: slug }, '#calculator'))
+    window.history.replaceState(null, '', urlWith({ project: null, calc: slug }, '#calculator'))
     setCalcPreset(slug)
     requestAnimationFrame(() => {
       fullLayout()
@@ -164,25 +157,21 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
     () => ({
       variant,
       openLead: (req) => {
-        if (req.source === 'excursion') track('excursion_click')
         setLead(req)
       },
       openProject: (slug) => openOverlay({ kind: 'project', slug }),
-      openCase: (slug) => openOverlay({ kind: 'case', slug }),
       calcPreset,
       calculateProject,
     }),
     [variant, openOverlay, calcPreset, calculateProject],
   )
 
-  const project = overlay?.kind === 'project' ? getProject(overlay.slug) : undefined
-  const kase = overlay?.kind === 'case' ? getCase(overlay.slug) : undefined
+  const project = overlay ? getProject(overlay.slug) : undefined
 
   return (
     <LandingContext.Provider value={value}>
       {children}
       <ProjectModal project={project} onClose={closeOverlay} />
-      <CaseModal kase={kase} onClose={closeOverlay} />
       <LeadModal request={lead} onClose={() => setLead(null)} />
     </LandingContext.Provider>
   )

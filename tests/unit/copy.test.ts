@@ -1,7 +1,6 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { CASES } from '@/content/cases'
 import { COPY } from '@/content/copy'
 import { LEGAL } from '@/content/legal'
 import { REVIEWS, TEAM } from '@/content/people'
@@ -33,7 +32,6 @@ function collect(): { where: string; text: string }[] {
   WHY_US.forEach((w, i) => (add(`WHY_US[${i}].title`, w.title), add(`WHY_US[${i}].fact`, w.fact)))
   FAQ.forEach((f, i) => (add(`FAQ[${i}].q`, f.question), f.answer.forEach((a, j) => add(`FAQ[${i}].a${j}`, a))))
   STEPS.forEach((s, i) => (add(`STEPS[${i}].title`, s.title), add(`STEPS[${i}].result`, s.result)))
-  CASES.forEach((c) => ['task', 'solution', 'result', 'deviationNote'].forEach((k) => add(`CASES.${c.slug}.${k}`, c[k as 'task'])))
   REVIEWS.forEach((r) => add(`REVIEWS.${r.id}`, r.text))
   TEAM.forEach((m) => add(`TEAM.${m.initials}`, m.responsibility))
   PROJECTS.forEach((p) => (add(`PROJECTS.${p.slug}.tagline`, p.tagline), p.features.forEach((f, i) => add(`PROJECTS.${p.slug}.features[${i}]`, f))))
