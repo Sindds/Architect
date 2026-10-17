@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import AxeBuilder from '@axe-core/playwright'
 import type { Page, Route } from '@playwright/test'
-import { expect, test } from './fixtures'
+import { expect, expectSeen, test } from './fixtures'
 import { SITE } from '@/content/site'
 import { formatDays, formatRub } from '@/lib/format'
 import { breakdown, projectPrice } from '@/lib/pricing'
@@ -199,6 +199,7 @@ test.describe('Калькулятор и квиз', () => {
     }
     const result = page.getByTestId('quiz-result')
     await expect(result).toContainText('Ваша вилка')
+    await expectSeen(result.getByRole('heading', { name: /Ваша вилка/ }))
     await result.getByRole('button', { name: 'Получить расчёт' }).click()
     await expect(page.getByTestId('lead-modal').getByRole('heading', { name: 'Получить расчёт' })).toBeVisible()
   })

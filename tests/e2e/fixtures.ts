@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test'
+import { test as base, expect, type Locator } from '@playwright/test'
 
 /** Ключ сессии, после которого лоадер не показывается (src/lib/theme.ts). */
 export const LOADER_KEY = 'arcline-loaded'
@@ -27,3 +27,28 @@ export const test = base.extend({
 })
 
 export { expect }
+
+/**
+ * Элемент действительно виден человеку: в окне, не скрыт и непрозрачен вместе со всеми предками.
+ * toBeVisible в Playwright считает видимым и элемент с opacity: 0 — так пропустили невидимый результат квиза.
+ */
+export async function expectSeen(locator: Locator) {
+  await expect(locator).toBeVisible()
+  await locator.scrollIntoViewIfNeeded()
+  await expect
+    .poll(
+      () =>
+        locator.evaluate((el) => {
+          let opacity = 1
+          for (let n: Element | null = el; n; n = n.parentElement) {
+            const cs = getComputedStyle(n)
+            if (cs.visibility === 'hidden' || cs.display === 'none') return 0
+            opacity *= Number(cs.opacity)
+          }
+          return opacity
+        }),
+      { message: 'элемент на экране прозрачный: человек его не видит', timeout: 4000 },
+    )
+    .toBeGreaterThan(0.95)
+}
+
