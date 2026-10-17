@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { HONEYPOT_FIELD, validateLead } from '@/lib/lead-schema'
 import { leadNotificationText } from '@/lib/notify'
-import { maskRuPhone, maskRuPhoneEdit, normalizeRuPhone, phoneProblem } from '@/lib/phone'
+import { maskRuPhone, maskRuPhoneEdit, normalizePhone, phoneProblem } from '@/lib/phone'
 import { allowRequest, resetRateLimit } from '@/lib/rate-limit'
 
 const NOW = 1_800_000_000_000
@@ -26,17 +26,20 @@ describe('телефон', () => {
     ['8 916 123 45 67', '+79161234567'],
     ['9161234567', '+79161234567'],
     ['+7 (495) 000-11-22', '+74950001122'],
-  ])('%s → %s', (input, out) => expect(normalizeRuPhone(input)).toBe(out))
+    // Любой номер +7, не только российский: Казахстан (+7 6xx, +7 7xx) тоже принимается (решение 17.10.2026).
+    ['+7 (654) 485-25-55', '+76544852555'],
+    ['+7 (701) 123-45-67', '+77011234567'],
+    ['87011234567', '+77011234567'],
+  ])('%s → %s', (input, out) => expect(normalizePhone(input)).toBe(out))
 
-  it.each(['123', '+7 (000) 000-00-00', '+1 202 555 0100', ''])('невалидный: %s', (input) => {
-    expect(normalizeRuPhone(input)).toBeNull()
+  it.each(['123', '+7 (916) 123-45', '+1 202 555 0100', ''])('невалидный: %s', (input) => {
+    expect(normalizePhone(input)).toBeNull()
   })
 
-  it('ошибка называет настоящую причину: неполный номер или нероссийский код', () => {
+  it('ошибка называет причину: пусто или неполный номер; код после +7 любой', () => {
     expect(phoneProblem('+7 (916) 123-45')).toBe('Номер неполный: нужно 10 цифр после +7')
     expect(phoneProblem('')).toBe('Укажите телефон')
-    // +7 6xx и +7 7xx — коды Казахстана, у российских номеров после +7 идёт 3, 4, 8 или 9.
-    expect(phoneProblem('+7 (654) 485-25-55')).toBe('Код 654 не российский. Номера в России начинаются после +7 с цифры 3, 4, 8 или 9')
+    expect(phoneProblem('+7 (654) 485-25-55')).toBeNull()
     expect(phoneProblem('+7 (916) 123-45-67')).toBeNull()
   })
 

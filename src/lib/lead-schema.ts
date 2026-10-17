@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { CONTACT_METHODS, HONEYPOT_FIELD, LEAD_SOURCES, type LeadState } from './lead-constants'
-import { normalizeRuPhone, phoneProblem } from './phone'
+import { normalizePhone, phoneProblem } from './phone'
 
 export { CONTACT_METHODS, HONEYPOT_FIELD, LEAD_SOURCES, SEND_FAILED, type LeadSource, type LeadState } from './lead-constants'
 
@@ -12,7 +12,7 @@ export const leadSchema = z.object({
       const problem = phoneProblem(v)
       if (problem) ctx.addIssue({ code: 'custom', message: problem })
     })
-    .transform((v) => normalizeRuPhone(v) as string),
+    .transform((v) => normalizePhone(v) as string),
   consent: z.literal('on', { message: 'Без согласия на обработку данных отправить заявку нельзя' }),
   contactMethod: z.enum(Object.keys(CONTACT_METHODS) as [keyof typeof CONTACT_METHODS]).default('call'),
   comment: z.string().trim().max(1000, 'Комментарий — не длиннее 1000 символов').optional(),

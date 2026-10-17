@@ -1,25 +1,21 @@
-/** Российский номер → E.164 (+7XXXXXXXXXX) или null. Принимает 8…, +7…, 7… и 10 цифр. */
-export function normalizeRuPhone(input: string): string | null {
+/**
+ * Номер +7 → E.164 (+7XXXXXXXXXX) или null. Принимает 8…, +7…, 7… и 10 цифр.
+ * Код после +7 любой: Россия и Казахстан (+7 6xx, +7 7xx) — решение 17.10.2026.
+ */
+export function normalizePhone(input: string): string | null {
   let digits = input.replace(/\D/g, '')
   if (digits.length === 11 && (digits.startsWith('8') || digits.startsWith('7'))) digits = digits.slice(1)
-  if (digits.length !== 10) return null
-  // Коды российских номеров начинаются с 3, 4, 8 или 9.
-  if (!/^[3489]/.test(digits)) return null
-  return `+7${digits}`
+  return digits.length === 10 ? `+7${digits}` : null
 }
 
-/**
- * Почему номер не подходит — текст под полем формы; null — номер верный.
- * Код после +7 с цифры 6 или 7 — Казахстан (соглашение России и Казахстана 2024 года), 0, 1, 2 и 5 сейчас не выдаются.
- */
+/** Почему номер не подходит — текст под полем формы; null — номер верный. */
 export function phoneProblem(input: string): string | null {
-  if (normalizeRuPhone(input)) return null
+  if (normalizePhone(input)) return null
   let digits = input.replace(/\D/g, '')
   if (!digits) return 'Укажите телефон'
   if (digits.length === 11 && /^[78]/.test(digits)) digits = digits.slice(1)
   if (digits.length < 10) return 'Номер неполный: нужно 10 цифр после +7'
-  if (digits.length > 10) return 'Лишние цифры: после +7 нужно ровно 10'
-  return `Код ${digits.slice(0, 3)} не российский. Номера в России начинаются после +7 с цифры 3, 4, 8 или 9`
+  return 'Лишние цифры: после +7 нужно ровно 10'
 }
 
 /** Маска ввода: «+7 (999) 123-45-67». */

@@ -112,7 +112,7 @@ export function LeadForm({
 
   const dark = tone === 'dark'
   const serverErrors = state.status === 'error' ? (state.fieldErrors ?? {}) : {}
-  // Набран полный номер — проверяем его сразу: нероссийский код виден до отправки, исправленный номер снимает ошибку сервера.
+  // Набран полный номер — ошибка сервера про телефон снимается сразу, без повторной отправки.
   const phoneComplete = phone.value.replace(/\D/g, '').length === 11
   const errors = { ...serverErrors, phone: phoneComplete ? (phoneProblem(phone.value) ?? undefined) : serverErrors.phone }
   const muted = dark ? 'text-on-inverse-muted' : 'text-muted'
