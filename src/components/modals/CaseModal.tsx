@@ -40,7 +40,7 @@ function CaseBody({ kase }: { kase: Case }) {
           <figure>
             <Image src={photo.picture.src} alt={photo.picture.alt} sizes="(min-width: 1024px) 620px, 100vw" className="aspect-[16/10] w-full rounded-2xl bg-subtle object-cover" placeholder="blur" />
             <figcaption className="label mt-2 text-muted">
-              {photo.stage} · {photo.picture.caption}
+              {photo.stage}
             </figcaption>
           </figure>
         )}
@@ -117,7 +117,6 @@ function CaseBody({ kase }: { kase: Case }) {
           <p className="text-lg leading-relaxed">«{review.text}»</p>
           <footer className="mt-3 text-muted">
             {review.author} · {review.object}
-            {review.isDemo && <span className="label ml-2">демо-отзыв</span>}
           </footer>
         </blockquote>
       )}

@@ -6,15 +6,19 @@ import { MessengerLinks, hasMessengerLinks } from '../MessengerLinks'
 import { type LeadRequest, useLanding } from '../LandingProvider'
 import { Modal } from '../ui/Modal'
 
-const INTRO: Partial<Record<LeadRequest['source'], string>> = {
-  excursion: 'Мы покажем построенный дом и стройку на нужном вам этапе. Подберём объект поближе и согласуем время.',
-  pricing_pdf: 'Смета в PDF с разбивкой по разделам и этапам откроется сразу после отправки. Инженер перезвонит и ответит на вопросы о пакете.',
-  calculator: 'Смета в PDF по вашим параметрам откроется сразу после отправки. Инженер перезвонит и ответит на вопросы о составе работ.',
-  project_modal: 'Смета проекта в PDF откроется сразу после отправки. Архитектор перезвонит и расскажет, как адаптировать проект под ваш участок.',
-  quiz: 'Мы уточним детали по телефону и пришлём расчёт с вилкой цены и сроков.',
-  messenger: 'Оставьте номер, и мы напишем вам в выбранный мессенджер.',
-  architect: 'Архитектор перезвонит, выслушает, что вы задумали, и подскажет, какой проект подойдёт вашему участку.',
+// Абзацы вступления над формой. Срок ответа (SITE.callbackPromise) — там, где текст сам его не называет.
+const INTRO: Partial<Record<LeadRequest['source'], string[]>> = {
+  excursion: [`Мы покажем построенный дом и стройку на нужном Вам этапе. Подберём объект поближе и согласуем время. ${SITE.callbackPromise}`],
+  calculator: [`Смета в PDF по Вашим параметрам откроется сразу после отправки. Инженер перезвонит и ответит на вопросы о составе работ. ${SITE.callbackPromise}`],
+  project_modal: [`Смета проекта в PDF откроется сразу после отправки. Архитектор перезвонит и расскажет, как адаптировать проект под Ваш участок. ${SITE.callbackPromise}`],
+  quiz: [`Мы уточним детали по телефону и пришлём расчёт с вилкой цены и сроков. ${SITE.callbackPromise}`],
+  messenger: ['Оставьте номер телефона — мы напишем Вам в выбранный мессенджер, ответим на вопросы о проекте, стоимости и сроках строительства. Свяжемся с Вами в течение рабочего дня.'],
+  architect: [
+    'Разберём особенности участка, Ваши пожелания к дому и ориентиры бюджета. Архитектор подскажет, какие планировочные и конструктивные решения подойдут именно Вам, на чём можно оптимизировать затраты и сколько может стоить реализация проекта.',
+    `Оставьте номер телефона — архитектор ${SITE.brandFull} свяжется с Вами в течение рабочего дня.`,
+  ],
 }
+const DEFAULT_INTRO = [`Оставьте имя и телефон, мы перезвоним и ответим на вопросы. ${SITE.callbackPromise}`]
 
 export function LeadModal({ request, onClose }: { request: LeadRequest | null; onClose: () => void }) {
   const { variant } = useLanding()
@@ -22,9 +26,11 @@ export function LeadModal({ request, onClose }: { request: LeadRequest | null; o
     <Modal open={request !== null} onClose={onClose} title={request?.title ?? ''} size="sm" testId="lead-modal">
       {request && (
         <div className="px-4 pb-6 pt-4 sm:px-8 sm:pb-8">
-          <p className="mb-5 text-muted">
-            {INTRO[request.source] ?? 'Оставьте имя и телефон, мы перезвоним и ответим на вопросы.'} {SITE.callbackPromise}
-          </p>
+          <div className="mb-5 grid gap-2 text-muted">
+            {(request.intro ?? INTRO[request.source] ?? DEFAULT_INTRO).map((text) => (
+              <p key={text}>{text}</p>
+            ))}
+          </div>
           {request.context && <p className="label mb-4 text-accent">{request.context}</p>}
           {request.source === 'messenger' && hasMessengerLinks && (
             <div className="mb-5 grid gap-2">

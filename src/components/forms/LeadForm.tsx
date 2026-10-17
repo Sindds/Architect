@@ -136,9 +136,6 @@ export function LeadForm({
                 </span>
               </a>
             )}
-            {SITE.contentMode === 'concept' && (
-              <p className={`mt-3 text-sm ${muted}`}>Это концепт-проект: данные формы не сохраняются и никуда не передаются.</p>
-            )}
           </div>
         </div>
       </div>

@@ -9,16 +9,16 @@ import { SectionHead } from '../ui/SectionHead'
 import { revealOrder } from '@/lib/reveal'
 
 const CONTROL = [
-  { icon: Camera, text: 'Раз в неделю мы присылаем фотоотчёт и обновлённый график.' },
-  { icon: ClipboardCheck, text: 'Фундамент, утепление и разводку принимаем по актам с фотографиями, пока их не закрыли.' },
-  { icon: ShieldCheck, text: 'Если вам нужна независимая проверка, поможем пригласить технадзор с вашей стороны.' },
+  { icon: Camera, text: 'Каждую неделю присылаем фотоотчёт и актуальный график работ.' },
+  { icon: ClipboardCheck, text: 'Фундамент, утепление и инженерные коммуникации проверяем и фиксируем в актах с фотографиями до того, как они будут скрыты последующими работами.' },
+  { icon: ShieldCheck, text: 'При необходимости поможем организовать независимую проверку с участием Вашего технического надзора.' },
 ]
 
 export function Process() {
   const total = STEPS.reduce((s, x) => s + x.days, 0)
   // День начала каждого этапа: 0, 30, 75, …
   const starts = STEPS.map((_, i) => STEPS.slice(0, i).reduce((s, x) => s + x.days, 0))
-  const lead = `На примере ${STEPS_EXAMPLE.project} ${STEPS_EXAMPLE.area} м², ${PRICING.tiers[STEPS_EXAMPLE.tier].title.toLowerCase()}: от начала работ до ключей проходит ${formatDays(total)}.`
+  const lead = `На примере ${STEPS_EXAMPLE.project} ${STEPS_EXAMPLE.area} м², ${PRICING.tiers[STEPS_EXAMPLE.tier].title.toLowerCase()}: от начала работ до получения ключей проходит ${formatDays(total)}.`
 
   return (
     <section id="process" aria-labelledby="process-title" className="lazy-section border-t border-line">
@@ -70,12 +70,11 @@ export function Process() {
         </ol>
 
         <div className="mt-10 grid gap-4 lg:grid-cols-12">
-          <figure className="relative overflow-hidden rounded-3xl border border-line lg:col-span-7">
+          <div className="relative overflow-hidden rounded-3xl border border-line lg:col-span-7">
             <Image src={MEDIA.processFrame.src} alt={MEDIA.processFrame.alt} placeholder="blur" sizes="(min-width: 1024px) 720px, 100vw" className="aspect-[16/9] w-full object-cover" />
-            <figcaption className="label absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1.5 font-medium text-[#d4d8dd]">{MEDIA.processFrame.caption}</figcaption>
-          </figure>
+          </div>
           <div className="reveal card p-6 sm:p-8 lg:col-span-5">
-            <h3 className="display text-2xl font-bold">Как следить за стройкой из города</h3>
+            <h3 className="display text-2xl font-bold">Держите стройку под контролем, даже на расстоянии</h3>
             <ul className="mt-5 grid gap-4">
               {CONTROL.map(({ icon: Icon, text }) => (
                 <li key={text} className="flex gap-3">

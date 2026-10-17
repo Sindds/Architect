@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { formatRub } from '@/lib/format'
 import { estimateFor } from '@/lib/pricing'
 import { renderSmetaPdf } from '@/lib/smeta-pdf'
+import { subsetNames } from '../../scripts/pdf-subset-tags'
 import { SMETA_TTL_MS, type SmetaInput, signSmetaToken, smetaLayout, verifySmetaToken } from '@/lib/smeta-token'
 
 const NOW = 1_800_000_000_000
@@ -54,5 +55,18 @@ describe('PDF сметы', () => {
     const fonts = execFileSync('pdffonts', [file], { encoding: 'utf8' })
     expect(fonts).not.toMatch(/Type 3/)
     expect(fonts).toMatch(/Onest/)
+    // Разные подмножества — разные имена (ISO 32000-1, п. 9.6.4), иначе просмотрщик путает глифы.
+    const names = subsetNames(pdf)
+    expect(names.length).toBeGreaterThan(0)
+    expect(new Set(names).size).toBe(names.length)
+  }, 30_000)
+
+  it('монолит (TITAN): PDF строится, в нём монолитный каркас', async () => {
+    const pdf = await renderSmetaPdf(48214, { area: 540, terrace: 120, style: 'monolith', tier: 'turnkey', addons: [], floors: 2, bathrooms: 5, project: 'TITAN' }, new Date(NOW))
+    const dir = mkdtempSync(path.join(tmpdir(), 'smeta-'))
+    const file = path.join(dir, 'titan.pdf')
+    writeFileSync(file, pdf)
+    const text = execFileSync('pdftotext', ['-layout', file, '-'], { encoding: 'utf8' })
+    expect(text).toContain('Монолитный железобетонный каркас')
   }, 30_000)
 })

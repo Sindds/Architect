@@ -1,6 +1,7 @@
 'use client'
 
 import { ArrowRight } from 'lucide-react'
+import { COPY } from '@/content/copy'
 import { PRICING, TIER_ORDER } from '@/content/pricing'
 import type { Project } from '@/content/types'
 import { formatDays, formatRub, groupDigits } from '@/lib/format'
@@ -78,7 +79,7 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                 className="btn btn-ghost"
                 onClick={() =>
                   openLead({
-                    title: 'Получить смету в PDF',
+                    title: COPY.smetaTitle,
                     source: 'project_modal',
                     context: `Проект ${project.name}, ${project.area} м², под ключ`,
                     smeta: {

@@ -11,6 +11,8 @@ export function Gallery({ pictures, label }: { pictures: Picture[]; label: strin
   const [zoom, setZoom] = useState(false)
   const current = pictures[index] ?? pictures[0]
   if (!current) return null
+  // Подпись «Визуализация» не показываем (решение заказчика 17.10.2026): она осталась в alt. Схемы подписаны.
+  const note = current.caption === 'Визуализация' ? null : current.caption
 
   return (
     <div>
@@ -32,7 +34,7 @@ export function Gallery({ pictures, label }: { pictures: Picture[]; label: strin
             <Maximize2 aria-hidden className="size-5" strokeWidth={1.5} />
           </span>
         </button>
-        <figcaption className="label mt-2 text-muted">{current.caption}</figcaption>
+        {note && <figcaption className="label mt-2 text-muted">{note}</figcaption>}
       </figure>
       <div className="mt-3 grid grid-cols-3 gap-2" role="group" aria-label={`Изображения: ${label}`}>
         {pictures.map((p, i) => (
@@ -48,12 +50,14 @@ export function Gallery({ pictures, label }: { pictures: Picture[]; label: strin
           </button>
         ))}
       </div>
-      <Modal open={zoom} onClose={() => setZoom(false)} title={`${label}: ${current.caption.toLowerCase()}`}>
+      <Modal open={zoom} onClose={() => setZoom(false)} title={note ? `${label}: ${note.toLowerCase()}` : label}>
         <figure className="p-2 sm:p-4">
           <Image src={current.src} alt={current.alt} sizes="(min-width: 1152px) 1120px, 100vw" className="h-auto w-full rounded-2xl" />
-          <figcaption className="label mt-2 px-2 text-muted">
-            {current.caption} · {current.alt}
-          </figcaption>
+          {note && (
+            <figcaption className="label mt-2 px-2 text-muted">
+              {note} · {current.alt}
+            </figcaption>
+          )}
         </figure>
       </Modal>
     </div>

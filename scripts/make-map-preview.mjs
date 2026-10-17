@@ -18,7 +18,7 @@ const geo = site.match(/geo:\s*\{\s*lat:\s*([\d.]+),\s*lon:\s*([\d.]+)/)
 if (!geo) throw new Error('Не нашёл SITE.geo в src/content/site.ts')
 const [lat, lon] = [Number(geo[1]), Number(geo[2])]
 
-const Z = 12
+const Z = 15 // точный адрес офиса: видны улицы и здания
 const TILE = 256
 const W = 1280
 const H = 520

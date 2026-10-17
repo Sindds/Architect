@@ -98,6 +98,9 @@ plain.describe('Лоадер', () => {
     const loader = page.getByTestId('page-loader')
     await expect(loader).toBeVisible()
     await expect(loader).not.toContainText(/BIM|Калибровка|Инициализация/)
+    // Отсчёт — с момента, когда применились стили: без JS лоадер скрывает CSS через 2,2 + 0,45 с после этого.
+    // Под нагрузкой (параллельные прогоны) CSS приходит позже, чем элемент появляется в HTML.
+    await expect(loader).toHaveCSS('position', 'fixed')
     await expect(loader).toBeHidden({ timeout: 3000 })
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
@@ -114,7 +117,8 @@ plain.describe('Лоадер', () => {
 
   plain('при повторном заходе в той же сессии не показывается', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByTestId('page-loader')).toBeHidden({ timeout: 3000 })
+    // Предусловие: лоадер первого визита ушёл (сроки проверяет тест выше). Под нагрузкой — с запасом.
+    await expect(page.getByTestId('page-loader')).toBeHidden({ timeout: 6000 })
     await page.reload({ waitUntil: 'commit' })
     await expect(page.locator('html')).toHaveAttribute('data-loader', 'skip')
     await expect(page.getByTestId('page-loader')).toBeHidden({ timeout: 200 })

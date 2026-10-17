@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs'
 import AxeBuilder from '@axe-core/playwright'
 import type { Page, Route } from '@playwright/test'
-import { expect, expectSeen, test } from './fixtures'
+import { clickCentered, expect, expectSeen, test } from './fixtures'
 import { SITE } from '@/content/site'
-import { formatDays, formatRub } from '@/lib/format'
-import { breakdown, projectPrice } from '@/lib/pricing'
+import { formatDays, formatMlnFrom, formatRub } from '@/lib/format'
+import { breakdown, minCalc, projectPrice } from '@/lib/pricing'
 
 const isMobile = (page: Page) => (page.viewportSize()?.width ?? 0) < 768
 
@@ -13,14 +13,16 @@ test.describe('Первый экран и варианты', () => {
     const html = await (await request.get('/')).text()
     // Текст H1 без тегов: цена может лежать в отдельном <span>, но заголовок остаётся одним H1.
     const h1 = (html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? '').replace(/<[^>]+>/g, '').replace(/\u00a0/g, ' ')
-    expect(h1).toBe('Дома из клееного бруса с панорамным остеклением в Подмосковье — от 26,4 млн ₽')
+    // Цена «от» — минимум калькулятора (variant.ts → minCalc); heroFor не импортируем: он тянет картинки.
+    expect(h1).toContain(`— от ${formatMlnFrom(minCalc('contour').price).replace(/\u00a0/g, ' ')}`)
+    expect(h1).toBe('Дома из клееного бруса с панорамным остеклением в Подмосковье — от 8,36 млн ₽')
   })
 
   test('варианты отдают свой H1 в HTML', async ({ request }) => {
     const text = async (url: string) => (await (await request.get(url)).text()).replace(/\u00a0/g, ' ')
-    expect(await text('/?v=monolith')).toContain('от 60,9 млн ₽')
-    expect(await text('/?utm_content=fachwerk')).toContain('от 35,4 млн ₽')
-    expect(await text('/?v=unknown')).toContain('от 26,4 млн ₽')
+    expect(await text('/?v=monolith')).toContain('от 10,56 млн ₽')
+    expect(await text('/?utm_content=fachwerk')).toContain('от 8,8 млн ₽')
+    expect(await text('/?v=unknown')).toContain('от 8,36 млн ₽')
   })
 
   test('цена в заголовке не выше самой низкой цены в карточках проектов', async ({ page }) => {
@@ -49,12 +51,36 @@ test.describe('Первый экран и варианты', () => {
     expect(text).toMatch(/от начала работ до ключей/)
   })
 
-  test('в контактах реквизиты компании; в концепте номера условные', async ({ page }) => {
+  test('в контактах реквизиты компании и адрес; пометки о концепте и строки про карту нет', async ({ page }) => {
     await page.goto('/')
     const req = page.getByTestId('requisites')
     for (const term of ['Компания', 'ИНН', 'КПП', 'ОГРН', 'Юридический адрес']) await expect(req.getByText(term, { exact: true })).toBeVisible()
     await expect(req).toContainText(SITE.operator.inn)
-    await expect(req).toContainText('номера условные')
+    await expect(req).toContainText('Московская обл., Новорижское шоссе, 7-й километр, с1')
+    await expect(page.locator('#contacts')).not.toContainText(/концепт|условн|вымышлен|Карта с отметкой/i)
+    await expect(page.locator('#contacts')).toContainText(SITE.address)
+  })
+
+  test('цена «от» в H1 — минимум калькулятора: 100 м², без террасы, скандинавский, тёплый контур', async ({ page }) => {
+    await page.goto('/')
+    const calc = page.getByTestId('calculator')
+    await calc.scrollIntoViewIfNeeded()
+    const area = page.getByTestId('calc-area-input')
+    await area.fill('100')
+    await area.press('Enter')
+    // Ползунок террасы: значение через нативный сеттер и событие input (так его видит React).
+    await calc.getByLabel('Терраса, м²').evaluate((el: HTMLInputElement) => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(el, '0')
+      el.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await calc.getByRole('radio', { name: /Скандинавский/ }).check()
+    await calc.getByRole('radio', { name: /^Тёплый контур/ }).check()
+    for (const name of ['Умный дом', 'Геотермальный', 'Бассейн']) {
+      const box = calc.getByRole('checkbox', { name: new RegExp(name) })
+      if (await box.isChecked()) await box.uncheck()
+    }
+    await expect(page.getByTestId('calc-total')).toHaveText(formatRub(8_360_000))
+    await expect(page.getByTestId('hero-price')).toHaveText(/от\s8,36\sмлн\s₽/)
   })
 
   test('несуществующий адрес — 404', async ({ request }) => {
@@ -94,23 +120,28 @@ test.describe('Шапка', () => {
     }
   })
 
-  test('футер: дисклеймер концепта и юридические ссылки', async ({ page }) => {
+  test('футер: знак ©, год и компания, дисклеймер концепта, адрес и юридические ссылки', async ({ page }) => {
     await page.goto('/')
+    await expect(page.getByTestId('copyright')).toHaveText(`© ${new Date().getFullYear()} ${SITE.brandFull}`)
     await expect(page.getByTestId('disclaimer')).toContainText('Концепт-проект для портфолио')
+    await expect(page.locator('footer')).toContainText('Архитектурно-строительное бюро полного цикла')
+    await expect(page.locator('footer')).toContainText(SITE.address)
+    await expect(page.locator('footer')).not.toContainText(/Адрес условный/)
     for (const name of ['Политика конфиденциальности', 'Согласие на обработку данных', 'Файлы cookie']) {
       await expect(page.locator('footer').getByRole('link', { name })).toBeVisible()
     }
   })
 })
 
-test('у команды портреты с описанием и пометкой о концепте', async ({ page }) => {
+test('у команды портреты с описанием; в тексте блока нет пометок о концепте', async ({ page }) => {
   await page.goto('/')
   const team = page.getByTestId('team')
   await team.scrollIntoViewIfNeeded()
   const photos = team.getByRole('img')
   await expect(photos).toHaveCount(4)
   await expect(photos.first()).toHaveAttribute('alt', /Алексей Воронов/)
-  await expect(page.locator('#team-title + p, #team-title ~ p').first()).toContainText('сгенерирован')
+  await expect(page.locator('#team-title + p, #team-title ~ p').first()).toContainText('Познакомьтесь со специалистами')
+  await expect(page.locator('section[aria-labelledby=team-title]')).not.toContainText(/сгенерирован|вымышлен|концепт/i)
 })
 
 test.describe('Окна проектов и кейсов', () => {
@@ -145,8 +176,8 @@ test.describe('Окна проектов и кейсов', () => {
     await expect(page.getByRole('navigation', { name: 'Разделы страницы' }).getByRole('link', { name: 'Кейсы' })).toHaveCount(0)
     const delivered = page.getByTestId('delivered')
     await expect(delivered.getByRole('listitem')).toHaveCount(3)
-    // Доказательство на первом экране ведёт к сданным домам.
-    await expect(page.getByTestId('hero').getByRole('link', { name: /сданных дома/ })).toHaveAttribute('href', '#delivered')
+    // В списке только названия: строки отклонений («+9 дней к сроку») убраны, план и факт — в окне дома.
+    await expect(delivered).not.toContainText(/к сроку|к смете|смета не изменилась|раньше/)
     const button = delivered.getByRole('button', { name: /Дом у воды/ })
     await button.scrollIntoViewIfNeeded()
     await button.click()
@@ -198,19 +229,19 @@ test.describe('Калькулятор и квиз', () => {
       await next.click()
     }
     const result = page.getByTestId('quiz-result')
-    await expect(result).toContainText('Ваша вилка')
-    await expectSeen(result.getByRole('heading', { name: /Ваша вилка/ }))
+    await expect(result).toContainText('Предварительная стоимость дома')
+    await expectSeen(result.getByRole('heading', { name: /Предварительная стоимость дома — от .+ до .+ млн/ }))
     await result.getByRole('button', { name: 'Получить расчёт' }).click()
     await expect(page.getByTestId('lead-modal').getByRole('heading', { name: 'Получить расчёт' })).toBeVisible()
   })
 })
 
 test.describe('Заявка', () => {
-  test('«Покажем построенный дом» → форма «Экскурсия на объект»; без согласия не отправляется; с согласием — номер заявки', async ({ page }) => {
+  test('«Задать вопрос архитектору» → форма; без согласия не отправляется; с согласием — номер заявки', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: 'Покажем построенный дом' }).click()
+    await clickCentered(page.getByRole('button', { name: 'Задать вопрос архитектору' }))
     const modal = page.getByTestId('lead-modal')
-    await expect(modal.getByRole('heading', { name: 'Экскурсия на объект' })).toBeVisible()
+    await expect(modal.getByRole('heading', { name: 'Обсудите свой будущий дом с архитектором' })).toBeVisible()
     const consent = modal.getByRole('checkbox')
     await expect(consent).not.toBeChecked()
 
@@ -218,12 +249,12 @@ test.describe('Заявка', () => {
     await modal.getByLabel('Телефон').fill('9161234567')
     await expect(modal.getByLabel('Телефон')).toHaveValue('+7 (916) 123-45-67')
     await page.waitForTimeout(3100)
-    await modal.getByRole('button', { name: 'Записаться на экскурсию' }).click()
-    await expect(modal.getByText('Без согласия на обработку данных отправить заявку нельзя')).toBeVisible()
+    await modal.getByRole('button', { name: 'Отправить заявку' }).click()
+    await expect(modal.getByText('Без согласия на обработку данных отправить заявку невозможно')).toBeVisible()
     await expect(modal.getByLabel('Имя')).toHaveValue('Анна')
 
     await consent.check()
-    await modal.getByRole('button', { name: 'Записаться на экскурсию' }).click()
+    await modal.getByRole('button', { name: 'Отправить заявку' }).click()
     await expect(modal.getByTestId('lead-success')).toContainText(/Заявка №\d+ принята/)
   })
 
@@ -237,12 +268,12 @@ test.describe('Заявка', () => {
         route.request().method() === 'POST' && route.request().headers()['next-action'] ? fail(route) : route.fallback(),
       )
       await page.goto('/')
-      await page.getByRole('button', { name: 'Покажем построенный дом' }).click()
+      await clickCentered(page.getByRole('button', { name: 'Задать вопрос архитектору' }))
       const modal = page.getByTestId('lead-modal')
       await modal.getByLabel('Имя').fill('Анна')
       await modal.getByLabel('Телефон').fill('9161234567')
       await modal.getByRole('checkbox').check()
-      await modal.getByRole('button', { name: 'Записаться на экскурсию' }).click()
+      await modal.getByRole('button', { name: 'Отправить заявку' }).click()
 
       const alert = modal.getByRole('alert')
       await expect(alert).toContainText('Не удалось отправить')
@@ -255,7 +286,7 @@ test.describe('Заявка', () => {
 
   test('маска телефона: правка в середине, код на 8, стирание через скобку', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: 'Покажем построенный дом' }).click()
+    await clickCentered(page.getByRole('button', { name: 'Задать вопрос архитектору' }))
     const phone = page.getByTestId('lead-modal').getByLabel('Телефон')
 
     await phone.pressSequentially('9161234567')
@@ -296,12 +327,12 @@ test.describe('Заявка', () => {
 
   test('отправка сразу после заполнения: сервер по своей метке времени отвечает «слишком быстро»', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: 'Покажем построенный дом' }).click()
+    await clickCentered(page.getByRole('button', { name: 'Задать вопрос архитектору' }))
     const modal = page.getByTestId('lead-modal')
     await modal.getByLabel('Имя').fill('Анна')
     await modal.getByLabel('Телефон').fill('9161234567')
     await modal.getByRole('checkbox').check()
-    const submit = modal.getByRole('button', { name: 'Записаться на экскурсию' })
+    const submit = modal.getByRole('button', { name: 'Отправить заявку' })
     await expect(submit).toBeEnabled()
     await submit.click()
     await expect(modal.getByRole('alert')).toContainText('слишком быстро')
@@ -344,10 +375,10 @@ test.describe('Заявка', () => {
 
   test('FAQ раскрывается с клавиатуры', async ({ page }) => {
     await page.goto('/')
-    const summary = page.locator('summary', { hasText: 'Можно ли через ипотеку или эскроу?' })
+    const summary = page.locator('summary', { hasText: 'Можно ли оплатить строительство в ипотеку или через эскроу?' })
     await summary.focus()
     await page.keyboard.press('Enter')
-    await expect(page.getByText('Условия ипотеки и эскроу мы пока уточняем')).toBeVisible()
+    await expect(page.getByText(/Условия работы с ипотекой и эскроу-счетами пока уточняются/)).toBeVisible()
   })
 })
 
@@ -391,13 +422,17 @@ test.describe('Нижняя панель на телефоне и мессенд
     await expect(bar).not.toHaveAttribute('data-shown', /.*/)
   })
 
-  test('в контактах кнопки Telegram и MAX; без ссылок в концепте — форма с выбранным мессенджером', async ({ page }) => {
+  test('в контактах кнопки Telegram, MAX и ВКонтакте; без ссылок в концепте — форма с выбранным мессенджером', async ({ page }) => {
     await page.goto('/')
     const contacts = page.locator('#contacts')
-    await contacts.getByRole('button', { name: 'MAX' }).click()
     const modal = page.getByTestId('lead-modal')
-    await expect(modal.getByRole('heading', { name: 'Написать в MAX' })).toBeVisible()
-    await expect(modal.getByRole('radio', { name: 'MAX' })).toBeChecked()
+    for (const [button, heading] of [['MAX', 'Написать в MAX'], ['ВКонтакте', 'Написать во ВКонтакте']] as const) {
+      await contacts.getByRole('button', { name: button }).click()
+      await expect(modal.getByRole('heading', { name: heading })).toBeVisible()
+      await expect(modal.getByRole('radio', { name: button })).toBeChecked()
+      await page.keyboard.press('Escape')
+      await expect(modal).toBeHidden()
+    }
   })
 })
 

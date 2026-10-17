@@ -66,7 +66,7 @@ tr.total td { border-top: 1.5pt solid #111315; border-bottom: 0; font-family: Ma
 </style></head><body><div class="mark">ОБРАЗЕЦ · КОНЦЕПТ</div>${body}</body></html>`
 
 const meta = (doc: string) =>
-  `<div class="meta"><span>${SITE.brandFull} · ${doc}</span><span>${SITE.disclaimer} Реквизиты и подписи в образце не заполнены.</span></div>`
+  `<div class="meta"><span>${SITE.brandFull} · ${doc}</span><span>Образец. Реквизиты и подписи не заполнены.</span></div>`
 
 const b = breakdown(SAMPLE)
 const sheet = estimateFor(SAMPLE)
@@ -236,7 +236,7 @@ ${meta('Приложение № 2')}
 <h1>Приложение № 2<br>График производства работ и платежей</h1>
 <p class="lead">Проект ${vista.name}, ${SAMPLE.area} м², терраса ${SAMPLE.terrace} м², «${tier.title}». Дни считаются от даты начала работ (п. 4.1). Платёж за следующий этап вносится после подписания акта по предыдущему.</p>
 ${stagesTable()}
-<p class="note">Документ демонстрационный и не является офертой. Компания и цены вымышлены.</p>`,
+<p class="note">Образец документа, не является офертой.</p>`,
   )
 }
 
@@ -290,6 +290,6 @@ ${stagesTable()}
 <div class="sign">Смету составил: инженер-сметчик / ____________ /</div>
 <div class="sign">Согласовано: Заказчик / ____________ /</div>
 </div>
-<p class="note" style="margin-top:4mm">Образец сметы концепт-проекта. Компания и цены вымышлены, документ не является офертой.</p>`,
+<p class="note" style="margin-top:4mm">Образец сметы, не является офертой.</p>`,
   )
 }

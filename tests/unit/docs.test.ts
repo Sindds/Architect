@@ -3,9 +3,11 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { formatRub } from '@/lib/format'
 import { breakdown, estimateFor } from '@/lib/pricing'
+import { subsetNames, subsetTag, uniqueSubsetTags } from '../../scripts/pdf-subset-tags'
 import { contractHtml, estimateHtml, SAMPLE } from '../../scripts/sample-docs'
 
-const pdf = (name: string) => readFileSync(path.join(process.cwd(), 'public/docs', name)).toString('latin1')
+const file = (name: string) => readFileSync(path.join(process.cwd(), 'public/docs', name))
+const pdf = (name: string) => file(name).toString('latin1')
 
 describe('PDF-образцы открываются в любом просмотрщике', () => {
   // Chrome сохраняет вариативные шрифты как Type 3. Такие глифы ломаются в iOS, Telegram,
@@ -18,7 +20,31 @@ describe('PDF-образцы открываются в любом просмот
       expect(bytes).toMatch(/\/Subtype\s*\/CIDFontType2/)
       expect(bytes).toMatch(/\/ToUnicode/)
     })
+
+    // Chrome называет разные подмножества одного шрифта одинаково («AAAAAA+Onest-Regular» трижды).
+    // Просмотрщик, который узнаёт шрифт по имени, берёт глифы из чужого подмножества — текст ломается.
+    it(`${name}: у каждого подмножества шрифта своё имя (ISO 32000-1, п. 9.6.4)`, () => {
+      const names = subsetNames(file(name))
+      expect(names.length).toBeGreaterThan(1)
+      expect(new Set(names).size).toBe(names.length)
+    })
   }
+
+  it('uniqueSubsetTags: дубли переименованы, длина файла и смещения xref те же', () => {
+    const dict = (id: number, body: string) => `${id} 0 obj\n<<${body}>>\nendobj\n`
+    const font = (base: number, tag: string) =>
+      dict(base, `/Type /Font /Subtype /Type0 /BaseFont /${tag}+Onest-Regular /DescendantFonts [${base + 1} 0 R]`) +
+      dict(base + 1, `/Type /Font /Subtype /CIDFontType2 /BaseFont /${tag}+Onest-Regular /FontDescriptor ${base + 2} 0 R`) +
+      dict(base + 2, `/Type /FontDescriptor /FontName /${tag}+Onest-Regular`)
+    const before = Buffer.from(`%PDF-1.4\n${font(1, 'AAAAAA')}${font(4, 'AAAAAA')}%%EOF`, 'latin1')
+    const after = uniqueSubsetTags(before)
+    expect(after.length).toBe(before.length)
+    expect(subsetNames(before)).toEqual(['AAAAAA+Onest-Regular', 'AAAAAA+Onest-Regular'])
+    expect(subsetNames(after)).toEqual(['AAAAAA+Onest-Regular', 'AAAAAB+Onest-Regular'])
+    // Имя совпадает во всех трёх словарях подмножества.
+    expect(after.toString('latin1').match(/AAAAAB\+Onest-Regular/g)).toHaveLength(3)
+    expect([subsetTag(0), subsetTag(1), subsetTag(26)]).toEqual(['AAAAAA', 'AAAAAB', 'AAAABA'])
+  })
 })
 
 const estimate = estimateFor(SAMPLE)
@@ -57,6 +83,35 @@ describe('Смета: подробная и сходится с ценой до�
     for (const l of lines) expect(html).toContain(l.name)
     expect(html).toContain(formatRub(estimate.total))
     expect(html).toMatch(/Не входит/)
+  })
+})
+
+describe('Смета для любого дома из калькулятора', () => {
+  // Раньше смета падала для монолита («рассчитана на каркас из клееного бруса»): PDF после заявки по TITAN не открывался.
+  const styles = ['minimal', 'fachwerk', 'chalet', 'monolith'] as const
+  const tiers = ['contour', 'whitebox', 'turnkey'] as const
+  for (const style of styles)
+    for (const tier of tiers)
+      for (const area of [100, 380, 800])
+        it(`${style}, ${tier}, ${area} м²: итог равен цене, все позиции с положительной ценой`, () => {
+          const e = { area, terrace: 50, style, tier, addons: [], floors: area > 250 ? 2 : 1, bathrooms: 3 }
+          const sheet = estimateFor(e)
+          expect(sheet.total).toBe(breakdown(e).total)
+          for (const l of sheet.sections.flatMap((x) => x.lines)) {
+            expect(l.price, `${l.name}`).toBeGreaterThan(0)
+            expect(l.sum, `${l.name}`).toBe(Math.round(l.qty * l.price))
+          }
+        })
+
+  it('у монолита свои разделы каркаса, кровли и фасада, без клееного бруса', () => {
+    const sheet = estimateFor({ area: 540, terrace: 120, style: 'monolith', tier: 'turnkey', addons: [], floors: 2, bathrooms: 5 })
+    const titles = sheet.sections.map((x) => x.title)
+    expect(titles).toContain('Монолитный железобетонный каркас')
+    expect(titles).toContain('Плоская кровля')
+    expect(titles).not.toContain('Домокомплект из клееного бруса')
+    // Терраса — деревянная и у монолитного дома: лаги из клееного бруса там уместны.
+    const house = sheet.sections.filter((x) => x.title !== 'Терраса').flatMap((x) => x.lines)
+    expect(house.filter((l) => /клееного бруса|фахверк/i.test(l.name)).map((l) => l.name)).toEqual([])
   })
 })
 

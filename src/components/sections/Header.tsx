@@ -2,6 +2,7 @@
 
 import { ArrowUpRight, Menu, MessageCircle, Phone, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { COPY } from '@/content/copy'
 import { SITE } from '@/content/site'
 import { useLanding } from '../LandingProvider'
 import { ThemeToggle } from '../ThemeToggle'
@@ -35,7 +36,7 @@ export function Header() {
     }
   }, [])
 
-  const messenger = () => openLead({ title: 'Написать в мессенджер', source: 'messenger', extended: true, contactMethod: 'telegram' })
+  const messenger = () => openLead({ title: COPY.messengerTitle, source: 'messenger', extended: true, contactMethod: 'telegram' })
 
   const glass = !scrolled
   const iconBtn = glass ? 'border border-white/20 text-white hover:bg-white/15' : 'border border-line text-fg hover:bg-subtle'

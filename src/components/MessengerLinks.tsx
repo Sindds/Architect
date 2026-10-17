@@ -4,8 +4,9 @@ import { SITE } from '@/content/site'
 import { useLanding } from './LandingProvider'
 
 const CHANNELS = [
-  { key: 'telegram', label: 'Telegram', href: SITE.messengers.telegram },
-  { key: 'max', label: 'MAX', href: SITE.messengers.max },
+  { key: 'telegram', label: 'Telegram', href: SITE.messengers.telegram, title: 'Написать в Telegram' },
+  { key: 'max', label: 'MAX', href: SITE.messengers.max, title: 'Написать в MAX' },
+  { key: 'vk', label: 'ВКонтакте', href: SITE.messengers.vk, title: 'Написать во ВКонтакте' },
 ] as const
 
 /**
@@ -29,7 +30,7 @@ export function MessengerLinks({ className = 'btn btn-ghost', onNavigate }: { cl
             data-messenger={c.key}
             onClick={() => {
               onNavigate?.()
-              openLead({ title: `Написать в ${c.label}`, source: 'messenger', extended: true, contactMethod: c.key })
+              openLead({ title: c.title, source: 'messenger', extended: true, contactMethod: c.key })
             }}
           >
             {c.label}

@@ -9,11 +9,22 @@ export function groupDigits(n: number): string {
 
 export const formatRub = (n: number) => `${groupDigits(n)}${NBSP}₽`
 
+const mln = (value: string) => `${value}${NBSP}млн${NBSP}₽`
+const mlnRounded = (n: number) => (Math.round(n / 100_000) / 10).toFixed(1).replace('.', ',').replace(/,0$/, '')
+/** Без округления вверх, с точностью до 10 000 ₽: 8 360 000 → «8,36», 8 800 000 → «8,8», 21 000 000 → «21». */
+const mlnFloor = (n: number) => (Math.floor(n / 10_000) / 100).toFixed(2).replace('.', ',').replace(/,?0+$/, '')
+
 /** 51 610 000 → «51,6 млн ₽»; 63 000 000 → «63 млн ₽». */
-export function formatMln(n: number): string {
-  const value = (Math.round(n / 100_000) / 10).toFixed(1).replace('.', ',').replace(/,0$/, '')
-  return `${value}${NBSP}млн${NBSP}₽`
-}
+export const formatMln = (n: number) => mln(mlnRounded(n))
+
+/**
+ * Нижняя цена «от …»: не округляется вверх. Иначе «от 8,4 млн ₽» в заголовке оказалось бы больше
+ * цены 8 360 000 ₽, которую показывает калькулятор (CONTENT-SPEC §4: ниже на странице нет цены меньше заголовка).
+ */
+export const formatMlnFrom = (n: number) => mln(mlnFloor(n))
+
+/** Вилка: «от 8,36 до 52,5 млн ₽». */
+export const formatMlnRange = (low: number, high: number) => `от ${mlnFloor(low)} до ${mln(mlnRounded(high))}`
 
 export function plural(n: number, forms: [string, string, string]): string {
   const mod10 = n % 10

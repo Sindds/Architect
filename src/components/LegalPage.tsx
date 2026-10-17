@@ -23,9 +23,6 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
           Версия {SITE.legalVersion.version} от {SITE.legalVersion.date}
         </p>
         <h1 className="display mt-4 text-3xl leading-tight font-normal sm:text-4xl">{doc.title}</h1>
-        {SITE.contentMode === 'concept' && (
-          <p className="mt-6 rounded-2xl bg-accent-soft p-4 text-fg">Это шаблон концепт-проекта. Для настоящего сайта текст готовит юрист компании-оператора.</p>
-        )}
         <div className="mt-10 grid gap-4">
           {doc.sections.map((s) => (
             <section key={s.heading} className="card p-6">

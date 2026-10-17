@@ -1,7 +1,8 @@
 import type { EstimatePlan } from './types'
 
 /*
-  Структура сметы-образца для дома на каркасе из клееного бруса (CONTENT-SPEC §5).
+  Структура сметы-образца (CONTENT-SPEC §5). Разделы каркаса, кровли, стен и фасада — свои для клееного бруса
+  (frame: 'timber') и монолита (frame: 'concrete'); остальные общие.
   Цена дома берётся из pricing.ts и раскладывается по разделам (доля, %) и позициям (вес).
   Веса — правдоподобные суммы для дома 380 м² в тыс. ₽ (оценка бюро для демо, не рыночные данные),
   поэтому цена за единицу получается реалистичной. Премиальная часть цены уходит в чистовую отделку,
@@ -54,6 +55,7 @@ export const ESTIMATE: EstimatePlan = {
     },
     {
       title: 'Домокомплект из клееного бруса',
+      frame: 'timber',
       from: 'contour',
       share: 13.1,
       items: [
@@ -67,6 +69,7 @@ export const ESTIMATE: EstimatePlan = {
     },
     {
       title: 'Монтаж каркаса и перекрытий',
+      frame: 'timber',
       from: 'contour',
       share: 4.9,
       items: [
@@ -79,7 +82,35 @@ export const ESTIMATE: EstimatePlan = {
       ],
     },
     {
+      title: 'Монолитный железобетонный каркас',
+      frame: 'concrete',
+      from: 'contour',
+      share: 13.1,
+      items: [
+        { name: 'Бетон В30 F200 W8 для колонн, стен и перекрытий с доставкой', unit: 'м³', basis: 'area', k: 0.36, weight: 3300 },
+        { name: 'Арматура А500С для колонн, стен и перекрытий', unit: 'т', basis: 'area', k: 0.045, weight: 2900 },
+        { name: 'Опалубка колонн, стен и перекрытий: аренда щитовой и балочной системы', unit: 'м²', basis: 'area', k: 1.7, weight: 1300 },
+        { name: 'Закладные детали, анкеры и выпуски арматуры под ограждающие конструкции', unit: 'компл.', basis: 'fixed', k: 1, weight: 700, absorb: true },
+        { name: 'Доставка арматуры и опалубки на объект', unit: 'рейс', basis: 'fixed', k: 6, weight: 330 },
+      ],
+    },
+    {
+      title: 'Бетонирование каркаса и перекрытий',
+      frame: 'concrete',
+      from: 'contour',
+      share: 4.9,
+      items: [
+        { name: 'Бетонирование колонн и стен с вибрированием и уходом за бетоном', unit: 'м³', basis: 'area', k: 0.2, weight: 1100 },
+        { name: 'Устройство монолитных перекрытий и консоли второго этажа', unit: 'м²', basis: 'upper', k: 1, weight: 760 },
+        { name: 'Аренда автобетононасоса', unit: 'маш.-ч', basis: 'fixed', k: 60, weight: 420 },
+        { name: 'Аренда автокрана 25 т', unit: 'маш.-ч', basis: 'fixed', k: 72, weight: 400 },
+        { name: 'Леса и средства подмащивания', unit: 'мес.', basis: 'fixed', k: 3, weight: 300 },
+        { name: 'Лабораторный контроль прочности бетона и геодезическая исполнительная съёмка каркаса', unit: 'компл.', basis: 'fixed', k: 1, weight: 160, absorb: true },
+      ],
+    },
+    {
       title: 'Кровля',
+      frame: 'timber',
       from: 'contour',
       share: 6.8,
       items: [
@@ -92,6 +123,22 @@ export const ESTIMATE: EstimatePlan = {
         { name: 'Снегозадержатели и элементы кровельной безопасности', unit: 'м.п.', basis: 'perimeter', k: 0.6, weight: 209 },
         { name: 'Подшивка свесов', unit: 'м²', basis: 'perimeter', k: 0.6, weight: 209 },
         { name: 'Проходки и примыкания: дымоход, вентиляция, мансардные узлы', unit: 'компл.', basis: 'fixed', k: 1, weight: 180, absorb: true },
+      ],
+    },
+    {
+      title: 'Плоская кровля',
+      frame: 'concrete',
+      from: 'contour',
+      share: 6.8,
+      items: [
+        { name: 'Разуклонка из керамзитобетона по монолитной плите', unit: 'м²', basis: 'footprint', k: 1, weight: 520 },
+        { name: 'Пароизоляционная мембрана', unit: 'м²', basis: 'footprint', k: 1.1, weight: 127 },
+        { name: 'Утеплитель из каменной ваты 250 мм для плоских кровель', unit: 'м²', basis: 'footprint', k: 1.05, weight: 980 },
+        { name: 'Кровельная ПВХ-мембрана с механическим креплением', unit: 'м²', basis: 'footprint', k: 1.1, weight: 1500 },
+        { name: 'Парапеты: утепление и отделка оцинкованной сталью', unit: 'м.п.', basis: 'perimeter', k: 1, weight: 560 },
+        { name: 'Водоприёмные воронки с электрообогревом и внутренний водосток', unit: 'шт.', basis: 'fixed', k: 4, weight: 340 },
+        { name: 'Основание смотровой площадки: опоры и настил из термодревесины', unit: 'м²', basis: 'footprint', k: 0.25, weight: 520 },
+        { name: 'Проходки и примыкания: вентиляция, выходы инженерных систем', unit: 'компл.', basis: 'fixed', k: 1, weight: 180, absorb: true },
       ],
     },
     {
@@ -108,6 +155,7 @@ export const ESTIMATE: EstimatePlan = {
     },
     {
       title: 'Стены и утепление',
+      frame: 'timber',
       from: 'contour',
       share: 3.2,
       items: [
@@ -118,13 +166,37 @@ export const ESTIMATE: EstimatePlan = {
       ],
     },
     {
+      title: 'Стены и утепление',
+      frame: 'concrete',
+      from: 'contour',
+      share: 3.2,
+      items: [
+        { name: 'Заполнение каркаса: кладка из керамического блока 250 мм', unit: 'м²', basis: 'walls', k: 1, weight: 1300 },
+        { name: 'Утепление стен минеральной ватой 150 мм под вентилируемый фасад', unit: 'м²', basis: 'walls', k: 1, weight: 520 },
+        { name: 'Звукоизоляция межэтажного перекрытия', unit: 'м²', basis: 'upper', k: 1, weight: 285 },
+        { name: 'Тест на воздухопроницаемость (Blower Door) с протоколом', unit: 'компл.', basis: 'fixed', k: 1, weight: 60, absorb: true },
+      ],
+    },
+    {
       title: 'Отделка фасада',
+      frame: 'timber',
       from: 'whitebox',
       share: 3.4,
       items: [
         { name: 'Фасад: планкен из лиственницы с покрытием маслом', unit: 'м²', basis: 'walls', k: 0.6, weight: 1260 },
         { name: 'Фасад: тонкослойная штукатурка по утеплителю на полях фахверка', unit: 'м²', basis: 'walls', k: 0.4, weight: 624 },
         { name: 'Окраска открытых элементов каркаса лазурью', unit: 'м²', basis: 'walls', k: 0.3, weight: 144 },
+        { name: 'Примыкания, откосы и декоративные элементы фасада', unit: 'компл.', basis: 'fixed', k: 1, weight: 250, absorb: true },
+      ],
+    },
+    {
+      title: 'Отделка фасада',
+      frame: 'concrete',
+      from: 'whitebox',
+      share: 3.4,
+      items: [
+        { name: 'Вентилируемый фасад из термодревесины на алюминиевой подсистеме', unit: 'м²', basis: 'walls', k: 0.7, weight: 1500 },
+        { name: 'Облицовка торцов перекрытий и консоли фиброцементными панелями', unit: 'м²', basis: 'walls', k: 0.3, weight: 520 },
         { name: 'Примыкания, откосы и декоративные элементы фасада', unit: 'компл.', basis: 'fixed', k: 1, weight: 250, absorb: true },
       ],
     },
@@ -162,7 +234,7 @@ export const ESTIMATE: EstimatePlan = {
         { name: 'Окраска стен и потолков', unit: 'м²', basis: 'area', k: 2.6, weight: 1090 },
         { name: 'Санузлы: плитка, сантехнические приборы, инсталляции', unit: 'шт.', basis: 'bathrooms', k: 1, weight: 3000 },
         { name: 'Межкомнатные двери со скрытым коробом', unit: 'шт.', basis: 'fixed', k: 10, weight: 750 },
-        { name: 'Лестница на косоурах из клееного бруса с ограждением', unit: 'шт.', basis: 'stairs', k: 1, weight: 900 },
+        { name: 'Лестница на второй этаж: ступени из массива дуба, ограждение', unit: 'шт.', basis: 'stairs', k: 1, weight: 900 },
         { name: 'Финальная уборка после строительства', unit: 'м²', basis: 'area', k: 1, weight: 95 },
         { name: 'Светильники, розетки и выключатели', unit: 'компл.', basis: 'fixed', k: 1, weight: 1200, absorb: true },
       ],

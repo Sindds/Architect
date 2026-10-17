@@ -51,8 +51,9 @@ describe('политика в режиме client', () => {
 describe('режим concept', () => {
   it('без реквизитов и обработчиков: данные никуда не передаются', () => {
     const all = Object.keys(LEGAL).map((k) => text(LEGAL, k as keyof typeof LEGAL)).join('\n')
-    expect(all).toContain('вымышленная компания')
-    expect(all).toContain('данные форм не сохраняются и никуда не передаются')
+    // Без слов «концепт» и «вымышленная» (правка заказчика 17.10.2026): о концепте говорит дисклеймер в футере.
+    expect(all).not.toMatch(/концепт|вымышлен/i)
+    expect(all).toContain('данные форм не сохраняются на сервере и третьим лицам не передаются')
     expect(all).not.toContain('1С-Битрикс')
   })
 })

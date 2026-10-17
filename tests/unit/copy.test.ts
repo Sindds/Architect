@@ -24,6 +24,11 @@ function collect(): { where: string; text: string }[] {
   }
   for (const [key, v] of Object.entries(COPY.ui)) add(`COPY.ui.${key}`, v)
   add('SITE.descriptor', SITE.descriptor)
+  add('SITE.tagline', SITE.tagline)
+  add('SITE.about', SITE.about)
+  add('COPY.smetaTitle', COPY.smetaTitle)
+  add('COPY.messengerTitle', COPY.messengerTitle)
+  COPY.smetaIntro('с 83 позициями в 14 разделах').forEach((t, i) => add(`COPY.smetaIntro[${i}]`, t))
   add('SITE.callbackPromise', SITE.callbackPromise)
   WHY_US.forEach((w, i) => (add(`WHY_US[${i}].title`, w.title), add(`WHY_US[${i}].fact`, w.fact)))
   FAQ.forEach((f, i) => (add(`FAQ[${i}].q`, f.question), f.answer.forEach((a, j) => add(`FAQ[${i}].a${j}`, a))))
@@ -43,6 +48,23 @@ const sentences = (t: string) => t.split(/(?<=[.!?…])\s+(?=[А-ЯЁA-Z«])/).f
 const fail = (items: { where: string; text: string }[]) => items.map((i) => `${i.where}: «${i.text}»`)
 
 const ALL = collect()
+
+/**
+ * Тексты, которые заказчик написал дословно (правки от 17.10.2026). Его формулировки важнее правил стиля,
+ * поэтому проверки клише, тире, длины предложений и рубленых заголовков к ним не применяются.
+ * Остальные проверки (кавычки, капслок, «Вы» с заглавной, обещания не сильнее договора) действуют.
+ */
+const CLIENT_TEXTS = new Set([
+  'COPY.sections.projects.lead',
+  'COPY.sections.process.title',
+  'process',
+  'STEPS[1].title',
+  'PROJECTS.chalet.tagline',
+  'FAQ[2].a0',
+  'FAQ[6].a0',
+  'FAQ[9].a0',
+])
+const STYLED = ALL.filter((i) => !CLIENT_TEXTS.has(i.where))
 
 describe('Тексты: шаблоны, которые звучат как реклама или ИИ', () => {
   it('нет рекламных клише и вычурных формул', () => {
@@ -72,7 +94,7 @@ describe('Тексты: шаблоны, которые звучат как ре�
       // Популярность без данных — это «цифры без источника» (CONTENT-SPEC §2)
       /выбирают чаще|самый популярн|хит продаж|лучший выбор/i,
     ]
-    expect(fail(ALL.filter((i) => banned.some((re) => re.test(i.text))))).toEqual([])
+    expect(fail(STYLED.filter((i) => banned.some((re) => re.test(i.text))))).toEqual([])
   })
 
   it('нет противопоставлений «не X, а Y» и «не только…, но и»', () => {
@@ -81,12 +103,12 @@ describe('Тексты: шаблоны, которые звучат как ре�
   })
 
   it('заголовки — одна фраза, без рубленых фрагментов «X. Y.»', () => {
-    const titles = Object.entries(COPY.sections).map(([k, s]) => ({ where: k, text: s.title }))
+    const titles = Object.entries(COPY.sections).map(([k, s]) => ({ where: k, text: s.title })).filter((t) => !CLIENT_TEXTS.has(t.where))
     expect(fail(titles.filter((t) => /[.!?]\s+\S/.test(t.text) || /[.]$/.test(t.text)))).toEqual([])
   })
 
   it('не больше одного тире в предложении', () => {
-    const bad = ALL.filter((i) => sentences(i.text).some((s) => (s.match(/\s—\s/g) ?? []).length > 1))
+    const bad = STYLED.filter((i) => sentences(i.text).some((s) => (s.match(/\s—\s/g) ?? []).length > 1))
     expect(fail(bad)).toEqual([])
   })
 
@@ -96,8 +118,13 @@ describe('Тексты: шаблоны, которые звучат как ре�
   })
 
   it('предложения не длиннее 32 слов', () => {
-    const long = ALL.filter((i) => sentences(i.text).some((s) => s.split(/\s+/).length > 32))
+    const long = STYLED.filter((i) => sentences(i.text).some((s) => s.split(/\s+/).length > 32))
     expect(fail(long)).toEqual([])
+  })
+
+  it('«Вы», «Вас», «Ваш» и другие формы — с заглавной буквы (правка заказчика 17.10.2026)', () => {
+    const lower = /(?<![А-Яа-яЁё])(вы|вас|вам|вами|ваш|ваша|ваше|ваши|вашего|вашей|вашему|вашим|вашими|ваших|вашу|вашем)(?![А-Яа-яЁё])/
+    expect(fail(ALL.filter((i) => lower.test(i.text)))).toEqual([])
   })
 
   it('кавычки-ёлочки, без двойных пробелов', () => {
@@ -132,17 +159,20 @@ describe('Тексты: структура', () => {
     // Сайт не обещает больше договора: формулировок про «разницу» и «удорожание» здесь нет.
     const risky = ALL.filter((i) => /подорожа|разниц\S* (оплачива|бер[её]м)|удорожани/i.test(i.text))
     expect(fail(risky)).toEqual([])
-    // FAQ ссылается на пункт 2.1 образца договора: проверяем, что пункт про твёрдую цену там есть.
+    // Сайт обещает неизменную цену: в образце договора есть пункт про твёрдую цену (п. 2.1).
     const script = readFileSync(path.join(process.cwd(), 'scripts/sample-docs.ts'), 'utf8')
     expect(script).toMatch(/<p>2\.1\.[^<]*твёрдая/)
-    expect(FAQ.some((f) => f.answer.join(' ').includes('пункт 2.1 образца договора'))).toBe(true)
+    expect(FAQ.some((f) => /смета прилагается к договору/i.test(f.answer.join(' ')))).toBe(true)
   })
 
-  it('FAQ про гарантию ссылается на существующий раздел образца договора', () => {
+  it('сроки гарантии в FAQ совпадают с разделом «Гарантия» образца договора', () => {
     const script = readFileSync(path.join(process.cwd(), 'scripts/sample-docs.ts'), 'utf8')
-    const section = script.match(/<h2>(\d+)\. Гарантия<\/h2>/)?.[1]
+    const section = script.match(/<h2>\d+\. Гарантия<\/h2>[\s\S]*?<\/table>/)?.[0] ?? ''
     const answer = FAQ.find((f) => /гаранти/i.test(f.question))?.answer.join(' ') ?? ''
     expect(section).toBeTruthy()
-    expect(answer).toContain(`разделе ${section}`)
+    expect(answer).toContain('указаны в образце договора')
+    const terms = (found: Iterable<string>) => [...new Set(found)].sort()
+    const contract = terms([...section.matchAll(/<td class="r">(\d+ (?:лет|года|год))<\/td>/g)].map((m) => m[1]!))
+    expect(terms(answer.match(/\d+ (?:лет|года|год)/g) ?? [])).toEqual(contract)
   })
 })

@@ -22,6 +22,16 @@ export const test = base.extend({
       },
       { loader: LOADER_KEY, consent: CONSENT_KEY },
     )
+    // До гидратации кнопки не работают: под нагрузкой (параллельные прогоны) щелчок сразу после load
+    // мог прийти раньше React. На странице лендинга ждём отметку из LandingProvider.
+    const goto = page.goto.bind(page)
+    page.goto = async (url, options) => {
+      const response = await goto(url, options)
+      if (!options?.waitUntil || options.waitUntil === 'load') {
+        await page.waitForFunction(() => !document.querySelector('[data-testid=hero]') || document.documentElement.hasAttribute('data-hydrated'), null, { timeout: 15_000 })
+      }
+      return response
+    }
     await provide(page)
   },
 })
@@ -52,3 +62,12 @@ export async function expectSeen(locator: Locator) {
     .toBeGreaterThan(0.95)
 }
 
+
+/**
+ * Щелчок по элементу в середине экрана. У нижнего края на телефоне выезжает капсула «Рассчитать стоимость»
+ * (MobileActionBar): если Playwright прокрутил кнопку к краю, щелчок мог попасть в капсулу, пока она выезжает.
+ */
+export async function clickCentered(locator: Locator) {
+  await locator.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }))
+  await locator.click()
+}

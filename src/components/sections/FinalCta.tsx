@@ -112,15 +112,7 @@ export function FinalCta({ variant }: { variant: VariantKey }) {
                 </Fragment>
               ))}
             </dl>
-            {SITE.contentMode === "concept" && (
-              <p className="mt-3 text-xs text-on-inverse-muted">
-                Компания концепт-проекта вымышлена, номера условные.
-              </p>
-            )}
           </div>
-          <p className="text-sm text-on-inverse-muted">
-            Карта с отметкой офиса — внизу страницы.
-          </p>
         </div>
       </div>
     </section>

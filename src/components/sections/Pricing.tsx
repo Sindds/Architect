@@ -4,13 +4,21 @@ import { PRICING, STYLE_ORDER, TIER_ORDER } from "@/content/pricing";
 import { PROJECTS } from "@/content/projects";
 import { SITE } from "@/content/site";
 import type { Style } from "@/content/types";
-import { formatDaysFrom, groupDigits } from "@/lib/format";
+import { formatDaysFrom, groupDigits, plural } from "@/lib/format";
 import { nbsp } from "@/lib/typography";
-import { daysFor, minPriceFor } from "@/lib/pricing";
+import { daysFor, estimateFor, minPriceFor } from "@/lib/pricing";
+import { smetaLayout, type SmetaInput } from "@/lib/smeta-token";
 import { LeadButton } from "../LeadButton";
 import { PackageDetails } from "./PackageDetails";
 import { SectionHead } from "../ui/SectionHead";
 import { revealOrder } from "@/lib/reveal";
+
+/** «с 83 позициями в 14 разделах» — та же смета, что сервер соберёт в PDF по этим параметрам. */
+function smetaSize(input: SmetaInput): string {
+  const sheet = estimateFor({ ...input, ...smetaLayout(input.area) });
+  const lines = sheet.sections.reduce((n, s) => n + s.lines.length, 0);
+  return `с ${lines} ${plural(lines, ["позицией", "позициями", "позициями"])} в ${sheet.sections.length} ${plural(sheet.sections.length, ["разделе", "разделах", "разделах"])}`;
+}
 
 /** Смета пакета в PDF — для дома по умолчанию из калькулятора (CONTENT-SPEC §5.2): 350 м², терраса 50 м². */
 export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
@@ -29,6 +37,7 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
       >
         {TIER_ORDER.map((tier, i) => {
           const t = PRICING.tiers[tier];
+          const smeta: SmetaInput = { area: 350, terrace: 50, style: defaultStyle, tier, addons: [] };
           const featured = tier === "whitebox";
           const muted = featured ? "text-on-inverse-muted" : "text-muted";
           return (
@@ -51,7 +60,7 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
                 )}
               </div>
               <h3 className="display mt-4 text-2xl font-bold">{t.title}</h3>
-              <p className={`mt-2 ${muted}`}>{nbsp(t.short)}</p>
+              <p className={`mt-2 text-[0.9375rem] leading-snug sm:text-base sm:leading-normal ${muted}`}>{nbsp(t.short)}</p>
 
               <table className="num mt-5 w-full text-left sm:mt-6">
                 <caption
@@ -71,10 +80,10 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
                       key={style}
                       className={`border-b ${featured ? "border-white/10" : "border-line"}`}
                     >
-                      <th scope="row" className="py-1.5 pr-2 font-normal sm:py-2">
+                      <th scope="row" className="py-1 pr-2 font-normal sm:py-2">
                         {PRICING.styles[style].title}
                       </th>
-                      <td className="py-1.5 text-right font-semibold whitespace-nowrap sm:py-2">
+                      <td className="py-1 text-right font-semibold whitespace-nowrap sm:py-2">
                         от {groupDigits(minPriceFor(tier, style))} ₽
                       </td>
                     </tr>
@@ -82,12 +91,12 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
                   <tr>
                     <th
                       scope="row"
-                      className={`py-1.5 pr-2 font-normal sm:py-2 ${muted}`}
+                      className={`py-1 pr-2 font-normal sm:py-2 ${muted}`}
                     >
                       Терраса
                     </th>
                     <td
-                      className={`py-1.5 text-right whitespace-nowrap sm:py-2 ${muted}`}
+                      className={`py-1 text-right whitespace-nowrap sm:py-2 ${muted}`}
                     >
                       {groupDigits(t.terracePerM2)} ₽
                     </td>
@@ -126,8 +135,10 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
               </PackageDetails>
               <LeadButton
                 source="pricing_pdf"
+                formTitle={COPY.smetaTitle}
+                intro={COPY.smetaIntro(smetaSize(smeta))}
                 context={`Пакет «${t.title}»`}
-                smeta={{ area: 350, terrace: 50, style: defaultStyle, tier, addons: [] }}
+                smeta={smeta}
                 className={`btn mt-auto w-full ${featured ? "btn-light" : "btn-ghost"}`}
               >
                 Получить смету в PDF
@@ -139,8 +150,8 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
       </ol>
 
       <p className="mt-8 max-w-3xl rounded-2xl bg-accent-soft p-5 text-fg">
-        Мы закрепляем цену в договоре. Пересчитать её можно только
-        допсоглашением, если вы сами меняете проект.{" "}
+        Цена фиксируется в договоре и меняется только по дополнительному
+        соглашению, если Вы решите изменить проект.{" "}
         <a
           href={SITE.docs.contract}
           target="_blank"

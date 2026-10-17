@@ -1,6 +1,8 @@
 import type { Locator, Page } from '@playwright/test'
-import { expect, expectSeen, test } from './fixtures'
+import { clickCentered, expect, expectSeen, test } from './fixtures'
+import { COPY } from '@/content/copy'
 import { PRICING } from '@/content/pricing'
+import { SITE } from '@/content/site'
 import { formatRub } from '@/lib/format'
 import { breakdown } from '@/lib/pricing'
 
@@ -21,11 +23,13 @@ async function submitLead(page: Page, root: Locator, submit: RegExp | string) {
   await expect(success).toContainText(/Заявка №\d+ принята/)
 }
 
+const LOWER_PRONOUN = /(?<![А-Яа-яЁё])(вы|вас|вам|вами|ваш|ваша|ваше|ваши|вашего|вашей|вашему|вашим|вашими|ваших|вашу|вашем)(?![А-Яа-яЁё])/
+
 async function openQuiz(page: Page) {
   await page.goto('/')
   await page.getByRole('link', { name: 'Узнать цену за 2 минуты' }).click()
   const quiz = page.getByTestId('quiz')
-  await expectSeen(quiz.getByRole('heading', { name: 'Какой площади дом?' }))
+  await expectSeen(quiz.getByRole('heading', { name: 'Какую площадь дома Вы рассматриваете?' }))
   return quiz
 }
 
@@ -44,7 +48,7 @@ test.describe('Квиз', () => {
     await answerQuiz(page, ['250–350 м²', 'Скандинавский', 'В течение года', 'Участок есть'])
 
     const result = page.getByTestId('quiz-result')
-    await expectSeen(result.getByRole('heading', { name: /Ваша вилка: от .+ до .+/ }))
+    await expectSeen(result.getByRole('heading', { name: /Предварительная стоимость дома — от .+ до .+ млн/ }))
     await expectSeen(result.getByText('Скандинавский'))
     await expectSeen(result.getByRole('button', { name: 'Получить расчёт' }))
 
@@ -57,10 +61,10 @@ test.describe('Квиз', () => {
   test('«Изменить ответы» и переключение вкладок: квиз и калькулятор всегда видны', async ({ page }) => {
     const quiz = await openQuiz(page)
     await answerQuiz(page, ['До 250 м²', 'Пока не знаю', 'Пока изучаю варианты', 'Участка пока нет'])
-    await expectSeen(page.getByTestId('quiz-result').getByRole('heading', { name: /Ваша вилка/ }))
+    await expectSeen(page.getByTestId('quiz-result').getByRole('heading', { name: /Предварительная стоимость дома/ }))
 
     await page.getByRole('button', { name: 'Изменить ответы' }).click()
-    await expectSeen(quiz.getByRole('heading', { name: 'Какой площади дом?' }))
+    await expectSeen(quiz.getByRole('heading', { name: 'Какую площадь дома Вы рассматриваете?' }))
 
     const tabs = page.locator('#calculator').getByRole('tablist')
     for (let i = 0; i < 2; i++) {
@@ -96,8 +100,7 @@ test.describe('Калькулятор', () => {
 
 test.describe('Каждая кнопка заявки открывает видимую форму с заголовком кнопки', () => {
   const cases: { name: string; open: (page: Page) => Promise<void>; heading: string | RegExp }[] = [
-    { name: 'первый экран: экскурсия', open: (p) => p.getByRole('button', { name: 'Покажем построенный дом' }).click(), heading: 'Экскурсия на объект' },
-    { name: 'шапка: мессенджер', open: (p) => p.getByRole('button', { name: 'Написать в мессенджер' }).first().click(), heading: 'Написать в мессенджер' },
+    { name: 'шапка: мессенджер', open: (p) => p.getByRole('button', { name: 'Написать в мессенджер' }).first().click(), heading: COPY.messengerTitle },
     {
       name: 'пакеты: смета в PDF',
       open: async (p) => {
@@ -105,7 +108,7 @@ test.describe('Каждая кнопка заявки открывает вид�
         await btn.scrollIntoViewIfNeeded()
         await btn.click()
       },
-      heading: 'Получить смету в PDF',
+      heading: COPY.smetaTitle,
     },
     {
       name: 'калькулятор: смета в PDF',
@@ -114,10 +117,11 @@ test.describe('Каждая кнопка заявки открывает вид�
         await btn.scrollIntoViewIfNeeded()
         await btn.click()
       },
-      heading: 'Получить смету в PDF',
+      heading: COPY.smetaTitle,
     },
-    { name: 'команда: вопрос архитектору', open: (p) => p.getByRole('button', { name: 'Задать вопрос архитектору' }).click(), heading: 'Задать вопрос архитектору' },
+    { name: 'команда: вопрос архитектору', open: (p) => clickCentered(p.getByRole('button', { name: 'Задать вопрос архитектору' })), heading: 'Обсудите свой будущий дом с архитектором' },
     { name: 'контакты: MAX', open: (p) => p.locator('#contacts').getByRole('button', { name: 'MAX' }).click(), heading: 'Написать в MAX' },
+    { name: 'контакты: ВКонтакте', open: (p) => p.locator('#contacts').getByRole('button', { name: 'ВКонтакте' }).click(), heading: 'Написать во ВКонтакте' },
     {
       name: 'окно проекта: смета в PDF',
       open: async (p) => {
@@ -125,7 +129,7 @@ test.describe('Каждая кнопка заявки открывает вид�
         await expectSeen(p.getByTestId('project-modal'))
         await p.getByTestId('project-modal').getByRole('button', { name: 'Получить смету в PDF' }).click()
       },
-      heading: 'Получить смету в PDF',
+      heading: COPY.smetaTitle,
     },
   ]
 
@@ -137,6 +141,8 @@ test.describe('Каждая кнопка заявки открывает вид�
       await expectSeen(modal.getByRole('heading', { name: c.heading }))
       await expectSeen(modal.getByLabel('Имя'))
       await expectSeen(modal.getByLabel('Телефон'))
+      // «Вы», «Ваш» — с заглавной и во вступлении окна (правка заказчика 17.10.2026).
+      expect(await modal.innerText()).not.toMatch(LOWER_PRONOUN)
       await page.keyboard.press('Escape')
       await expect(modal).toBeHidden()
     })
@@ -224,7 +230,7 @@ test('окно над прокрученной страницей: страни�
 
 test('номер +7 с любым кодом принимается: заявка с +7 (654) … отправляется', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'Покажем построенный дом' }).click()
+  await clickCentered(page.getByRole('button', { name: 'Задать вопрос архитектору' }))
   const modal = page.getByTestId('lead-modal')
   const phone = modal.getByLabel('Телефон')
   await modal.getByLabel('Имя').fill('Анна')
@@ -233,6 +239,111 @@ test('номер +7 с любым кодом принимается: заявк�
   await expect(phone).not.toHaveAttribute('aria-invalid', 'true')
   await modal.getByRole('checkbox').check()
   await page.waitForTimeout(3100)
-  await modal.getByRole('button', { name: 'Записаться на экскурсию' }).click()
+  await modal.getByRole('button', { name: 'Отправить заявку' }).click()
   await expectSeen(modal.getByTestId('lead-success'))
+})
+
+test('квиз: кнопка «Получить расчёт» под карточкой результата, одной колонкой и на компьютере', async ({ page }) => {
+  await openQuiz(page)
+  await answerQuiz(page, ['250–350 м²', 'Скандинавский', 'В течение года', 'Участок есть'])
+  const result = page.getByTestId('quiz-result')
+  const card = result.getByRole('heading', { level: 3 }).locator('xpath=ancestor::div[contains(@class,"card")][1]')
+  const button = result.getByRole('button', { name: 'Получить расчёт' })
+  await expectSeen(button)
+  const [c, b] = [await card.boundingBox(), await button.boundingBox()]
+  expect(b!.y).toBeGreaterThanOrEqual(c!.y + c!.height - 1)
+  expect(b!.x).toBeLessThan(c!.x + c!.width / 2)
+  await expectSeen(result.getByText('Свяжемся с Вами, уточним параметры участка и подготовим смету для Вашего проекта.'))
+})
+
+// Карточки проектов: окно открывает щелчок по фото, по стрелке и по описанию; над фото курсор-указатель.
+test('карточка проекта: щелчок по фото, по стрелке и по описанию открывает окно', async ({ page }) => {
+  await page.goto('/')
+  const card = page.getByTestId('projects-grid').getByRole('listitem').first()
+  await card.scrollIntoViewIfNeeded()
+  const photo = card.getByTestId('project-card')
+  await expectSeen(photo)
+  const modal = page.getByTestId('project-modal')
+  const targets = [
+    { name: 'фото', at: (b: { x: number; y: number; width: number; height: number }) => [b.x + b.width / 2, b.y + b.height * 0.35] as const },
+    { name: 'стрелка', at: (b: { x: number; y: number; width: number; height: number }) => [b.x + b.width - 40, b.y + b.height - 40] as const },
+  ]
+  for (const t of targets) {
+    // Координаты — каждый раз заново: после закрытия окна страница возвращается на место, но могла сдвинуться.
+    await photo.scrollIntoViewIfNeeded()
+    const [x, y] = t.at((await photo.boundingBox())!)
+    const cursor = await page.evaluate(([px, py]) => getComputedStyle(document.elementFromPoint(px!, py!)!).cursor, [x, y])
+    expect(cursor, t.name).toBe('pointer')
+    await page.mouse.click(x, y)
+    await expectSeen(modal)
+    await page.keyboard.press('Escape')
+    await expect(modal).toBeHidden()
+  }
+  await card.locator('p').first().click()
+  await expectSeen(modal)
+})
+
+test('нет плашек «Визуализация» и пометок «демо» в тексте страницы; «Вы» с заглавной', async ({ page }) => {
+  await page.goto('/')
+  await page.evaluate(() => document.documentElement.setAttribute('data-full-layout', ''))
+  const disclaimer = (await page.getByTestId('disclaimer').innerText()).trim()
+  const text = (await page.locator('body').innerText()).replace(disclaimer, '')
+  expect(text).not.toMatch(/Визуализация/i)
+  expect(text).not.toMatch(/демо-|демонстрац|концепт|вымышлен|сгенерирован|условн(ый|ые)/i)
+  expect(text).not.toMatch(LOWER_PRONOUN)
+  // Галерея в окне проекта тоже без подписи «Визуализация».
+  await page.goto('/?project=vista')
+  await expectSeen(page.getByTestId('project-modal'))
+  expect(await page.getByTestId('project-modal').innerText()).not.toMatch(/Визуализация/i)
+})
+
+test('первый экран: без метки над заголовком и блоков-доказательств, под фото — адрес', async ({ page }) => {
+  await page.goto('/')
+  const hero = page.getByTestId('hero')
+  await expect(hero).not.toContainText('Для тех, кто переезжает')
+  await expect(hero.getByRole('list')).toHaveCount(0)
+  await expect(hero).not.toContainText(/сданных дома|Образец договора|Покажем построенный дом/)
+  await expect(hero.getByText(SITE.address, { exact: true })).toBeVisible()
+})
+
+test('карта в футере показывает адрес офиса по координатам из SITE.geo', async ({ page }) => {
+  await page.goto('/')
+  const map = page.getByTestId('office-map')
+  await map.scrollIntoViewIfNeeded()
+  await expect(page.getByTestId('office-map-preview')).toHaveAttribute('alt', new RegExp(SITE.address))
+  await map.getByRole('button', { name: 'Интерактивная карта' }).click()
+  const src = await map.locator('iframe').getAttribute('src')
+  expect(src).toContain(`pt=${SITE.geo.lon}%2C${SITE.geo.lat}`)
+  expect(SITE.geo).toMatchObject({ lat: 55.799917, lon: 37.279968 })
+})
+
+test('меню: пункт «Этапы» ведёт к этапам строительства', async ({ page }) => {
+  await page.goto('/')
+  const wide = (page.viewportSize()?.width ?? 0) >= 1280
+  if (!wide) await page.getByRole('button', { name: 'Открыть меню' }).click()
+  const nav = page.getByRole('navigation', { name: wide ? 'Разделы страницы' : 'Разделы страницы (мобильное меню)', exact: true })
+  await expect(nav.getByRole('link', { name: 'Этапы' })).toHaveAttribute('href', '#process')
+  await expect(nav.getByRole('link', { name: 'Как строим' })).toHaveCount(0)
+})
+
+// closeOverlay вызывает history.back(), а он асинхронный: запоздавший popstate закрывал окно, открытое сразу после.
+test('окно проекта: закрыть и сразу открыть другое — новое окно остаётся открытым', async ({ page }) => {
+  await page.goto('/')
+  const grid = page.getByTestId('projects-grid')
+  const modal = page.getByTestId('project-modal')
+  await grid.getByRole('button', { name: 'VISTA' }).click()
+  await expectSeen(modal)
+  // Закрыть и открыть в одной задаче: history.back() ещё не дошёл, когда открывается новое окно.
+  await page.evaluate(() => {
+    document.querySelector<HTMLButtonElement>('[data-testid=project-modal] button[aria-label="Закрыть окно"]')!.click()
+    const nordic = [...document.querySelectorAll<HTMLButtonElement>('[data-testid=projects-grid] h3 button')].find((b) => b.textContent === 'NORDIC')!
+    nordic.click()
+  })
+  await expect(modal.getByRole('heading', { level: 2 })).toContainText('NORDIC')
+  await page.waitForTimeout(600)
+  await expect(modal).toBeVisible()
+  await expect(page).toHaveURL(/project=nordic/)
+  await page.goBack()
+  await expect(modal).toBeHidden()
+  await expect(page).not.toHaveURL(/project=/)
 })

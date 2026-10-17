@@ -2,9 +2,9 @@
 
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
-import { PRICING, STYLE_ORDER } from '@/content/pricing'
+import { CALC_LIMITS, PRICING, STYLE_ORDER } from '@/content/pricing'
 import type { Style } from '@/content/types'
-import { formatMln } from '@/lib/format'
+import { formatMlnRange } from '@/lib/format'
 import { priceFor } from '@/lib/pricing'
 import { useLanding } from '../LandingProvider'
 import { revealOrder } from '@/lib/reveal'
@@ -13,7 +13,7 @@ import { track } from '@/lib/analytics'
 // Сроки старта — относительно текущей даты, без зашитых годов (PLAN P5.3).
 const AREAS = [
   // Нижняя граница — минимальная площадь калькулятора, 100 м² (решение 12.10.2026).
-  { label: 'До 250 м²', range: [100, 250] },
+  { label: 'До 250 м²', range: [CALC_LIMITS.area.min, 250] },
   { label: '250–350 м²', range: [250, 350] },
   { label: '350–500 м²', range: [350, 500] },
   { label: 'Больше 500 м²', range: [500, 700] },
@@ -24,7 +24,7 @@ const STYLES = [...STYLE_ORDER.map((s) => ({ label: PRICING.styles[s].title, sty
 const START = ['В ближайшие 3 месяца', 'В течение года', 'Пока изучаю варианты']
 const LAND = ['Участок есть', 'Покупаю участок', 'Участка пока нет']
 
-const QUESTIONS = ['Какой площади дом?', 'Какой стиль ближе?', 'Когда хотите начать?', 'Что с участком?'] as const
+const QUESTIONS = ['Какую площадь дома Вы рассматриваете?', 'Какой стиль дома Вам ближе?', 'Когда планируете начать строительство?', 'У Вас уже есть участок?'] as const
 
 export function Quiz() {
   const { openLead } = useLanding()
@@ -60,14 +60,15 @@ export function Quiz() {
   if (done) {
     const { low, high } = range()
     return (
-      <div className="grid gap-6 lg:grid-cols-12" data-testid="quiz-result">
-        <div className="reveal card p-6 sm:p-8 lg:col-span-7">
+      // Карточка результата и под ней кнопка заявки — одной колонкой на любой ширине (правка заказчика 17.10.2026).
+      <div className="grid gap-6" data-testid="quiz-result">
+        <div className="reveal card p-6 sm:p-8">
           <h3 ref={headingRef} tabIndex={-1} className="display text-2xl leading-tight font-bold outline-none sm:text-3xl">
-            Ваша вилка: от {formatMln(low)} до {formatMln(high)}
+            Предварительная стоимость дома — {formatMlnRange(low, high)}
           </h3>
           <p className="mt-3 text-muted">
-            Нижняя граница соответствует тёплому контуру на минимальную площадь, верхняя — дому под ключ на максимальную. Террасу и опции мы не учитывали. Точную цену назовём, когда
-            уточним проект и участок.
+            Минимальная цена — за тёплый контур дома небольшой площади, максимальная — за дом максимальной площади под ключ. Терраса и дополнительные опции не учтены. Точную стоимость
+            рассчитаем после уточнения проекта и участка.
           </p>
           <ul className="mt-5 grid gap-1.5 text-[0.9375rem]">
             {QUESTIONS.map((q, i) => (
@@ -81,16 +82,16 @@ export function Quiz() {
             Изменить ответы
           </button>
         </div>
-        <div className="lg:col-span-5 lg:pt-8">
+        <div className="reveal flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
           <button
             type="button"
-            className="btn btn-primary w-full"
+            className="btn btn-primary w-full sm:w-auto"
             onClick={() =>
               openLead({
                 title: 'Получить расчёт',
                 source: 'quiz',
                 quiz: summary(),
-                context: `Вилка ${formatMln(low)} — ${formatMln(high)}`,
+                context: `Вилка ${formatMlnRange(low, high)}`,
                 extended: true,
               })
             }
@@ -100,7 +101,7 @@ export function Quiz() {
               <ArrowRight aria-hidden className="size-4" />
             </span>
           </button>
-          <p className="mt-3 text-sm text-muted">Мы перезвоним, уточним детали участка и подготовим смету под ваш проект.</p>
+          <p className="text-sm text-muted">Свяжемся с Вами, уточним параметры участка и подготовим смету для Вашего проекта.</p>
         </div>
       </div>
     )

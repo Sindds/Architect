@@ -5,7 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { getCase } from '@/content/cases'
 import { getProject } from '@/content/projects'
 import type { VariantKey } from '@/content/types'
-import type { LeadSource } from '@/lib/lead-constants'
+import type { CONTACT_METHODS, LeadSource } from '@/lib/lead-constants'
 
 import type { SmetaInput } from '@/lib/smeta-token'
 import { track } from '@/lib/analytics'
@@ -26,9 +26,11 @@ export interface LeadRequest {
   /** Параметры дома для PDF-сметы: после заявки появится ссылка «Скачать смету (PDF)». */
   smeta?: SmetaInput
   quiz?: string
+  /** Абзацы вступления над формой, если текст зависит от данных страницы (иначе — по source в LeadModal). */
+  intro?: string[]
   extended?: boolean
   submitLabel?: string
-  contactMethod?: 'call' | 'telegram' | 'whatsapp' | 'max'
+  contactMethod?: keyof typeof CONTACT_METHODS
 }
 
 type Overlay = { kind: 'project'; slug: string } | { kind: 'case'; slug: string } | null
@@ -75,6 +77,18 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
   const [calcPreset, setCalcPreset] = useState<string | null>(null)
   // Окно открыто кликом (есть запись в истории) или прямой ссылкой (записи нет).
   const pushed = useRef(false)
+  // history.back() асинхронный: пока он не дошёл (popstate), новое окно не пишем в историю, иначе
+  // запоздавший popstate закроет его. Окно показываем сразу, запись делаем после popstate.
+  const backPending = useRef(false)
+  const queued = useRef<Overlay>(null)
+
+  const push = useCallback((next: NonNullable<Overlay>) => {
+    const key = next.kind
+    const other = key === 'project' ? 'case' : 'project'
+    window.history.pushState(null, '', urlWith({ [key]: next.slug, [other]: null, calc: null }))
+    pushed.current = true
+    setOverlay(next)
+  }, [])
 
   useEffect(() => {
     // Прямой заход по ссылке /?project=slug или /?case=slug открывает окно сразу.
@@ -87,11 +101,20 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
     /* eslint-enable react-hooks/set-state-in-effect */
     const onPop = () => {
       pushed.current = false
+      if (backPending.current) {
+        backPending.current = false
+        const next = queued.current
+        queued.current = null
+        if (next) push(next)
+        return
+      }
       setOverlay(readOverlay())
     }
     window.addEventListener('popstate', onPop)
+    // Отметка «страница ожила»: кнопки до гидратации не работают. По ней тесты ждут готовности (tests/e2e/fixtures.ts).
+    document.documentElement.dataset.hydrated = ''
     return () => window.removeEventListener('popstate', onPop)
-  }, [])
+  }, [push])
 
   // Цель «открыл проект/дом» — и по клику, и по прямой ссылке, и по «Вперёд» в браузере.
   useEffect(() => {
@@ -99,17 +122,23 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
   }, [overlay])
 
   const openOverlay = useCallback((next: NonNullable<Overlay>) => {
-    const key = next.kind
-    const other = key === 'project' ? 'case' : 'project'
-    window.history.pushState(null, '', urlWith({ [key]: next.slug, [other]: null, calc: null }))
-    pushed.current = true
-    setOverlay(next)
-  }, [])
+    if (backPending.current) {
+      queued.current = next
+      setOverlay(next)
+      return
+    }
+    push(next)
+  }, [push])
 
   const closeOverlay = useCallback(() => {
-    if (pushed.current) {
+    if (queued.current) {
+      // Окно ещё не записано в историю: «Назад» в пути и вернёт адрес без параметра.
+      queued.current = null
+      setOverlay(null)
+    } else if (pushed.current) {
       // «Назад» убирает параметр из адреса; состояние обновит обработчик popstate.
       pushed.current = false
+      backPending.current = true
       window.history.back()
       setOverlay(null)
     } else {

@@ -19,8 +19,9 @@ export function CookieBanner() {
       data-testid="cookie-banner"
       className="fixed inset-x-2 bottom-2 z-[60] rounded-3xl border border-line bg-surface p-4 text-fg shadow-2xl motion-safe:animate-[cookie-in_400ms_var(--ease-out-soft)] sm:inset-x-auto sm:right-4 sm:bottom-4 sm:max-w-md sm:p-5"
     >
-      <p className="text-sm leading-relaxed">
-        Мы храним в браузере тему и ваш выбор, без них сайт не работает. {SITE.metrikaId ? 'Интерактивная карта Яндекса и Яндекс Метрика ставят свои cookie, поэтому мы загружаем их только с вашего согласия.' : 'Интерактивная карта Яндекса ставит свои cookie, поэтому мы загружаем её только с вашего согласия.'}{' '}
+      <p className="text-[0.8125rem] leading-snug sm:text-sm sm:leading-relaxed">
+        Мы используем необходимые файлы cookie и локальное хранилище браузера для корректной работы сайта и сохранения Ваших настроек. С Вашего согласия мы также используем файлы cookie{' '}
+        {SITE.metrikaId ? 'Яндекс Карт для отображения интерактивной карты и Яндекс Метрики для статистики посещений.' : 'Яндекс Карт для отображения интерактивной карты.'} Вы можете принять или отклонить использование дополнительных cookie.{' '}
         <Link href="/cookies" className="link whitespace-nowrap">
           Подробнее о cookie
         </Link>

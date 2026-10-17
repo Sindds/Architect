@@ -5,6 +5,9 @@ import { CookieSettingsButton } from '../CookieSettingsButton'
 import { OfficeMap } from '../OfficeMap'
 import { Logo } from '../ui/Logo'
 
+/** Год сборки: страница статическая, год обновляется при следующей сборке. */
+const COPYRIGHT_YEAR = new Date().getFullYear()
+
 /** Футер по образцу: тёмная скруглённая карточка с контактами, дисклеймером концепта и юридическими ссылками. */
 export function Footer() {
   const concept = SITE.contentMode === 'concept'
@@ -14,7 +17,7 @@ export function Footer() {
         <div className="grid gap-10 border-b border-white/10 pb-10 md:grid-cols-2 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <Logo />
-            <p className="mt-4 max-w-sm text-on-inverse-muted">{SITE.descriptor}. Проектируем и строим дома из клееного бруса и монолита в Подмосковье.</p>
+            <p className="mt-4 max-w-sm text-on-inverse-muted">{SITE.about}</p>
           </div>
           <nav aria-label="Разделы страницы (футер)" className="lg:col-span-3">
             <p className="label text-[#9fc0de]">Разделы</p>
@@ -50,7 +53,7 @@ export function Footer() {
           <div className="lg:col-span-4">
             <p className="label text-[#9fc0de]">Как добраться</p>
             <p className="mt-3 max-w-sm text-on-inverse-muted">
-              {SITE.address}. {concept ? 'Адрес условный, как и вся компания концепт-проекта: карта показывает район.' : SITE.hours}
+              {SITE.address}. {SITE.hours}
             </p>
           </div>
           <div className="lg:col-span-8">
@@ -58,9 +61,12 @@ export function Footer() {
           </div>
         </div>
         <div className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:justify-between">
-          <p className="max-w-xl text-sm text-on-inverse-muted" data-testid="disclaimer">
-            {concept ? SITE.disclaimer : operatorRequisites(SITE)}
-          </p>
+          <div className="grid max-w-xl gap-1 text-sm text-on-inverse-muted">
+            <p data-testid="copyright">
+              © {COPYRIGHT_YEAR} {SITE.brandFull}
+            </p>
+            <p data-testid="disclaimer">{concept ? SITE.disclaimer : operatorRequisites(SITE)}</p>
+          </div>
           <ul className="flex flex-wrap gap-x-5 text-sm">
             <li>
               <Link href="/privacy" className="link inline-flex min-h-11 items-center">

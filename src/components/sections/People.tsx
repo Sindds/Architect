@@ -8,14 +8,12 @@ import { SectionHead } from "../ui/SectionHead";
 import { revealOrder } from "@/lib/reveal";
 
 export function Team() {
-  const concept = SITE.contentMode === "concept";
   return (
     <section aria-labelledby="team-title" className="lazy-section border-t border-line">
       <div className="shell py-16 sm:py-24">
         <SectionHead
           id="team-title"
           copy={COPY.sections.team}
-          lead={concept ? COPY.sections.team.lead : ""}
         />
         <ul
           data-testid="team"
@@ -66,11 +64,13 @@ export function Team() {
         </ul>
         <div className="mt-6 flex flex-col items-start gap-4 rounded-3xl bg-accent-soft p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
           <p className="max-w-xl text-lg">
-            Ещё не выбрали проект? Расскажите архитектору, как вы хотите жить за
-            городом, и он предложит, с чего начать.
+            Не определились с проектом? Расскажите архитектору, каким Вы
+            представляете свой загородный дом. Он поможет определить Ваши
+            потребности и подобрать подходящее решение.
           </p>
           <LeadButton
             source="architect"
+            formTitle="Обсудите свой будущий дом с архитектором"
             extended
             className="btn btn-primary shrink-0"
             icon={
@@ -116,21 +116,15 @@ export function Reviews() {
                     <span className="text-muted">{r.object}</span>
                   </span>
                 </figcaption>
-                {r.isDemo ? (
-                  <p className="label mt-4 font-normal text-muted">
-                    Демо-отзыв концепт-проекта
-                  </p>
-                ) : (
-                  r.sourceUrl && (
-                    <a
-                      href={r.sourceUrl}
-                      className="link mt-4 text-sm"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      Отзыв на Яндекс Картах
-                    </a>
-                  )
+                {!r.isDemo && r.sourceUrl && (
+                  <a
+                    href={r.sourceUrl}
+                    className="link mt-4 text-sm"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Отзыв на Яндекс Картах
+                  </a>
                 )}
               </figure>
             </li>

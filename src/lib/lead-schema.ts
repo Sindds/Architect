@@ -13,7 +13,7 @@ export const leadSchema = z.object({
       if (problem) ctx.addIssue({ code: 'custom', message: problem })
     })
     .transform((v) => normalizePhone(v) as string),
-  consent: z.literal('on', { message: 'Без согласия на обработку данных отправить заявку нельзя' }),
+  consent: z.literal('on', { message: 'Без согласия на обработку данных отправить заявку невозможно' }),
   contactMethod: z.enum(Object.keys(CONTACT_METHODS) as [keyof typeof CONTACT_METHODS]).default('call'),
   comment: z.string().trim().max(1000, 'Комментарий — не длиннее 1000 символов').optional(),
   source: z.enum(LEAD_SOURCES),

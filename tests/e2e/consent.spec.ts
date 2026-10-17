@@ -59,7 +59,8 @@ test('«Принять все»: карта в футере загружаетс
   await expect(banner(page)).toBeHidden()
   const map = page.getByTestId('office-map')
   await map.scrollIntoViewIfNeeded()
-  await expect(map.locator('iframe')).toHaveAttribute('src', /ll=37\.31\d*%2C55\.80\d*/)
+  // Точка адреса «Новорижское шоссе, 7-й километр, с1» (SITE.geo, геокодер Яндекс Карт).
+  await expect(map.locator('iframe')).toHaveAttribute('src', /ll=37\.279968%2C55\.799917/)
 })
 
 test('без выбора карта не грузится, а баннер не перекрывает кнопки первого экрана на телефоне', async ({ page }) => {

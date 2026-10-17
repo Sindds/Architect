@@ -2,7 +2,8 @@
 
 import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
-import { ADDON_ORDER, PRICING, STYLE_ORDER, TIER_ORDER } from '@/content/pricing'
+import { ADDON_ORDER, CALC_LIMITS, PRICING, STYLE_ORDER, TIER_ORDER } from '@/content/pricing'
+import { COPY } from '@/content/copy'
 import { getProject } from '@/content/projects'
 import type { AddonKey, Style, Tier } from '@/content/types'
 import { formatDays, formatRub, groupDigits } from '@/lib/format'
@@ -10,8 +11,8 @@ import { breakdown, minPriceFor, ROUNDING_STEP } from '@/lib/pricing'
 import { useLanding } from '../LandingProvider'
 import { track } from '@/lib/analytics'
 
-const AREA = { min: 100, max: 800, step: 10 }
-const TERRACE = { min: 0, max: 200, step: 5 }
+const AREA = CALC_LIMITS.area
+const TERRACE = CALC_LIMITS.terrace
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
 
 export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
@@ -208,12 +209,12 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
             </p>
           </div>
           <p className="mt-4 text-sm text-on-inverse-muted">
-            Это предварительный расчёт, итог округлён до {formatRub(ROUNDING_STEP)}. Твёрдую цену фиксируем в договоре по смете вашего проекта: дальше она меняется, только если вы сами меняете проект или комплектацию.
+            Это предварительный расчёт, итог округлён до {formatRub(ROUNDING_STEP)}. Твёрдую цену фиксируем в договоре по смете Вашего проекта: дальше она меняется, только если Вы сами меняете проект или комплектацию.
           </p>
           <button
             type="button"
             className="btn btn-light mt-5 w-full"
-            onClick={() => openLead({ title: 'Получить смету в PDF', source: 'calculator', estimate, context: estimate, smeta: { area, terrace, style, tier, addons } })}
+            onClick={() => openLead({ title: COPY.smetaTitle, source: 'calculator', estimate, context: estimate, smeta: { area, terrace, style, tier, addons } })}
           >
             Получить смету в PDF
             <span className="btn-dot">

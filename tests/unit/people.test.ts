@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { COPY } from '@/content/copy'
+import { SITE } from '@/content/site'
 import { TEAM, visiblePhoto } from '@/content/people'
 
 // Решение заказчика 08.10.2026: в концепте у команды портреты из прототипа (сгенерированные).
@@ -19,7 +19,10 @@ describe('Портреты команды', () => {
     expect(visiblePhoto(m, 'client')).toBeUndefined()
   })
 
-  it('лид блока команды честно говорит, что портреты сгенерированы', () => {
-    expect(COPY.sections.team.lead).toMatch(/сгенерирован/)
+  // Пометку о сгенерированных портретах из текста блока убрали (правка заказчика 17.10.2026). Она осталась
+  // в alt для экранных дикторов, а в концепте футер говорит, что люди вымышлены.
+  it('портреты подписаны в alt, а в концепте футер называет людей вымышленными', () => {
+    for (const m of TEAM) expect(m.photo?.alt).toContain('сгенерированный портрет')
+    expect(SITE.disclaimer).toMatch(/люди/)
   })
 })

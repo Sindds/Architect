@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { CASES } from '@/content/cases'
 import { STEPS, STEPS_EXAMPLE, FAQ } from '@/content/process'
+import { CALC_LIMITS, STYLE_ORDER } from '@/content/pricing'
 import { PROJECTS } from '@/content/projects'
 import type { Style, Tier } from '@/content/types'
-import { formatDeviation, formatMln, formatRub } from '@/lib/format'
-import { breakdown, daysFor, minContour, minPriceFor, minTurnkey, priceFor, projectPrice } from '@/lib/pricing'
+import { formatDeviation, formatMln, formatMlnFrom, formatRub } from '@/lib/format'
+import { breakdown, daysFor, minCalc, minContour, minPriceFor, minTurnkey, priceFor, projectPrice } from '@/lib/pricing'
 import { heroFor, projectsFor } from '@/lib/variant'
 
 const NBSP = ' '
@@ -110,16 +111,24 @@ describe('CONTENT-SPEC §5.4 — этапы', () => {
 })
 
 describe('CONTENT-SPEC §9 — H1 вариантов', () => {
-  // В H1 — самая низкая цена проекта на сайте (тёплый контур), в подзаголовке — контур и под ключ.
+  // В H1 — самая низкая цена на сайте: тёплый контур на 100 м² без террасы в самом дешёвом стиле варианта
+  // (правка заказчика 17.10.2026). Скандинавский: 100 × 88 000 × 0,95 = 8 360 000 ₽; под ключ 100 × 175 000 × 0,95 → 16 630 000 ₽.
+  // Фахверк ×1,0: 8,8 и 17,5 млн; монолит ×1,2: 10,56 и 21 млн. Вверх не округляем.
   it.each([
-    ['default', '26,4', '51,6'],
-    ['fachwerk', '35,4', '69,5'],
-    ['monolith', '60,9', '119,4'],
-    ['scandi', '26,4', '51,6'],
+    ['default', '8,36', '16,63'],
+    ['fachwerk', '8,8', '17,5'],
+    ['monolith', '10,56', '21'],
+    ['scandi', '8,36', '16,63'],
   ] as const)('%s → «от %s млн ₽», под ключ от %s', (key, contour, turnkey) => {
     expect(heroFor(key).h1).toMatch(new RegExp(`— от ${contour}${NBSP}млн${NBSP}₽$`))
     expect(heroFor(key).subtitle).toContain(`Тёплый контур от ${contour}${NBSP}млн${NBSP}₽`)
     expect(heroFor(key).subtitle).toContain(`под ключ от ${turnkey}${NBSP}млн${NBSP}₽`)
+  })
+  it('цена в H1 не больше минимума калькулятора и квиза: 100 м², без террасы, любой стиль', () => {
+    const lowest = Math.min(...STYLE_ORDER.map((style) => priceFor({ area: CALC_LIMITS.area.min, terrace: 0, style, tier: 'contour', addons: [] })))
+    expect(minCalc('contour').price).toBe(lowest)
+    expect(formatMlnFrom(lowest)).toBe(`8,36${NBSP}млн${NBSP}₽`)
+    expect(minCalc('turnkey').days).toBe(daysFor(CALC_LIMITS.area.min, 'turnkey'))
   })
   it('первый проект в сетке — проект кампании', () => {
     expect(projectsFor('monolith')[0]?.slug).toBe('titan')

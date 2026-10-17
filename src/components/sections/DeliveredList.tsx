@@ -2,18 +2,10 @@
 
 import { ArrowUpRight } from 'lucide-react'
 import { CASES } from '@/content/cases'
-import { formatDayDelta, formatPriceDelta } from '@/lib/format'
-import { daysFor, priceFor } from '@/lib/pricing'
 import { useLanding } from '../LandingProvider'
 import { revealOrder } from '@/lib/reveal'
 
-/** «+9 дней» без подлежащего непонятно: уточняем, что это к сроку. */
-const dayNote = (plan: number, fact: number) => {
-  const d = formatDayDelta(plan, fact)
-  return d.startsWith('+') ? `${d} к сроку` : d
-}
-
-/** Сданные дома: план и факт по смете и сроку. Клик открывает окно кейса (/?case=slug). */
+/** Сданные дома. Клик открывает окно кейса (/?case=slug) с планом и фактом по смете и сроку. */
 export function DeliveredList() {
   const { openCase } = useLanding()
   return (
@@ -27,9 +19,6 @@ export function DeliveredList() {
           >
             <span className="min-w-0 flex-1">
               <span className="block font-semibold">{c.title}</span>
-              <span className="mt-0.5 block text-sm text-muted">
-                {formatPriceDelta(priceFor(c), c.factPrice)}, {dayNote(daysFor(c.area, c.tier, c.addons), c.factDays)}
-              </span>
             </span>
             <ArrowUpRight aria-hidden className="size-4 shrink-0 text-accent transition-transform group-hover:rotate-45 motion-reduce:transition-none" />
           </button>

@@ -7,9 +7,10 @@
  * Запуск: pnpm docs:pdf
  */
 import { existsSync } from 'node:fs'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { chromium } from '@playwright/test'
+import { uniqueSubsetTags } from './pdf-subset-tags'
 import { contractHtml, estimateHtml } from './sample-docs'
 
 async function main() {
@@ -24,13 +25,14 @@ async function main() {
   ] as const) {
     await tab.setContent(html, { waitUntil: 'load' })
     await tab.evaluate(() => document.fonts.ready)
-    await tab.pdf({
-      path: path.join(out, file),
+    const pdf = await tab.pdf({
       format: 'A4',
       printBackground: true,
       preferCSSPageSize: true,
       tagged: true,
     })
+    // Chrome даёт разным подмножествам одного шрифта одинаковую метку: исправляем (scripts/pdf-subset-tags.ts).
+    await writeFile(path.join(out, file), uniqueSubsetTags(pdf))
     console.log('✓', file)
   }
   await browser.close()

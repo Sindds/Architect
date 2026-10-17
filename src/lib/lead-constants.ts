@@ -17,7 +17,7 @@ export const LEAD_SOURCES = [
 
 export type LeadSource = (typeof LEAD_SOURCES)[number]
 
-export const CONTACT_METHODS = { call: 'Звонок', telegram: 'Telegram', whatsapp: 'WhatsApp', max: 'MAX' } as const
+export const CONTACT_METHODS = { call: 'Звонок', telegram: 'Telegram', whatsapp: 'WhatsApp', max: 'MAX', vk: 'ВКонтакте' } as const
 
 export type LeadState =
   | { status: 'idle' }

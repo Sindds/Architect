@@ -38,7 +38,9 @@ export function Projects({ projects }: { projects: Project[] }) {
             const turnkey = projectPrice(p, 'turnkey')
             return (
               <li key={p.slug} className="reveal" style={revealOrder(i)}>
-                <article className="group relative">
+                {/* Окно открывает щелчок по любому месту карточки: по фото, стрелке, описанию и ценам.
+                    С клавиатуры — кнопка с названием: Enter и пробел дают click, он всплывает сюда. */}
+                <article className="group relative cursor-pointer" onClick={() => openProject(p.slug)}>
                   <div data-testid="project-card" className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-line bg-[#0a0b0d] shadow-lg transition-[transform,box-shadow] duration-500 ease-[var(--ease-out-soft)] group-hover:-translate-y-2 group-hover:shadow-2xl group-active:scale-[0.985] motion-reduce:transition-none sm:aspect-[16/11]">
                     <Image
                       src={p.cover.src}
@@ -56,19 +58,11 @@ export function Projects({ projects }: { projects: Project[] }) {
                       <span data-chip className="label num rounded-full border border-white/20 bg-black/55 px-3 py-1.5 font-medium text-white fine:bg-white/20 fine:backdrop-blur-md">
                         {p.area} м²
                       </span>
-                      <span data-chip className="label ml-auto rounded-full bg-black/60 px-3 py-1.5 font-medium text-[#d4d8dd]">
-                        {p.cover.caption}
-                      </span>
                     </div>
                     <div className="absolute inset-x-4 bottom-4 flex items-end justify-between gap-4 text-white sm:inset-x-6 sm:bottom-6">
                       <div>
                         <h3 className="display text-3xl font-bold sm:text-4xl">
-                          <button
-                            type="button"
-                            onClick={() => openProject(p.slug)}
-                            aria-haspopup="dialog"
-                            className="cursor-pointer text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
-                          >
+                          <button type="button" aria-haspopup="dialog" className="cursor-pointer text-left focus-visible:outline-none">
                             {p.name}
                           </button>
                         </h3>

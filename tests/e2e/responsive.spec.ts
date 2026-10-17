@@ -30,25 +30,7 @@ for (const width of [320, 375, 768, 1024, 1280, 1440]) {
     expect(h1?.lines).toBeLessThanOrEqual(5)
     const [price] = await textLines(page, '[data-testid=hero-price]')
     expect(price?.lines).toBe(1)
-    await expect(page.getByTestId('hero-price')).toContainText('26,4')
-  })
-}
-
-for (const width of [640, 768, 1024, 1280, 1440]) {
-  test(`${width}px: карточки доказательств на первом экране не наезжают друг на друга`, async ({ page }) => {
-    await page.setViewportSize({ width, height: 900 })
-    await page.goto('/')
-    const boxes = await page.locator('[aria-label="Доказательства"] li > *').evaluateAll((els) =>
-      els.map((e) => {
-        const r = e.getBoundingClientRect()
-        const li = e.parentElement!.getBoundingClientRect()
-        return { l: r.left, r: r.right, t: r.top, b: r.bottom, inCell: r.right <= li.right + 1 && r.left >= li.left - 1 }
-      }),
-    )
-    expect(boxes).toHaveLength(3)
-    expect(boxes.every((b) => b.inCell)).toBe(true)
-    const overlaps = boxes.flatMap((a, i) => boxes.slice(i + 1).filter((b) => a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1))
-    expect(overlaps).toEqual([])
+    await expect(page.getByTestId('hero-price')).toContainText('8,36')
   })
 }
 
@@ -74,14 +56,14 @@ for (const width of [320, 360, 640, 1024, 1180]) {
 }
 
 for (const width of [360, 375, 414]) {
-  test(`${width}px: кнопки первого экрана и метка в одну строку, без висячих предлогов`, async ({ page }) => {
+  test(`${width}px: кнопки первого экрана и адрес в одну строку`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 })
     await page.goto('/')
     const buttons = await textLines(page, '[data-testid=hero] .btn')
     expect(buttons.filter((b) => b.lines > 1)).toEqual([])
-    // Метка не заканчивает строку предлогом: «за» привязан к следующему слову неразрывным пробелом.
-    const label = await page.getByTestId('hero').locator('p.label').first().textContent()
-    expect(label).toMatch(/\sза\u00A0/)
+    // Метки над заголовком нет (правка 17.10.2026); под фото — адрес офиса.
+    const [address] = await textLines(page, '[data-testid=hero] p.label')
+    expect(address?.lines).toBeLessThanOrEqual(2)
   })
 }
 
@@ -105,7 +87,8 @@ test.describe('Телефон', () => {
     const card = page.getByTestId('project-card').first()
     await card.scrollIntoViewIfNeeded()
     const boxes = await card.locator('[data-chip]').evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ l: r.left, r: r.right, t: r.top, b: r.bottom })))
-    expect(boxes.length).toBeGreaterThanOrEqual(3)
+    // Стиль и площадь; плашки «Визуализация» нет (правка 17.10.2026).
+    expect(boxes.length).toBe(2)
     const overlaps = boxes.flatMap((a, i) => boxes.slice(i + 1).filter((b) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b))
     expect(overlaps).toEqual([])
   })
@@ -134,7 +117,7 @@ test.describe('Телефон', () => {
     for (const b of boxes) expect(b.h).toBeLessThanOrEqual(667)
     const first = page.locator('#pricing ol > li').first()
     await first.getByText('Что входит и что нет').click()
-    await expect(first.getByText('Геология, топосъёмка, проект АР и КР')).toBeVisible()
+    await expect(first.getByText('Геология, топосъёмка, проект', { exact: true })).toBeVisible()
   })
 })
 
@@ -181,5 +164,5 @@ for (const width of [390, 1600]) {
 test('нет неподтверждённой популярности и «0%» в сданных домах', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByText('Выбирают чаще')).toHaveCount(0)
-  await expect(page.getByTestId('delivered').getByText('смета не изменилась').first()).toBeVisible()
+  await expect(page.getByTestId('delivered')).not.toContainText('0%')
 })

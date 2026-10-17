@@ -1,5 +1,5 @@
 import { ESTIMATE } from '@/content/estimate'
-import { PRICING } from '@/content/pricing'
+import { CALC_LIMITS, PRICING } from '@/content/pricing'
 import type { AddonKey, EstimateBasis, EstimateItem, EstimatePlan, EstimateUnit, PricingModel, Style, Tier } from '@/content/types'
 
 // Единственное место, где считаются цены и сроки (CONTENT-SPEC §5.1).
@@ -88,6 +88,19 @@ export const minTurnkeyDays = (projects: Priced[], style: Style | null = null, m
 export const minContour = (projects: Priced[], style: Style | null = null, model: PricingModel = PRICING) =>
   minOf(projects, 'contour', style, 'price', model)
 
+/**
+ * Самая низкая цена и срок, которые можно получить в калькуляторе и квизе: минимальная площадь, без террасы и опций,
+ * самый дешёвый стиль (или стиль варианта). Это цена «от» для H1: ниже на странице дешевле не найти.
+ */
+export function minCalc(tier: Tier, style: Style | null = null, model: PricingModel = PRICING) {
+  const area = CALC_LIMITS.area.min
+  const styles = style ? [style] : (Object.keys(model.styles) as Style[])
+  return {
+    price: Math.min(...styles.map((s) => priceFor({ area, terrace: 0, style: s, tier, addons: [] }, model))),
+    days: daysFor(area, tier, [], model),
+  }
+}
+
 // ── Смета-образец ─────────────────────────────────────────────────────────────
 // Цена дома из breakdown() раскладывается по разделам (доли из content/estimate.ts) и позициям (веса).
 // Сумма позиции = объём × цена за единицу. Остаток округления раздела забирает позиция «за комплект»,
@@ -155,10 +168,11 @@ function linesFor(items: EstimateItem[], target: number, basis: Record<EstimateB
 
 /** Подробная смета: разделы, позиции с объёмом и ценой; итог равен breakdown().total. */
 export function estimateFor(e: EstimateInput, model: PricingModel = PRICING, plan: EstimatePlan = ESTIMATE): EstimateSheet {
-  if (!model.styles[e.style].construction.startsWith('Клееный брус')) throw new Error('Смета-образец рассчитана на каркас из клееного бруса')
   const b = breakdown(e, model)
   const basis = geometry(e, b.days, plan)
-  const included = plan.sections.filter((s) => TIER_ORDER.indexOf(s.from) <= TIER_ORDER.indexOf(e.tier))
+  // Разделы каркаса, стен, кровли и фасада свои для бруса и для монолита (EstimateSection.frame).
+  const frame = model.styles[e.style].frame
+  const included = plan.sections.filter((s) => (!s.frame || s.frame === frame) && TIER_ORDER.indexOf(s.from) <= TIER_ORDER.indexOf(e.tier))
   const shares = included.reduce((s, x) => s + x.share, 0)
 
   let allocated = 0

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { expect, test } from './fixtures'
+import { clickCentered, expect, test } from './fixtures'
 
 // PLAN P7.2: цели Метрики проверяем заглушкой window.ym — она записывает вызовы reachGoal.
 const goals = (page: Page) =>
@@ -40,15 +40,17 @@ test('образец PDF и телефон', async ({ page }) => {
   await expect.poll(() => names(page)).toContain('phone_click')
 })
 
-test('окно проекта и экскурсия', async ({ page }) => {
+test('окно проекта и окно сданного дома', async ({ page }) => {
   await page.goto('/')
   await page.getByTestId('projects-grid').getByRole('button', { name: 'VISTA' }).click()
   await expect(page.getByTestId('project-modal')).toBeVisible()
   await expect.poll(() => goals(page)).toEqual(expect.arrayContaining([{ goal: 'project_open', params: { slug: 'vista' } }]))
   await page.keyboard.press('Escape')
   await expect(page.getByTestId('project-modal')).toBeHidden()
-  await page.getByRole('button', { name: 'Покажем построенный дом' }).click()
-  await expect.poll(() => names(page)).toContain('excursion_click')
+  const house = page.getByTestId('delivered').getByRole('button', { name: /Дом у воды/ })
+  await house.scrollIntoViewIfNeeded()
+  await house.click()
+  await expect.poll(() => goals(page)).toEqual(expect.arrayContaining([{ goal: 'case_open', params: { slug: 'dom-u-vody' } }]))
 })
 
 test('lead_submit — только когда сервер принял заявку, с источником и вариантом; при ошибке — нет', async ({ page }) => {
@@ -58,21 +60,21 @@ test('lead_submit — только когда сервер принял заяв
   await page.goto('/')
   const modal = page.getByTestId('lead-modal')
   const fill = async () => {
-    await page.getByRole('button', { name: 'Покажем построенный дом' }).click()
+    await clickCentered(page.getByRole('button', { name: 'Задать вопрос архитектору' }))
     await modal.getByLabel('Имя').fill('Анна')
     await modal.getByLabel('Телефон').fill('9161234567')
     await modal.getByRole('checkbox').check()
     await page.waitForTimeout(3100)
-    await modal.getByRole('button', { name: 'Записаться на экскурсию' }).click()
+    await modal.getByRole('button', { name: 'Отправить заявку' }).click()
   }
   await fill()
   await expect(modal.getByRole('alert')).toContainText('Не удалось отправить')
   expect(await names(page)).not.toContain('lead_submit')
 
   await page.unroute('**/*')
-  await modal.getByRole('button', { name: 'Записаться на экскурсию' }).click()
+  await modal.getByRole('button', { name: 'Отправить заявку' }).click()
   await expect(modal.getByTestId('lead-success')).toBeVisible()
-  await expect.poll(() => goals(page)).toEqual(expect.arrayContaining([{ goal: 'lead_submit', params: { source: 'excursion', variant: 'default' } }]))
+  await expect.poll(() => goals(page)).toEqual(expect.arrayContaining([{ goal: 'lead_submit', params: { source: 'architect', variant: 'default' } }]))
 })
 
 test('мессенджер: messenger_click', async ({ page }) => {

@@ -108,7 +108,7 @@ test('блоки ниже первого экрана раскладываютс
   const wide = (page.viewportSize()?.width ?? 0) >= 1280
   if (!wide) await page.getByRole('button', { name: 'Открыть меню' }).click()
   const nav = page.getByRole('navigation', { name: wide ? 'Разделы страницы' : 'Разделы страницы (мобильное меню)', exact: true })
-  await nav.getByRole('link', { name: 'Как строим' }).click()
+  await nav.getByRole('link', { name: 'Этапы' }).click()
   expect(Math.abs(await settledOffset(page, '#process'))).toBeLessThanOrEqual(2)
   // Заново, с неразложенными блоками: цель ниже «ленивого» блока «Проекты».
   await page.goto('/')

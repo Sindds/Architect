@@ -21,6 +21,8 @@ export interface StyleModel {
   title: string
   coef: number
   construction: string
+  /** Несущий каркас: от него зависят разделы сметы (домокомплект из бруса или монолит). */
+  frame: Frame
 }
 
 export interface AddonModel {
@@ -140,8 +142,13 @@ export interface EstimateItem {
   absorb?: true
 }
 
+/** Каркас дома: клееный брус или монолитный железобетон. */
+export type Frame = 'timber' | 'concrete'
+
 export interface EstimateSection {
   title: string
+  /** Раздел только для этого каркаса; без поля — для любого. */
+  frame?: Frame
   /** С какого пакета раздел входит в цену. */
   from: Tier
   /** Доля цены дома в пакете «под ключ», %. Для других пакетов доли нормируются. */

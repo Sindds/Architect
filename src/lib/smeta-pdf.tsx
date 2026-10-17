@@ -81,7 +81,7 @@ function SmetaDocument({ leadId, input, issued }: { leadId: number; input: Smeta
         <Text style={s.muted}>
           от {date} · {input.project ? `проект ${input.project}` : 'расчёт по параметрам с сайта'}
         </Text>
-        {concept && <Text style={s.stamp}>Образец. Концепт-проект: компания вымышлена, цены рассчитаны по модели сайта.</Text>}
+        {concept && <Text style={s.stamp}>Предварительный расчёт, не является офертой.</Text>}
 
         <View style={s.facts}>
           <Fact label="Стиль и каркас" value={`${style.title}, ${style.construction.toLowerCase()}`} />
@@ -171,7 +171,7 @@ function SmetaDocument({ leadId, input, issued }: { leadId: number; input: Smeta
         <View wrap={false}>
           <Text style={s.h2}>Важно</Text>
           <Text>
-            Это предварительный расчёт по параметрам, указанным на сайте. Твёрдую цену фиксируем в договоре по смете вашего проекта: дальше она меняется, только если вы сами
+            Это предварительный расчёт по параметрам, указанным на сайте. Твёрдую цену фиксируем в договоре по смете Вашего проекта: дальше она меняется, только если Вы сами
             меняете проект или комплектацию.
           </Text>
           {derived && <Text style={{ marginTop: 4 }}>Этажность и число санузлов приняты по площади: до 250 м² — один этаж, санузел на каждые 90 м².</Text>}
@@ -179,7 +179,7 @@ function SmetaDocument({ leadId, input, issued }: { leadId: number; input: Smeta
           <Text>
             {SITE.phoneDisplay} · {SITE.email} · {SITE.hours}
           </Text>
-          <Text style={s.muted}>{concept ? SITE.disclaimer : `${SITE.operator.name}, ИНН ${SITE.operator.inn}, ОГРН ${SITE.operator.ogrn}`}</Text>
+          <Text style={s.muted}>{`${SITE.operator.name}, ИНН ${SITE.operator.inn}, ОГРН ${SITE.operator.ogrn}`}</Text>
         </View>
 
         <View style={s.footer} fixed>
