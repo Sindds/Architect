@@ -41,14 +41,16 @@ test.describe('Первый экран и варианты', () => {
     await expect(page.getByTestId('office-map')).toHaveCount(1)
   })
 
-  test('тексты не обещают больше договора: срок от начала работ, оплата по этапам после акта', async ({ page }) => {
+  test('тексты не обещают больше договора: срок не от подписания, оплата по этапам после акта', async ({ page }) => {
     await page.goto('/')
     // nbsp() ставит неразрывные пробелы после предлогов: приводим к обычным.
     const text = (await page.locator('body').innerText()).replace(/\u00a0/g, ' ')
     expect(text).not.toMatch(/от подпис\S* (договора )?до ключей/i)
     expect(text).not.toMatch(/готовый результат/i)
     expect(text).not.toMatch(/после геологии/i)
-    expect(text).toMatch(/от начала работ до ключей/)
+    // Подзаголовок первого экрана — текст заказчика (18.10.2026) со сроком и ценами из pricing.ts.
+    expect(text).toMatch(/Ваш загородный дом — от 130 дней, с фиксированной стоимостью/)
+    expect(text).toMatch(/Получите персональный расчёт стоимости Вашего дома с учётом площади, архитектуры и комплектации\./)
   })
 
   test('в контактах реквизиты компании и адрес; пометки о концепте и строки про карту нет', async ({ page }) => {
@@ -120,10 +122,11 @@ test.describe('Шапка', () => {
     }
   })
 
-  test('футер: знак ©, год и компания, дисклеймер концепта, адрес и юридические ссылки', async ({ page }) => {
+  test('футер: знак ©, год и компания, реквизиты, адрес и юридические ссылки; без пометок о концепте', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByTestId('copyright')).toHaveText(`© ${new Date().getFullYear()} ${SITE.brandFull}`)
-    await expect(page.getByTestId('disclaimer')).toContainText('Концепт-проект для портфолио')
+    await expect(page.getByTestId('requisites-line')).toContainText(`${SITE.operator.name}, ИНН ${SITE.operator.inn}`)
+    await expect(page.locator('footer')).not.toContainText(/концепт|портфолио|вымышлен/i)
     await expect(page.locator('footer')).toContainText('Архитектурно-строительное бюро полного цикла')
     await expect(page.locator('footer')).toContainText(SITE.address)
     await expect(page.locator('footer')).not.toContainText(/Адрес условный/)

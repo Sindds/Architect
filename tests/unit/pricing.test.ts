@@ -101,8 +101,10 @@ describe('CONTENT-SPEC §9 — H1 вариантов', () => {
     ['scandi', '8,36', '16,63'],
   ] as const)('%s → «от %s млн ₽», под ключ от %s', (key, contour, turnkey) => {
     expect(heroFor(key).h1).toMatch(new RegExp(`— от ${contour}${NBSP}млн${NBSP}₽$`))
-    expect(heroFor(key).subtitle).toContain(`Тёплый контур от ${contour}${NBSP}млн${NBSP}₽`)
-    expect(heroFor(key).subtitle).toContain(`под ключ от ${turnkey}${NBSP}млн${NBSP}₽`)
+    // Подзаголовок — текст заказчика от 18.10.2026: «Тёплый контур — от …, резиденция под ключ — от …».
+    expect(heroFor(key).subtitle).toContain(`Тёплый контур — от ${contour}${NBSP}млн${NBSP}₽`)
+    expect(heroFor(key).subtitle).toContain(`резиденция под ключ — от ${turnkey}${NBSP}млн${NBSP}₽`)
+    expect(heroFor(key).subtitle).toMatch(/^Ваш загородный дом — от 130\u00a0дней, с фиксированной стоимостью/)
   })
   it('цена в H1 не больше минимума калькулятора и квиза: 100 м², без террасы, любой стиль', () => {
     const lowest = Math.min(...STYLE_ORDER.map((style) => priceFor({ area: CALC_LIMITS.area.min, terrace: 0, style, tier: 'contour', addons: [] })))

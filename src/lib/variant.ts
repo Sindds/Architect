@@ -1,4 +1,5 @@
 import { PROJECTS } from '@/content/projects'
+import { COPY } from '@/content/copy'
 import { VARIANTS } from '@/content/variants'
 import type { Project, VariantKey } from '@/content/types'
 import { formatDaysFrom, formatMlnFrom } from './format'
@@ -17,7 +18,7 @@ export function heroFor(key: VariantKey) {
     h1: `${v.h1Prefix} — ${price}`,
     h1Prefix: v.h1Prefix,
     h1Price: price,
-    subtitle: `Тёплый контур от ${contour}, дом под ключ от ${turnkey}. Цена закреплена в договоре, а от начала работ до ключей проходит ${formatDaysFrom(minCalc('turnkey', v.heroStyleFilter).days)}.`,
+    subtitle: COPY.hero.subtitle(formatDaysFrom(minCalc('turnkey', v.heroStyleFilter).days), contour, turnkey),
   }
 }
 

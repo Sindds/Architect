@@ -126,7 +126,7 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
           </div>
 
           <div className="lg:col-span-7">
-            <h3 className="label text-muted">Экспликация помещений</h3>
+            <h3 className="label text-muted">Распределение площадей</h3>
             <div className={`mt-3 grid gap-6 ${project.explication.length > 1 ? 'sm:grid-cols-2' : ''}`}>
               {project.explication.map((floor) => (
                 <table key={floor.floor} className="num w-full text-left text-[0.9375rem]">

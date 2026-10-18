@@ -276,15 +276,58 @@ test('карточка проекта: щелчок по фото, по стре
 test('нет плашек «Визуализация» и пометок «демо» в тексте страницы; «Вы» с заглавной', async ({ page }) => {
   await page.goto('/')
   await page.evaluate(() => document.documentElement.setAttribute('data-full-layout', ''))
-  const disclaimer = (await page.getByTestId('disclaimer').innerText()).trim()
-  const text = (await page.locator('body').innerText()).replace(disclaimer, '')
-  expect(text).not.toMatch(/Визуализация/i)
-  expect(text).not.toMatch(/демо-|демонстрац|концепт|вымышлен|сгенерирован|условн(ый|ые)/i)
+  // Правка заказчика 18.10.2026: никаких упоминаний демо и концепта, в том числе в футере.
+  const text = await page.locator('body').innerText()
+  expect(text).not.toMatch(/Визуализация|Схема \(иллюстрация\)/i)
+  expect(text).not.toMatch(/демо-|демонстрац|концепт|портфолио|вымышлен|сгенерирован|условн(ый|ые)/i)
   expect(text).not.toMatch(LOWER_PRONOUN)
   // Галерея в окне проекта тоже без подписи «Визуализация».
   await page.goto('/?project=vista')
   await expectSeen(page.getByTestId('project-modal'))
-  expect(await page.getByTestId('project-modal').innerText()).not.toMatch(/Визуализация/i)
+  expect(await page.getByTestId('project-modal').innerText()).not.toMatch(/Визуализация|иллюстрация|Экспликация/i)
+  // Юридические страницы тоже без пометок.
+  for (const url of ['/privacy', '/soglasie', '/cookies']) {
+    await page.goto(url)
+    expect(await page.locator('body').innerText(), url).not.toMatch(/концепт|портфолио|вымышлен|шаблон/i)
+  }
+})
+
+// Правка заказчика 18.10.2026: увеличенный чертёж закрывался вместе с окном дома.
+// Причина — React передаёт событие close вложенного <dialog> окнам-предкам (ui/Modal.tsx).
+test('окно проекта: увеличенный чертёж закрывается крестиком и Esc, окно дома остаётся открытым', async ({ page }) => {
+  await page.goto('/?project=nordic')
+  const modal = page.getByTestId('project-modal')
+  await expectSeen(modal)
+  await expect(modal.getByRole('heading', { name: 'Распределение площадей' })).toBeVisible()
+  await modal.getByRole('button', { name: /^Показать: Архитектурные чертежи/ }).click()
+  const zoomButton = modal.getByRole('button', { name: /^Увеличить: Архитектурные чертежи одноэтажного дома NORDIC/ })
+  for (const close of ['крестик', 'Esc'] as const) {
+    await zoomButton.click()
+    const zoom = page.getByRole('dialog', { name: 'NORDIC', exact: true })
+    await expectSeen(zoom)
+    // Под увеличенной картинкой нет подписи «Схема (иллюстрация) · …», заголовок — только название проекта.
+    await expect(zoom).not.toContainText(/Схема|иллюстрация/)
+    if (close === 'крестик') await zoom.getByRole('button', { name: 'Закрыть окно' }).click()
+    else await page.keyboard.press('Escape')
+    await expect(zoom).toBeHidden()
+    await expect(modal, close).toBeVisible()
+    await expect(page).toHaveURL(/project=nordic/)
+  }
+})
+
+test('кнопка «Наверх»: появляется ниже первого экрана, ведёт наверх и ставит фокус на заголовок', async ({ page }) => {
+  await page.goto('/')
+  const up = page.locator('[data-testid=scroll-top]')
+  await expect(up).not.toHaveAttribute('data-shown', /.*/)
+  await page.locator('#pricing').scrollIntoViewIfNeeded()
+  await expect(up).toHaveAttribute('data-shown', '')
+  const box = (await up.boundingBox())!
+  // Высота как у капсулы «Рассчитать стоимость» (46 px с рамкой), цель нажатия не меньше 44 px.
+  expect(Math.round(box.height)).toBe(46)
+  await up.click()
+  await expect.poll(() => page.evaluate(() => Math.round(scrollY)), { timeout: 5000 }).toBe(0)
+  await expect(page.locator('#hero-title')).toBeFocused()
+  await expect(up).not.toHaveAttribute('data-shown', /.*/)
 })
 
 test('первый экран: без метки над заголовком и блоков-доказательств, под фото — адрес', async ({ page }) => {

@@ -19,24 +19,25 @@ import vistaExterior from "@/assets/images/vista-exterior.webp";
 import vistaInterior from "@/assets/images/vista-interior.webp";
 import vistaScheme from "@/assets/images/vista-scheme.webp";
 
-// Все фото домов — ИИ-визуализации из прототипа (CONTENT-SPEC §1, §7).
-// Портреты команды тоже из прототипа и сгенерированы: решение заказчика 08.10.2026 — показывать их
-// только в режиме concept (см. visiblePhoto в people.ts). Фото клиентов в отзывах не используются.
+// Фото домов — визуализации (CONTENT-SPEC §1, §7). 18.10.2026 заказчик заменил фасады и интерьеры NORDIC, VISTA,
+// CHALET, фото этапа «Как мы работаем», два портрета команды и все схемы — теперь это архитектурные чертежи
+// (план, фасады, разрезы; alt составлен по тексту на чертежах). Портреты помечены generated: в режиме client
+// их скрывает visiblePhoto (people.ts), пока заказчик не даст фото сотрудников. Фото клиентов в отзывах нет.
 const viz = (src: Picture["src"], alt: string): Picture => ({
   src,
   alt,
   caption: "Визуализация",
 });
-const scheme = (src: Picture["src"], alt: string): Picture => ({
+const drawing = (src: Picture["src"], alt: string): Picture => ({
   src,
   alt,
-  caption: "Схема (иллюстрация)",
+  caption: "Чертёж",
 });
 
 const portrait = (src: Picture["src"], alt: string): Picture => ({
   src,
-  alt: `${alt}, сгенерированный портрет`,
-  caption: "Сгенерированный портрет",
+  alt,
+  caption: "Портрет",
   generated: true,
 });
 
@@ -66,10 +67,7 @@ export const MEDIA = {
     vistaInterior,
     "Гостиная с панорамным остеклением в фахверковом доме, визуализация",
   ),
-  vistaScheme: scheme(
-    vistaScheme,
-    "Схема информационной модели фахверкового дома, иллюстрация",
-  ),
+  vistaScheme: drawing(vistaScheme, "Архитектурные чертежи дома VISTA: план первого этажа, разрез и терраса"),
 
   nordicExterior: viz(
     nordicExterior,
@@ -79,10 +77,7 @@ export const MEDIA = {
     nordicInterior,
     "Гостиная одноэтажного дома в скандинавском стиле, визуализация",
   ),
-  nordicScheme: scheme(
-    nordicScheme,
-    "Схема информационной модели одноэтажного дома, иллюстрация",
-  ),
+  nordicScheme: drawing(nordicScheme, "Архитектурные чертежи одноэтажного дома NORDIC: план этажа, фасады и разрез"),
 
   titanExterior: viz(
     titanExterior,
@@ -92,10 +87,7 @@ export const MEDIA = {
     titanInterior,
     "Интерьер монолитного дома с панорамным остеклением, визуализация",
   ),
-  titanScheme: scheme(
-    titanScheme,
-    "Схема информационной модели монолитного дома, иллюстрация",
-  ),
+  titanScheme: drawing(titanScheme, "Архитектурные чертежи дома TITAN: план первого этажа, план кровли, фасады и терраса"),
 
   chaletExterior: viz(
     chaletExterior,
@@ -105,9 +97,6 @@ export const MEDIA = {
     chaletInterior,
     "Каминный зал в доме в стиле шале, визуализация",
   ),
-  chaletScheme: scheme(
-    chaletScheme,
-    "Схема информационной модели дома в стиле шале, иллюстрация",
-  ),
+  chaletScheme: drawing(chaletScheme, "Архитектурные чертежи дома CHALET: план этажа"),
 
 } satisfies Record<string, Picture>;

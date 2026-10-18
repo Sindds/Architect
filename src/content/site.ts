@@ -27,7 +27,6 @@ export const SITE = {
   /** Номер счётчика Яндекс Метрики: не секрет, задаётся NEXT_PUBLIC_METRIKA_ID при сборке. Пусто — счётчика нет. */
   metrikaId: process.env.NEXT_PUBLIC_METRIKA_ID ?? '',
   callbackPromise: 'Перезвоним в течение рабочего дня.',
-  disclaimer: 'Концепт-проект для портфолио. Компания, объекты, люди и цены вымышлены.',
   nav: [
     { href: '#projects', label: 'Проекты' },
     { href: '#pricing', label: 'Цены' },

@@ -37,7 +37,7 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
         </div>
       </main>
       <footer className="shell max-w-3xl border-t border-line py-8">
-        <p className="text-sm text-muted">{SITE.contentMode === 'concept' ? SITE.disclaimer : operatorRequisites(SITE)}</p>
+        <p className="text-sm text-muted">{operatorRequisites(SITE)}</p>
       </footer>
     </div>
   )

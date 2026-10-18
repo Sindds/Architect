@@ -3,6 +3,7 @@ import { VARIANTS } from '@/content/variants'
 import { projectsFor } from '@/lib/variant'
 import { LandingProvider } from './LandingProvider'
 import { MobileActionBar } from './MobileActionBar'
+import { ScrollTopButton } from './ScrollTopButton'
 import { PageLoader } from './PageLoader'
 import { CalculatorSection } from './sections/CalculatorSection'
 import { Documents } from './sections/Documents'
@@ -42,6 +43,7 @@ export function Landing({ variant }: { variant: VariantKey }) {
       </main>
       <Footer />
       <MobileActionBar />
+      <ScrollTopButton />
       <Metrika variant={variant} />
     </LandingProvider>
   )

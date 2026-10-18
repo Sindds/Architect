@@ -1,5 +1,6 @@
 import { MapPin } from "lucide-react";
 import Image from "next/image";
+import { COPY } from "@/content/copy";
 import { SITE } from "@/content/site";
 import type { VariantKey } from "@/content/types";
 import { nbsp } from "@/lib/typography";
@@ -18,7 +19,7 @@ export function Hero({ variant }: { variant: VariantKey }) {
     >
       <div
         data-testid="hero"
-        className="on-dark relative flex min-h-[88svh] flex-col justify-between overflow-hidden sm:justify-end rounded-[24px] border border-white/10 bg-[#0a0b0d] px-5 pt-24 pb-6 text-white shadow-2xl sm:min-h-[92svh] sm:rounded-[36px] sm:p-8 sm:pt-32 md:p-12 lg:p-14"
+        className="on-dark relative flex min-h-[88svh] flex-col justify-between overflow-hidden sm:justify-end rounded-[24px] border border-white/10 bg-[#0a0b0d] px-5 pt-20 pb-6 text-white shadow-2xl sm:min-h-[92svh] sm:rounded-[36px] sm:p-8 sm:pt-32 md:p-12 lg:p-14"
       >
         <Image
           src={v.heroImage.src}
@@ -40,7 +41,8 @@ export function Hero({ variant }: { variant: VariantKey }) {
         <div className="relative z-10 max-w-4xl">
           <h1
             id="hero-title"
-            className="display text-[clamp(1.35rem,6.2vw,1.9rem)] leading-[1.08] font-normal sm:text-5xl lg:text-[3.3rem] xl:text-[3.7rem]"
+            tabIndex={-1}
+            className="display outline-none text-[clamp(1.35rem,6.2vw,1.9rem)] leading-[1.08] font-normal sm:text-5xl lg:text-[3.3rem] xl:text-[3.7rem]"
           >
             {nbsp(h1Prefix)}
             <span className="sr-only"> — </span>
@@ -51,10 +53,13 @@ export function Hero({ variant }: { variant: VariantKey }) {
               {nbsp(h1Price)}
             </span>
           </h1>
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-[#d4d8dd] sm:text-lg">
+          <p className="mt-4 max-w-xl text-[0.9375rem] leading-snug text-[#d4d8dd] sm:mt-5 sm:text-lg sm:leading-relaxed">
             {nbsp(subtitle)}
           </p>
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <p className="mt-2.5 max-w-xl text-[0.9375rem] leading-snug text-[#d4d8dd] sm:mt-3 sm:text-lg sm:leading-relaxed">
+            <strong className="font-semibold text-white">{nbsp(COPY.hero.offerLead)}</strong> {nbsp(COPY.hero.offerRest)}
+          </p>
+          <div className="mt-5 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:flex-wrap sm:items-center">
             <QuizButton />
             <a href="#projects" className="btn btn-glass">
               Смотреть проекты

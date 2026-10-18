@@ -10,7 +10,6 @@ const COPYRIGHT_YEAR = new Date().getFullYear()
 
 /** Футер по образцу: тёмная скруглённая карточка с контактами, дисклеймером концепта и юридическими ссылками. */
 export function Footer() {
-  const concept = SITE.contentMode === 'concept'
   return (
     <footer className="mx-auto w-full max-w-[100rem] px-2 pt-4 pb-6 sm:px-4 md:px-6">
       <div className="on-dark rounded-[24px] border border-white/10 bg-inverse p-6 text-on-inverse sm:rounded-[36px] sm:p-10 lg:p-14">
@@ -65,7 +64,7 @@ export function Footer() {
             <p data-testid="copyright">
               © {COPYRIGHT_YEAR} {SITE.brandFull}
             </p>
-            <p data-testid="disclaimer">{concept ? SITE.disclaimer : operatorRequisites(SITE)}</p>
+            <p data-testid="requisites-line">{operatorRequisites(SITE)}</p>
           </div>
           <ul className="flex flex-wrap gap-x-5 text-sm">
             <li>

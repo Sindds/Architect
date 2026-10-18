@@ -41,7 +41,8 @@ export interface PricingModel {
 export interface Picture {
   src: StaticImageData
   alt: string
-  caption: 'Визуализация' | 'Схема (иллюстрация)' | 'Сгенерированный портрет'
+  /** Тип изображения; на сайте не показывается (решение заказчика 18.10.2026), нужен для кода. */
+  caption: 'Визуализация' | 'Чертёж' | 'Портрет'
   /** Лицо сгенерировано: такие портреты допустимы только в режиме concept. */
   generated?: boolean
 }

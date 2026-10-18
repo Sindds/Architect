@@ -2,19 +2,43 @@
 
 import { ArrowUpRight } from 'lucide-react'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { COPY } from '@/content/copy'
 import { PRICING, STYLE_ORDER } from '@/content/pricing'
 import type { Project, Style } from '@/content/types'
 import { formatDaysFrom, formatMln } from '@/lib/format'
 import { nbsp } from '@/lib/typography'
 import { projectPrice } from '@/lib/pricing'
+import { GALLERY_SIZES, warmPicture } from '@/lib/preload-image'
 import { useLanding } from '../LandingProvider'
 import { SectionHead } from '../ui/SectionHead'
 import { revealOrder } from '@/lib/reveal'
 
+/**
+ * Наведение, касание или фокус на карточке: заранее грузим код окна проекта и первую картинку галереи.
+ * Между наведением и щелчком проходит 100–300 мс — к открытию окна картинка уже в кэше.
+ */
+function warmProject(p: Project) {
+  void import('../modals/ProjectModal')
+  const first = p.gallery[0]
+  if (first) warmPicture(first, GALLERY_SIZES, 'high')
+}
+
+const CARD_SIZES = '(min-width: 1280px) 620px, (min-width: 768px) 50vw, 100vw'
+
 export function Projects({ projects }: { projects: Project[] }) {
   const { openProject } = useLanding()
+
+  // Блок «Проекты» ленивый (content-visibility: auto), а картинки в нём — loading="lazy": браузер начинал
+  // их грузить, только когда блок подходил к экрану, и при прокрутке обложки появлялись с задержкой.
+  // После загрузки страницы, в простое, скачиваем обложки заранее с низким приоритетом — первый экран не страдает.
+  useEffect(() => {
+    const warm = () => projects.forEach((p) => warmPicture(p.cover, CARD_SIZES, 'low'))
+    const idle = () => ('requestIdleCallback' in window ? requestIdleCallback(warm, { timeout: 3000 }) : setTimeout(warm, 1500))
+    if (document.readyState === 'complete') idle()
+    else window.addEventListener('load', idle, { once: true })
+    return () => window.removeEventListener('load', idle)
+  }, [projects])
   const [filter, setFilter] = useState<Style | 'all'>('all')
   const visible = filter === 'all' ? projects : projects.filter((p) => p.style === filter)
   const filters: { key: Style | 'all'; label: string }[] = [{ key: 'all', label: 'Все' }, ...STYLE_ORDER.map((s) => ({ key: s, label: PRICING.styles[s].title }))]
@@ -40,14 +64,19 @@ export function Projects({ projects }: { projects: Project[] }) {
               <li key={p.slug} className="reveal" style={revealOrder(i)}>
                 {/* Окно открывает щелчок по любому месту карточки: по фото, стрелке, описанию и ценам.
                     С клавиатуры — кнопка с названием: Enter и пробел дают click, он всплывает сюда. */}
-                <article className="group relative cursor-pointer" onClick={() => openProject(p.slug)}>
+                <article
+                  className="group relative cursor-pointer"
+                  onClick={() => openProject(p.slug)}
+                  onPointerEnter={() => warmProject(p)}
+                  onFocus={() => warmProject(p)}
+                >
                   <div data-testid="project-card" className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-line bg-[#0a0b0d] shadow-lg transition-[transform,box-shadow] duration-500 ease-[var(--ease-out-soft)] group-hover:-translate-y-2 group-hover:shadow-2xl group-active:scale-[0.985] motion-reduce:transition-none sm:aspect-[16/11]">
                     <Image
                       src={p.cover.src}
                       alt={p.cover.alt}
                       fill
                       placeholder="blur"
-                      sizes="(min-width: 1280px) 620px, (min-width: 768px) 50vw, 100vw"
+                      sizes={CARD_SIZES}
                       className="object-cover transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.08] motion-reduce:transition-none"
                     />
                     <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/30" />

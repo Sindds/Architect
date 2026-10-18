@@ -48,6 +48,11 @@ interface ModalProps {
 export function Modal({ open, onClose, title, hideTitle, size = 'lg', children, testId }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
+  // Окно открыто по props: закрытие из кода (open → false) не должно снова звать onClose.
+  const openRef = useRef(open)
+  useLayoutEffect(() => {
+    openRef.current = open
+  }, [open])
 
   useEffect(() => {
     const dialog = ref.current
@@ -68,7 +73,11 @@ export function Modal({ open, onClose, title, hideTitle, size = 'lg', children, 
       ref={ref}
       aria-labelledby={titleId}
       data-testid={testId}
-      onClose={onClose}
+      onClose={(e) => {
+        // React передаёт close вложенного окна (увеличенная схема в окне дома) всем окнам-предкам:
+        // реагируем только на своё закрытие и только когда его закрыл браузер (Esc), а не код.
+        if (e.target === e.currentTarget && openRef.current) onClose()
+      }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}

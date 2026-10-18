@@ -89,6 +89,15 @@ test('пока виден баннер cookie, нижняя панель на т
   await page.locator('#projects').scrollIntoViewIfNeeded()
   await page.evaluate(() => window.scrollBy(0, 400))
   await expect(page.getByTestId('mobile-action-bar')).not.toHaveAttribute('data-shown', /.*/)
+  await expect(page.getByTestId('scroll-top')).not.toHaveAttribute('data-shown', /.*/)
   await banner(page).getByRole('button', { name: 'Только необходимые' }).click()
   await expect(page.getByTestId('mobile-action-bar')).toHaveAttribute('data-shown', '')
+  await expect(page.getByTestId('scroll-top')).toHaveAttribute('data-shown', '')
+  // Кнопка «Наверх» стоит над капсулой и не перекрывает её (после того как обе выехали: переход 300 мс).
+  await expect
+    .poll(async () => {
+      const [up, bar] = [await page.getByTestId('scroll-top').boundingBox(), await page.getByTestId('mobile-action-bar').boundingBox()]
+      return { gap: Math.round(bar!.y - (up!.y + up!.height)), sameHeight: Math.round(up!.height) === Math.round(bar!.height) }
+    })
+    .toEqual({ gap: 8, sameHeight: true })
 })

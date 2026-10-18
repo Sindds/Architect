@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { SITE } from '@/content/site'
 import { TEAM, visiblePhoto } from '@/content/people'
 
 // Решение заказчика 08.10.2026: в концепте у команды портреты из прототипа (сгенерированные).
@@ -19,10 +18,12 @@ describe('Портреты команды', () => {
     expect(visiblePhoto(m, 'client')).toBeUndefined()
   })
 
-  // Пометку о сгенерированных портретах из текста блока убрали (правка заказчика 17.10.2026). Она осталась
-  // в alt для экранных дикторов, а в концепте футер говорит, что люди вымышлены.
-  it('портреты подписаны в alt, а в концепте футер называет людей вымышленными', () => {
-    for (const m of TEAM) expect(m.photo?.alt).toContain('сгенерированный портрет')
-    expect(SITE.disclaimer).toMatch(/люди/)
+  // Пометок о сгенерированных портретах на сайте нет (правки заказчика 17 и 18.10.2026): alt — имя и роль.
+  // Защита осталась в коде: generated-портреты в режиме client не показываются (тест выше).
+  it('alt портрета — имя и роль, без пометок', () => {
+    for (const m of TEAM) {
+      expect(m.photo?.alt).toMatch(new RegExp(`^${m.name}, `))
+      expect(m.photo?.alt).not.toMatch(/сгенерирован/)
+    }
   })
 })
