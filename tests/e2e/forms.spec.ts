@@ -1,4 +1,7 @@
+import { existsSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import type { Locator, Page } from '@playwright/test'
+import { E2E_LEADS_DIR } from '../../playwright.config'
 import { clickCentered, expect, expectSeen, test } from './fixtures'
 import { COPY } from '@/content/copy'
 import { PRICING } from '@/content/pricing'
@@ -150,9 +153,16 @@ test.describe('Каждая кнопка заявки открывает вид�
 })
 
 test.describe('Отправка заявок', () => {
-  test('финальная форма «Перезвоните мне»', async ({ page }) => {
+  test('финальная форма «Перезвоните мне»: заявка сохраняется с именем и телефоном', async ({ page }) => {
     await page.goto('/')
-    await submitLead(page, page.locator('#contacts'), 'Перезвоните мне')
+    const contacts = page.locator('#contacts')
+    await submitLead(page, contacts, 'Перезвоните мне')
+    const id = Number((await contacts.getByTestId('lead-success').innerText()).match(/№(\d+)/)?.[1])
+    // Заявка дошла до хранилища (на тестовом сервере — файл), а не только показала «принята».
+    const file = path.join(E2E_LEADS_DIR, 'leads.ndjson')
+    await expect
+      .poll(() => (existsSync(file) ? readFileSync(file, 'utf8') : '').split('\n').filter(Boolean).map((l) => JSON.parse(l) as { id: number; name: string; phone: string; source: string }).find((l) => l.id === id))
+      .toMatchObject({ id, name: 'Анна', phone: '+79161234567', source: 'final_cta' })
   })
 
   test('окно проекта: смета в PDF → заявка и ссылка на PDF', async ({ page }) => {

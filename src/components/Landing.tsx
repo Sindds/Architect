@@ -1,5 +1,6 @@
 import type { VariantKey } from '@/content/types'
 import { VARIANTS } from '@/content/variants'
+import { structuredData } from '@/lib/seo'
 import { projectsFor } from '@/lib/variant'
 import { LandingProvider } from './LandingProvider'
 import { MobileActionBar } from './MobileActionBar'
@@ -20,6 +21,9 @@ import { WhyUs } from './sections/WhyUs'
 import { Metrika } from './Metrika'
 
 /** Одна страница, порядок блоков фиксирован (CONTENT-SPEC §4). */
+// Внутри <script> закрывающий тег из данных разорвал бы разметку: экранируем «<».
+const jsonLd = JSON.stringify(structuredData()).replace(/</g, '\\u003c')
+
 export function Landing({ variant }: { variant: VariantKey }) {
   return (
     <LandingProvider variant={variant}>
@@ -28,6 +32,8 @@ export function Landing({ variant }: { variant: VariantKey }) {
       </a>
       <PageLoader />
       <Header />
+      {/* Разметка schema.org: организация, услуги с ценами, проекты (src/lib/seo.ts). FAQPage — в блоке вопросов. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
       <main id="main">
         <Hero variant={variant} />
         <WhyUs />

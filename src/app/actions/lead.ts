@@ -3,7 +3,6 @@
 import { randomInt } from 'node:crypto'
 import { headers } from 'next/headers'
 import { after } from 'next/server'
-import { SITE } from '@/content/site'
 import { clientIp } from '@/lib/client-ip'
 import { type LeadState, SEND_FAILED, validateLead } from '@/lib/lead-schema'
 import { checkLeadToken, leadTokenSecret, signLeadToken } from '@/lib/lead-token'
@@ -13,9 +12,9 @@ import { leadNotificationText, notifyTelegram } from '@/lib/notify'
 import { allowRequest, hashIp } from '@/lib/rate-limit'
 import { signSmetaToken, smetaInputSchema, smetaSecret } from '@/lib/smeta-token'
 
-const secret = () => leadTokenSecret(process.env, SITE.contentMode === 'concept')
+const secret = () => leadTokenSecret(process.env)
 
-/** Ссылка на PDF-смету после заявки с параметрами дома (PLAN P5.4). Без секрета в режиме client ссылки нет. */
+/** Ссылка на PDF-смету после заявки с параметрами дома (PLAN P5.4). Без SMETA_SIGNING_SECRET ссылки нет. */
 function smetaLink(id: number, raw: string | undefined): string | undefined {
   if (!raw) return undefined
   let data: unknown
@@ -26,7 +25,7 @@ function smetaLink(id: number, raw: string | undefined): string | undefined {
   }
   const input = smetaInputSchema.safeParse(data)
   if (!input.success) return undefined
-  const key = smetaSecret(process.env, SITE.contentMode === 'concept')
+  const key = smetaSecret(process.env)
   if (!key) {
     console.error('[lead] Не задан SMETA_SIGNING_SECRET: ссылка на PDF-смету не выдаётся')
     return undefined
@@ -65,13 +64,7 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
   const id = randomInt(10_000, 99_999)
   const { source, variant } = checked.data
 
-  // Режим concept: компания вымышлена, персональные данные не сохраняются и никуда не передаются.
-  if (SITE.contentMode === 'concept') {
-    after(() => notifyTelegram(leadNotificationText(id, source, variant)))
-    return { status: 'ok', id, smeta: smetaLink(id, checked.data.estimateInput) }
-  }
-
-  // Режим client: файл на сервере, Битрикс24 и 1С — те, что заданы в переменных окружения (docs/INTEGRATIONS.md).
+  // Файл на сервере, почта, Битрикс24 и 1С — те, что заданы в переменных окружения (docs/INTEGRATIONS.md).
   let delivered: Awaited<ReturnType<typeof deliverLead>>
   try {
     delivered = await deliverLead(toLeadRecord(id, checked.data), configuredSinks())

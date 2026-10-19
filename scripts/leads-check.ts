@@ -2,11 +2,12 @@
  * Проверка интеграций заявок: pnpm leads:check [--send]
  *
  * Без флага ничего не отправляет: показывает, какие каналы настроены, и спрашивает у Битрикс24 режим CRM
- * (crm.settings.mode.get), чтобы подсказать B24_ENTITY. С --send отправляет тестовую заявку
- * в Битрикс24 и 1С и уведомление в Telegram. Переменные берутся из окружения и .env.local.
+ * (crm.settings.mode.get), чтобы подсказать B24_ENTITY, и проверяет вход на почтовый сервер. С --send отправляет
+ * тестовую заявку на почту, в Битрикс24 и 1С и уведомление в Telegram. Переменные — из окружения и .env.local.
  */
 import { bitrix24Config } from '@/lib/leads/bitrix24'
 import { configuredSinks, deliverLead } from '@/lib/leads/deliver'
+import { emailConfig, emailTransport } from '@/lib/leads/email'
 import { oneCConfig } from '@/lib/leads/onec'
 import { leadSummary, toLeadRecord } from '@/lib/leads/record'
 import { leadNotificationText, notifyTelegram } from '@/lib/notify'
@@ -28,15 +29,28 @@ const lead = toLeadRecord(Math.floor(Date.now() / 1000) % 90_000 + 10_000, {
 async function main() {
   const b24 = bitrix24Config()
   const onec = oneCConfig()
+  const mail = emailConfig()
   const telegram = Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID)
+  const file = configuredSinks().some((s) => s.name === 'file')
 
   console.log('Каналы заявок:')
-  console.log(`  файл .data/leads.ndjson: ${process.env.LEADS_FILE === 'off' ? 'выключен' : 'включён'}`)
+  console.log(`  файл ${process.env.LEADS_DIR || '.data'}/leads.ndjson: ${file ? 'включён' : 'выключен'}`)
+  console.log(`  Почта: ${mail ? `${mail.host}:${mail.port} → ${mail.to.join(', ')}` : 'не настроена (SMTP_HOST, SMTP_USER, SMTP_PASS, LEADS_EMAIL_TO)'}`)
   console.log(`  Битрикс24: ${b24 ? `${new URL(b24.webhook).host}, создаём ${b24.entity === 'lead' ? 'лид' : 'контакт и сделку'}` : 'не настроен (B24_WEBHOOK_URL)'}`)
   console.log(`  1С: ${onec ? new URL(onec.url).host : 'не настроена (ONEC_LEADS_URL)'}`)
   console.log(`  Telegram: ${telegram ? 'настроен' : 'не настроен (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)'}`)
-  console.log(`  Защита формы: ${process.env.LEAD_TOKEN_SECRET ? 'LEAD_TOKEN_SECRET задан' : '⚠ LEAD_TOKEN_SECRET не задан: в режиме client заявки не принимаются'}`)
-  console.log(`  PDF-смета: ${process.env.SMETA_SIGNING_SECRET ? 'SMETA_SIGNING_SECRET задан' : '⚠ SMETA_SIGNING_SECRET не задан: в режиме client ссылки на смету не будет'}`)
+  console.log(`  Защита формы: ${process.env.LEAD_TOKEN_SECRET ? 'LEAD_TOKEN_SECRET задан' : '⚠ LEAD_TOKEN_SECRET не задан: заявки не принимаются (pnpm env:init)'}`)
+  console.log(`  PDF-смета: ${process.env.SMETA_SIGNING_SECRET ? 'SMETA_SIGNING_SECRET задан' : '⚠ SMETA_SIGNING_SECRET не задан: ссылки на смету не будет (pnpm env:init)'}`)
+  if (!file && !mail && !b24 && !onec) console.log('  ⚠ Ни одного хранилища: заявки некуда сохранить. Настройте почту или Битрикс24.')
+
+  if (mail) {
+    try {
+      await emailTransport(mail).verify()
+      console.log('  Почтовый сервер: вход выполнен')
+    } catch (error) {
+      console.log(`  ⚠ Почтовый сервер не принимает вход: ${error instanceof Error ? error.message : error}`)
+    }
+  }
 
   if (b24) {
     try {
@@ -60,7 +74,7 @@ async function main() {
 
   // Файл не трогаем: тестовая заявка нужна только в CRM.
   const sinks = configuredSinks().filter((s) => s.name !== 'file')
-  if (!sinks.length) console.log('\nНе задано ни Битрикс24, ни 1С: отправлять некуда.')
+  if (!sinks.length) console.log('\nНе задано ни почты, ни Битрикс24, ни 1С: отправлять некуда.')
   const { results } = await deliverLead(lead, sinks)
   for (const r of results) console.log(r.ok ? `  ✓ ${r.sink}: ${r.url ?? r.ref ?? 'принята'}` : `  ✗ ${r.sink}: ${r.error}`)
   if (telegram) {

@@ -1,9 +1,8 @@
 import { MEDIA } from "./media";
-import type { ContentMode, Picture, Review, TeamMember } from "./types";
+import type { Review, TeamMember } from "./types";
 
-// Режим concept: отзывы помечены isDemo — без «подтверждено» и без ссылки на источник.
-// У клиентов в отзывах фото нет, только инициалы. У команды — сгенерированные портреты из прототипа,
-// они видны только в режиме concept (решение заказчика 08.10.2026, CONTENT-SPEC §1).
+// Отзывы шаблона без ссылки на источник (isDemo): под заказчика — настоящие отзывы со sourceUrl (Яндекс Карты, 2ГИС).
+// У клиентов в отзывах фото нет, только инициалы.
 export const REVIEWS: Review[] = [
   {
     id: "marina-artem",
@@ -69,14 +68,3 @@ export const TEAM: TeamMember[] = [
     stages: "Этапы 2–5",
   },
 ];
-
-/** Портрет, который можно показать в этом режиме: сгенерированные лица — только в концепте. */
-export function visiblePhoto(
-  member: TeamMember,
-  mode: ContentMode,
-): Picture | undefined {
-  if (!member.photo) return undefined;
-  return member.photo.generated && mode !== "concept"
-    ? undefined
-    : member.photo;
-}

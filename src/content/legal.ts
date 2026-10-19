@@ -16,9 +16,8 @@ interface Party {
   purpose: string
 }
 
-/** Поля SITE, из которых собираются тексты. Отдельный тип, чтобы тест мог проверить режим client. */
+/** Поля SITE, из которых собираются тексты. Отдельный тип, чтобы тест мог подставить данные заказчика. */
 export interface LegalSite {
-  contentMode: 'concept' | 'client'
   brandFull: string
   email: string
   operator: { name: string; inn: string; kpp: string; ogrn: string; address: string }
@@ -37,10 +36,10 @@ export function operatorRequisites(site: LegalSite): string {
   return `${o.name}, ИНН ${o.inn}, КПП ${o.kpp}, ОГРН ${o.ogrn}, адрес: ${o.address}`
 }
 
-/** Что не заполнено для режима client. Пустой список — тексты можно публиковать. */
+/** Что не заполнено под заказчика. Пустой список — тексты можно публиковать. */
 export function legalReadiness(site: LegalSite): string[] {
   const missing: string[] = []
-  // Пусто или нули концепта — не заполнено.
+  // Пусто или нули шаблона — не заполнено.
   for (const [key, value] of Object.entries(site.operator)) if (!value.trim() || /^0+$/.test(value.trim())) missing.push(`operator.${key}`)
   site.processors.forEach((p, i) => {
     for (const key of ['name', 'details', 'address', 'purpose'] as const) if (!p[key].trim()) missing.push(`processors[${i}].${key}`)
@@ -50,12 +49,10 @@ export function legalReadiness(site: LegalSite): string[] {
 }
 
 export function legalDocs(site: LegalSite): Record<LegalDoc['slug'], LegalDoc> {
-  const concept = site.contentMode === 'concept'
   const operator = `Оператор персональных данных — ${operatorRequisites(site)}.`
-  const processors = site.processors.map((p) => `${p.name}, ${p.details}, адрес: ${p.address}. Задача: ${p.purpose}.`)
-  // В режиме concept заявки не сохраняются (src/lib/leads): текст говорит, как есть, без слова «концепт» (правка 17.10.2026).
-  const notShared = 'Сейчас данные форм не сохраняются на сервере и третьим лицам не передаются.'
-  const contact = concept ? `письмом на ${site.email}` : `письмом на ${site.email} или по почтовому адресу оператора`
+  // Незаполненные обработчики (шаблон) не выводим: пустая строка «, , адрес: .» хуже, чем её отсутствие.
+  const processors = site.processors.filter((p) => p.name.trim()).map((p) => `${p.name}, ${p.details}, адрес: ${p.address}. Задача: ${p.purpose}.`)
+  const contact = `письмом на ${site.email} или по почтовому адресу оператора`
   const metrika = Boolean(site.metrikaId)
   const dataList = `имя, номер телефона, удобный способ связи, комментарий и сведения о заявке: из какой формы она отправлена, параметры расчёта, ответы квиза, рекламные метки (utm)${metrika ? ', номер посещения в Яндекс Метрике (ClientID)' : ''}`
   const actions =
@@ -99,20 +96,18 @@ export function legalDocs(site: LegalSite): Record<LegalDoc['slug'], LegalDoc> {
         },
         {
           heading: '6. Кому передаём',
-          paragraphs: concept
-            ? [notShared, 'В уведомлениях сотрудникам в Telegram приходит только номер заявки. Имя и телефон в Telegram не передаются.']
-            : [
-                `Данные обрабатывают по нашему поручению (часть 3 статьи 6 ${LAW}):`,
-                ...processors,
-                `Обработчики обязаны сохранять конфиденциальность данных и защищать их по статье 19 ${LAW}.`,
-                'В уведомлениях сотрудникам в Telegram приходит только номер заявки и ссылка на неё в системе учёта клиентов. Имя и телефон в Telegram не передаются.',
-                'Если Вы выбрали связь через мессенджер, мы напишем Вам в нём. Переписка в мессенджере идёт по правилам его владельца.',
-              ],
+          paragraphs: [
+            `Данные обрабатывают по нашему поручению (часть 3 статьи 6 ${LAW}):`,
+            ...processors,
+            `Обработчики обязаны сохранять конфиденциальность данных и защищать их по статье 19 ${LAW}.`,
+            'В уведомлениях сотрудникам в Telegram приходит только номер заявки и ссылка на неё в системе учёта клиентов. Имя и телефон в Telegram не передаются.',
+            'Если Вы выбрали связь через мессенджер, мы напишем Вам в нём. Переписка в мессенджере идёт по правилам его владельца.',
+          ],
         },
         {
           heading: '7. Где и сколько хранятся данные',
           paragraphs: [
-            ...(concept ? [notShared] : [`Данные хранятся на серверах в России (часть 5 статьи 18 ${LAW}).`]),
+            `Данные хранятся на серверах в России (часть 5 статьи 18 ${LAW}).`,
             `Срок обработки — ${site.leadRetention}.`,
             `После достижения цели или отзыва согласия данные уничтожаются в течение 30 дней (части 4 и 5 статьи 21 ${LAW}).`,
           ],
@@ -165,7 +160,7 @@ export function legalDocs(site: LegalSite): Record<LegalDoc['slug'], LegalDoc> {
         },
         {
           heading: 'Кто обрабатывает данные по поручению оператора',
-          paragraphs: concept ? [notShared] : processors,
+          paragraphs: processors,
         },
         {
           heading: 'Срок и отзыв',

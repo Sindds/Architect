@@ -1,8 +1,7 @@
 import { ArrowUpRight, Quote } from "lucide-react";
 import Image from "next/image";
 import { COPY } from "@/content/copy";
-import { REVIEWS, TEAM, visiblePhoto } from "@/content/people";
-import { SITE } from "@/content/site";
+import { REVIEWS, TEAM } from "@/content/people";
 import { LeadButton } from "../LeadButton";
 import { SectionHead } from "../ui/SectionHead";
 import { revealOrder } from "@/lib/reveal";
@@ -20,7 +19,7 @@ export function Team() {
           className="mt-10 grid gap-4 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4"
         >
           {TEAM.map((m, i) => {
-            const photo = visiblePhoto(m, SITE.contentMode);
+            const photo = m.photo;
             return (
               <li
                 key={m.name}

@@ -4,7 +4,6 @@ import { SITE } from '@/content/site'
 
 const CLIENT: LegalSite = {
   ...SITE,
-  contentMode: 'client',
   email: 'pd@arcline.test',
   operator: { name: 'ООО «Тест»', inn: '1234567890', kpp: '123456789', ogrn: '1234567890123', address: '000000, г. Москва, ул. Тестовая, д. 1' },
   processors: [
@@ -48,26 +47,20 @@ describe('политика в режиме client', () => {
   })
 })
 
-describe('режим concept', () => {
-  it('без реквизитов и обработчиков: данные никуда не передаются', () => {
+describe('тексты сайта (шаблон)', () => {
+  it('без пометок о концепте; незаполненный обработчик (хостинг) не печатается пустой строкой', () => {
     const all = Object.keys(LEGAL).map((k) => text(LEGAL, k as keyof typeof LEGAL)).join('\n')
-    // Без слов «концепт» и «вымышленная» (правка заказчика 17.10.2026): о концепте говорит дисклеймер в футере.
-    expect(all).not.toMatch(/концепт|вымышлен/i)
-    expect(all).toContain('данные форм не сохраняются на сервере и третьим лицам не передаются')
-    expect(all).not.toContain('1С-Битрикс')
+    expect(all).not.toMatch(/концепт|вымышлен|не сохраняются/i)
+    expect(all).toContain('ООО «1С-Битрикс»')
+    expect(all).toContain('на серверах в России')
+    expect(all).not.toMatch(/(^|\n), , адрес/)
   })
 })
 
-describe('готовность к режиму client', () => {
-  it('пустые реквизиты оператора и хостинга не пропускаются', () => {
-    expect(legalReadiness({ ...SITE, contentMode: 'client' })).toEqual(
-      expect.arrayContaining(['operator.inn', 'operator.kpp', 'operator.ogrn', 'processors[1].name', 'email']),
-    )
+describe('готовность под заказчика', () => {
+  it('нули шаблона в реквизитах, пустой хостинг и example.com — в списке «не заполнено»', () => {
+    expect(legalReadiness(SITE)).toEqual(expect.arrayContaining(['operator.inn', 'operator.kpp', 'operator.ogrn', 'processors[1].name', 'email']))
     expect(legalReadiness(CLIENT)).toEqual([])
-  })
-
-  it('сайт в режиме client публикуется только с заполненными реквизитами', () => {
-    if (SITE.contentMode === 'client') expect(legalReadiness(SITE)).toEqual([])
   })
 })
 

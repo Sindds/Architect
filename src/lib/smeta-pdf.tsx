@@ -68,7 +68,6 @@ function SmetaDocument({ leadId, input, issued }: { leadId: number; input: Smeta
   const style = PRICING.styles[input.style]
   const addons = input.addons.map((k) => PRICING.addons[k].title)
   const date = issued.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' })
-  const concept = SITE.contentMode === 'concept'
   // Сквозная нумерация строк: номер первой строки каждого раздела.
   const firstLine = sheet.sections.map((_, i) => sheet.sections.slice(0, i).reduce((n, x) => n + x.lines.length, 0) + 1)
 
@@ -81,7 +80,7 @@ function SmetaDocument({ leadId, input, issued }: { leadId: number; input: Smeta
         <Text style={s.muted}>
           от {date} · {input.project ? `проект ${input.project}` : 'расчёт по параметрам с сайта'}
         </Text>
-        {concept && <Text style={s.stamp}>Предварительный расчёт, не является офертой.</Text>}
+        <Text style={s.stamp}>Предварительный расчёт, не является офертой.</Text>
 
         <View style={s.facts}>
           <Fact label="Стиль и каркас" value={`${style.title}, ${style.construction.toLowerCase()}`} />

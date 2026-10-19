@@ -22,14 +22,9 @@ export type SmetaInput = z.infer<typeof smetaInputSchema>
 
 const payloadSchema = z.object({ l: z.number().int(), e: smetaInputSchema, x: z.number().int() })
 
-/**
- * Секрет подписи. В режиме client — только из SMETA_SIGNING_SECRET (без него ссылка не выдаётся).
- * В concept допустим общий ключ: в смете нет персональных данных, подпись лишь не даёт подставить чужие параметры.
- */
-export function smetaSecret(env: Record<string, string | undefined> = process.env, concept = false): string | null {
-  const key = env.SMETA_SIGNING_SECRET?.trim()
-  if (key) return key
-  return concept ? 'arcline-concept-smeta' : null
+/** Секрет подписи — только из SMETA_SIGNING_SECRET: без него ссылка на смету не выдаётся (pnpm env:init). */
+export function smetaSecret(env: Record<string, string | undefined> = process.env): string | null {
+  return env.SMETA_SIGNING_SECRET?.trim() || null
 }
 
 const sign = (data: string, key: string) => createHmac('sha256', key).update(`smeta:${data}`).digest('base64url').slice(0, 32)

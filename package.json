@@ -18,7 +18,9 @@
     "docs:pdf": "tsx --import ./scripts/assets-hook.mjs scripts/make-sample-pdfs.ts",
     "leads:check": "tsx --env-file-if-exists=.env.local scripts/leads-check.ts",
     "map:preview": "node scripts/make-map-preview.mjs",
-    "check": "pnpm typecheck && pnpm lint && pnpm lint:content && pnpm test"
+    "check": "pnpm typecheck && pnpm lint && pnpm lint:content && pnpm test",
+    "env:init": "tsx scripts/env-init.ts",
+    "seo:images": "tsx --import ./scripts/assets-hook.mjs scripts/make-seo-images.ts"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -32,6 +34,7 @@
     "@react-pdf/renderer": "4.9.0",
     "lucide-react": "1.53.0",
     "next": "16.3.8",
+    "nodemailer": "10.0.13",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "4.6.5"

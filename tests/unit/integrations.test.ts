@@ -1,6 +1,11 @@
+import { mkdtempSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import nodemailer from 'nodemailer'
 import { describe, expect, it } from 'vitest'
 import { bitrix24Config, sendToBitrix24 } from '@/lib/leads/bitrix24'
-import { deliverLead, type Sink } from '@/lib/leads/deliver'
+import { configuredSinks, deliverLead, type Sink } from '@/lib/leads/deliver'
+import { emailConfig, leadEmail, sendLeadEmail } from '@/lib/leads/email'
 import { oneCConfig, sendToOneC } from '@/lib/leads/onec'
 import { leadSummary, toLeadRecord, type LeadRecord } from '@/lib/leads/record'
 import type { LeadInput } from '@/lib/lead-schema'
@@ -173,5 +178,50 @@ describe('уведомление в Telegram со ссылками', () => {
     expect(text).not.toContain('Анна')
     expect(text).not.toMatch(/\+?7\d{10}/)
     expect(text).not.toContain('нет связи')
+  })
+})
+
+describe('почта (SMTP)', () => {
+  const ENV = { SMTP_HOST: 'smtp.yandex.ru', SMTP_USER: 'leads@arcline.test', SMTP_PASS: 'пароль приложения', LEADS_EMAIL_TO: 'a@arcline.test, b@arcline.test' }
+
+  it('канал включается, только когда заданы сервер, вход и получатели; порт 465 — TLS сразу', () => {
+    expect(emailConfig({})).toBeNull()
+    expect(emailConfig({ ...ENV, LEADS_EMAIL_TO: '' })).toBeNull()
+    expect(emailConfig(ENV)).toMatchObject({ host: 'smtp.yandex.ru', port: 465, secure: true, from: 'leads@arcline.test', to: ['a@arcline.test', 'b@arcline.test'] })
+    expect(emailConfig({ ...ENV, SMTP_PORT: '587' })).toMatchObject({ port: 587, secure: false })
+  })
+
+  it('письмо: в теме номер, имя и телефон (без переводов строки), в тексте — всё для менеджера', () => {
+    const mail = leadEmail({ ...LEAD, name: 'Анна\nBcc: x@evil.test' }, { from: 'leads@arcline.test', to: ['a@arcline.test'] })
+    expect(mail.subject).toBe(`Заявка №${LEAD.id} с сайта: Анна Bcc: x@evil.test, ${LEAD.phone}`)
+    expect(mail.subject).not.toMatch(/\n/)
+    expect(mail.text).toContain(`Телефон: ${LEAD.phone}`)
+    expect(mail.text).toContain(leadSummary(LEAD))
+    expect(mail.text).toContain('utm_source=yandex')
+  })
+
+  it('отправка через SMTP-транспорт: письмо уходит на всех получателей', async () => {
+    const config = emailConfig(ENV)!
+    const transport = nodemailer.createTransport({ jsonTransport: true })
+    const { ref } = await sendLeadEmail(LEAD, config, transport)
+    expect(ref).toBeTruthy()
+    const sent = await transport.sendMail(leadEmail(LEAD, config))
+    const message = JSON.parse(String(sent.message)) as { to: { address: string }[]; subject: string }
+    expect(message.to.map((t) => t.address)).toEqual(['a@arcline.test', 'b@arcline.test'])
+    expect(message.subject).toContain(`№${LEAD.id}`)
+  })
+
+  it('хранилища из окружения: почта при настройке; файл выключен на Vercel, если не включён явно', () => {
+    expect(configuredSinks({ ...ENV, LEADS_FILE: 'off' }).map((s) => s.name)).toEqual(['email'])
+    expect(configuredSinks({ VERCEL: '1' }).map((s) => s.name)).toEqual([])
+    expect(configuredSinks({ VERCEL: '1', LEADS_FILE: 'on' }).map((s) => s.name)).toEqual(['file'])
+    expect(configuredSinks({}).map((s) => s.name)).toEqual(['file'])
+  })
+
+  it('файл пишется в LEADS_DIR', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'leads-'))
+    const [file] = configuredSinks({ LEADS_DIR: dir })
+    await file!.send(LEAD)
+    expect(JSON.parse(readFileSync(path.join(dir, 'leads.ndjson'), 'utf8').trim())).toMatchObject({ id: LEAD.id, phone: LEAD.phone })
   })
 })

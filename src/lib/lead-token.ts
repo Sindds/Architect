@@ -9,14 +9,9 @@ const CLOCK_SKEW_MS = 60_000
 
 export type TokenCheck = 'ok' | 'too_fast' | 'expired' | 'invalid'
 
-/**
- * Секрет подписи. В режиме client — только из LEAD_TOKEN_SECRET (без него заявки не принимаются).
- * В режиме concept допустим общий ключ: персональные данные там не сохраняются, а метка лишь отсекает простых ботов.
- */
-export function leadTokenSecret(env: Record<string, string | undefined> = process.env, concept = false): string | null {
-  const key = env.LEAD_TOKEN_SECRET?.trim()
-  if (key) return key
-  return concept ? 'arcline-concept' : null
+/** Секрет подписи — только из LEAD_TOKEN_SECRET: без него заявки не принимаются (сгенерировать — pnpm env:init). */
+export function leadTokenSecret(env: Record<string, string | undefined> = process.env): string | null {
+  return env.LEAD_TOKEN_SECRET?.trim() || null
 }
 
 function sign(issued: string, key: string): string {

@@ -3,7 +3,6 @@ import type { StaticImageData } from 'next/image'
 export type Tier = 'contour' | 'whitebox' | 'turnkey'
 export type Style = 'minimal' | 'fachwerk' | 'chalet' | 'monolith'
 export type AddonKey = 'knx' | 'geothermal' | 'spa'
-export type ContentMode = 'concept' | 'client'
 export type VariantKey = 'default' | 'fachwerk' | 'monolith' | 'scandi'
 
 export interface TierModel {
@@ -43,8 +42,6 @@ export interface Picture {
   alt: string
   /** Тип изображения; на сайте не показывается (решение заказчика 18.10.2026), нужен для кода. */
   caption: 'Визуализация' | 'Чертёж' | 'Портрет'
-  /** Лицо сгенерировано: такие портреты допустимы только в режиме concept. */
-  generated?: boolean
 }
 
 export interface Room {

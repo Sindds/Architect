@@ -349,6 +349,7 @@ test.describe('Заявка', () => {
     const res = await page.request.get(href)
     expect(res.status()).toBe(200)
     expect(res.headers()['content-type']).toBe('application/pdf')
+    expect(res.headers()['x-robots-tag']).toBe('noindex, nofollow')
     expect((await res.body()).subarray(0, 5).toString()).toBe('%PDF-')
     expect((await page.request.get(`${href.slice(0, -3)}xyz`)).status()).toBe(403)
   })
