@@ -14,7 +14,8 @@ export function leadNotificationText(id: number, source: LeadSource, variant?: s
     else if (r.url) lines.push(`${label}: ${r.url}`)
     else if (r.sink !== 'file') lines.push(`${label}: принята${r.ref ? `, №${r.ref}` : ''}`)
   }
-  if (results.length && !results.some((r) => r.ok)) lines.push('Заявка нигде не сохранена: клиенту показан телефон для звонка.')
+  if (!results.length) lines.push('Заявка нигде не сохранена: не настроено ни одно хранилище (почта, Битрикс24, 1С). Клиенту показан телефон для звонка.')
+  else if (!results.some((r) => r.ok)) lines.push('Заявка нигде не сохранена: клиенту показан телефон для звонка.')
   return lines.join('\n')
 }
 

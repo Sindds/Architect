@@ -1,11 +1,7 @@
 import { SITE } from '@/content/site'
+import { MESSENGER_LABELS } from '@/content/texts'
 
-const CHANNELS = [
-  { key: 'telegram', label: 'Telegram', href: SITE.messengers.telegram },
-  { key: 'max', label: 'MAX', href: SITE.messengers.max },
-  { key: 'vk', label: 'ВКонтакте', href: SITE.messengers.vk },
-  { key: 'whatsapp', label: 'WhatsApp', href: SITE.messengers.whatsapp },
-] as const
+const CHANNELS = (['telegram', 'max', 'vk', 'whatsapp'] as const).map((key) => ({ key, label: MESSENGER_LABELS[key], href: SITE.messengers[key] }))
 
 /**
  * Прямые ссылки на чаты компании: щелчок открывает мессенджер в новой вкладке, без формы.

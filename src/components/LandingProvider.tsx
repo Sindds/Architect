@@ -37,7 +37,8 @@ interface LandingContextValue {
   variant: VariantKey
   openLead: (req: LeadRequest) => void
   openProject: (slug: string) => void
-  calcPreset: string | null
+  /** Проект для калькулятора. Новый объект на каждое «Рассчитать этот проект»: повторный щелчок по тому же проекту снова подставит его параметры. */
+  calcPreset: { slug: string } | null
   calculateProject: (slug: string) => void
 }
 
@@ -69,7 +70,7 @@ function urlWith(updates: Record<string, string | null>, hash = '') {
 export function LandingProvider({ variant, children }: { variant: VariantKey; children: React.ReactNode }) {
   const [overlay, setOverlay] = useState<Overlay>(null)
   const [lead, setLead] = useState<LeadRequest | null>(null)
-  const [calcPreset, setCalcPreset] = useState<string | null>(null)
+  const [calcPreset, setCalcPreset] = useState<{ slug: string } | null>(null)
   // Окно открыто кликом (есть запись в истории) или прямой ссылкой (записи нет).
   const pushed = useRef(false)
   // history.back() асинхронный: пока он не дошёл (popstate), новое окно не пишем в историю, иначе
@@ -90,7 +91,7 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
     // Состояние из URL доступно только в браузере, поэтому читаем его после монтирования.
     /* eslint-disable react-hooks/set-state-in-effect */
     if (initial) setOverlay(initial)
-    if (getProject(preset)) setCalcPreset(preset)
+    if (preset && getProject(preset)) setCalcPreset({ slug: preset })
     /* eslint-enable react-hooks/set-state-in-effect */
     const onPop = () => {
       pushed.current = false
@@ -144,7 +145,7 @@ export function LandingProvider({ variant, children }: { variant: VariantKey; ch
     pushed.current = false
     setOverlay(null)
     window.history.replaceState(null, '', urlWith({ project: null, calc: slug }, '#calculator'))
-    setCalcPreset(slug)
+    setCalcPreset({ slug })
     requestAnimationFrame(() => {
       fullLayout()
       const target = document.getElementById('calculator')

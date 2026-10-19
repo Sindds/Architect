@@ -1,12 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { SITE } from '@/content/site'
+import { LEAD_LIMITS, UTM_KEYS, type UtmKey } from '@/lib/lead-constants'
 import { CONTACT_METHODS, type LeadInput, type LeadSource } from '@/lib/lead-schema'
 
 export const SOURCE_LABELS: Record<LeadSource, string> = {
-  header: 'шапка',
-  hero: 'первый экран',
   messenger: 'мессенджер',
-  project_card: 'карточка проекта',
   project_modal: 'окно проекта',
   pricing_pdf: 'смета из блока цен',
   calculator: 'калькулятор',
@@ -15,8 +13,7 @@ export const SOURCE_LABELS: Record<LeadSource, string> = {
   architect: 'вопрос архитектору',
 }
 
-const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'yclid'] as const
-export type UtmKey = (typeof UTM_KEYS)[number]
+export type { UtmKey }
 
 /** Заявка в том виде, в каком её получают хранилища: файл, Битрикс24, 1С. Только на сервере. */
 export interface LeadRecord {
@@ -49,7 +46,7 @@ function parseUtm(raw?: string): LeadRecord['utm'] {
     const out: LeadRecord['utm'] = {}
     for (const key of UTM_KEYS) {
       const value = (data as Record<string, unknown>)[key]
-      if (typeof value === 'string' && value) out[key] = value.slice(0, 200)
+      if (typeof value === 'string' && value) out[key] = value.slice(0, LEAD_LIMITS.utmValue)
     }
     return out
   } catch {

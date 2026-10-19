@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import nodemailer from 'nodemailer'
@@ -223,5 +223,32 @@ describe('почта (SMTP)', () => {
     const [file] = configuredSinks({ LEADS_DIR: dir })
     await file!.send(LEAD)
     expect(JSON.parse(readFileSync(path.join(dir, 'leads.ndjson'), 'utf8').trim())).toMatchObject({ id: LEAD.id, phone: LEAD.phone })
+  })
+
+  it('файл с персональными данными читает только владелец: файл 0600, папка 0700', async () => {
+    const dir = path.join(mkdtempSync(path.join(tmpdir(), 'leads-')), 'data')
+    const [file] = configuredSinks({ LEADS_DIR: dir })
+    await file!.send(LEAD)
+    expect(statSync(path.join(dir, 'leads.ndjson')).mode & 0o777).toBe(0o600)
+    expect(statSync(dir).mode & 0o777).toBe(0o700)
+  })
+
+  it('ошибка настройки одного канала не выключает остальные: он отказывает, заявка уходит в другие, Telegram называет сбой', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'leads-'))
+    const sinks = configuredSinks({ LEADS_DIR: dir, B24_WEBHOOK_URL: 'http://portal.bitrix24.ru/rest/1/key/', ONEC_LEADS_URL: 'не адрес' })
+    expect(sinks.map((s) => s.name)).toEqual(['file', 'bitrix24', 'onec'])
+    const res = await deliverLead(LEAD, sinks)
+    expect(res.ok).toBe(true)
+    expect(res.results).toEqual([
+      expect.objectContaining({ sink: 'file', ok: true }),
+      expect.objectContaining({ sink: 'bitrix24', ok: false, error: expect.stringContaining('ошибка настройки: B24_WEBHOOK_URL') }),
+      expect.objectContaining({ sink: 'onec', ok: false, error: expect.stringContaining('ошибка настройки') }),
+    ])
+    expect(leadNotificationText(LEAD.id, 'quiz', undefined, res.results)).toContain('Не принята в Битрикс24')
+  })
+
+  it('хранилищ нет — уведомление прямо говорит, что заявка нигде не сохранена', () => {
+    const text = leadNotificationText(1234567, 'quiz', undefined, [])
+    expect(text).toContain('Заявка нигде не сохранена: не настроено ни одно хранилище')
   })
 })

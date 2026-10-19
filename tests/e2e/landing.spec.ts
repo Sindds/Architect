@@ -1,11 +1,14 @@
 import { readFileSync } from 'node:fs'
 import AxeBuilder from '@axe-core/playwright'
 import type { Page, Route } from '@playwright/test'
-import { clickCentered, expect, expectSeen, test } from './fixtures'
+import { clickCentered, expect, expectSeen, test, waitFillTime } from './fixtures'
 import { SITE } from '@/content/site'
+import { VARIANT_TITLES } from '@/content/texts'
 import { formatDays, formatMlnFrom, formatRub } from '@/lib/format'
 import { breakdown, minCalc, projectPrice } from '@/lib/pricing'
 
+/** Неразрывные пробелы из форматирования цен — обычными, как в тексте страницы после замены. */
+const plain = (s: string) => s.replace(/\u00a0/g, ' ')
 const isMobile = (page: Page) => (page.viewportSize()?.width ?? 0) < 768
 
 test.describe('Первый экран и варианты', () => {
@@ -15,14 +18,16 @@ test.describe('Первый экран и варианты', () => {
     const h1 = (html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? '').replace(/<[^>]+>/g, '').replace(/\u00a0/g, ' ')
     // Цена «от» — минимум калькулятора (variant.ts → minCalc); heroFor не импортируем: он тянет картинки.
     expect(h1).toContain(`— от ${formatMlnFrom(minCalc('contour').price).replace(/\u00a0/g, ' ')}`)
-    expect(h1).toBe('Дома из клееного бруса с панорамным остеклением в Подмосковье — от 8,36 млн ₽')
+    expect(h1).toBe(`${VARIANT_TITLES.default} — от ${plain(formatMlnFrom(minCalc('contour').price))}`)
   })
 
   test('варианты отдают свой H1 в HTML', async ({ request }) => {
     const text = async (url: string) => (await (await request.get(url)).text()).replace(/\u00a0/g, ' ')
-    expect(await text('/?v=monolith')).toContain('от 10,56 млн ₽')
-    expect(await text('/?utm_content=fachwerk')).toContain('от 8,8 млн ₽')
-    expect(await text('/?v=unknown')).toContain('от 8,36 млн ₽')
+    // Цена «от» — минимум калькулятора в стиле варианта (src/lib/variant.ts).
+    const from = (style: 'monolith' | 'fachwerk' | null) => `от ${plain(formatMlnFrom(minCalc('contour', style).price))}`
+    expect(await text('/?v=monolith')).toContain(from('monolith'))
+    expect(await text('/?utm_content=fachwerk')).toContain(from('fachwerk'))
+    expect(await text('/?v=unknown')).toContain(from(null))
   })
 
   test('цена в заголовке не выше самой низкой цены в карточках проектов', async ({ page }) => {
@@ -81,8 +86,8 @@ test.describe('Первый экран и варианты', () => {
       const box = calc.getByRole('checkbox', { name: new RegExp(name) })
       if (await box.isChecked()) await box.uncheck()
     }
-    await expect(page.getByTestId('calc-total')).toHaveText(formatRub(8_360_000))
-    await expect(page.getByTestId('hero-price')).toHaveText(/от\s8,36\sмлн\s₽/)
+    await expect(page.getByTestId('calc-total')).toHaveText(formatRub(minCalc('contour').price))
+    await expect(page.getByTestId('hero-price')).toHaveText(`от ${formatMlnFrom(minCalc('contour').price)}`)
   })
 
   test('несуществующий адрес — 404', async ({ request }) => {
@@ -147,7 +152,7 @@ test('у команды портреты с описанием; в тексте 
   await expect(page.locator('section[aria-labelledby=team-title]')).not.toContainText(/сгенерирован|вымышлен|концепт/i)
 })
 
-test.describe('Окна проектов и кейсов', () => {
+test.describe('Окна проектов', () => {
   test('прямой заход /?project=titan открывает окно, Esc закрывает и чистит адрес', async ({ page }) => {
     await page.goto('/?project=titan')
     const modal = page.getByTestId('project-modal')
@@ -195,6 +200,14 @@ test.describe('Окна проектов и кейсов', () => {
     await expect(page).toHaveURL(/calc=titan/)
     // Надпись «Подставили параметры проекта …» убрана по просьбе заказчика (19.10.2026).
     await expect(page.getByTestId('calculator')).not.toContainText(/Подставили параметры/i)
+    // Повторный «Рассчитать этот проект» по тому же дому снова подставляет его параметры.
+    const area = page.getByTestId('calc-area-input')
+    await area.fill('500')
+    await area.press('Enter')
+    await expect(area).toHaveValue('500')
+    await clickCentered(page.getByTestId('projects-grid').getByRole('button', { name: 'TITAN' }))
+    await page.getByTestId('project-modal').getByRole('button', { name: 'Рассчитать этот проект' }).click()
+    await expect(area).toHaveValue('540')
   })
 })
 
@@ -243,7 +256,7 @@ test.describe('Заявка', () => {
     await modal.getByLabel('Имя').fill('Анна')
     await modal.getByLabel('Телефон').fill('9161234567')
     await expect(modal.getByLabel('Телефон')).toHaveValue('+7 (916) 123-45-67')
-    await page.waitForTimeout(3100)
+    await waitFillTime(page)
     await modal.getByRole('button', { name: 'Отправить заявку' }).click()
     await expect(modal.getByText('Без согласия на обработку данных отправить заявку невозможно')).toBeVisible()
     await expect(modal.getByLabel('Имя')).toHaveValue('Анна')
@@ -341,7 +354,7 @@ test.describe('Заявка', () => {
     await modal.getByLabel('Имя').fill('Анна')
     await modal.getByLabel('Телефон').fill('9161234567')
     await modal.getByRole('checkbox').check()
-    await page.waitForTimeout(3100)
+    await waitFillTime(page)
     await modal.getByRole('button', { name: /Отправить|Получить/ }).click()
 
     const link = modal.getByTestId('smeta-download')

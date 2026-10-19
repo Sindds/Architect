@@ -2,7 +2,7 @@
 
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
-import { CALC_LIMITS, PRICING, STYLE_ORDER } from '@/content/pricing'
+import { PRICING, QUIZ_AREAS, STYLE_ORDER } from '@/content/pricing'
 import { QUIZ_TEXT as T } from '@/content/texts'
 import type { Style } from '@/content/types'
 import { formatMlnRange } from '@/lib/format'
@@ -11,13 +11,13 @@ import { useLanding } from '../LandingProvider'
 import { revealOrder } from '@/lib/reveal'
 import { track } from '@/lib/analytics'
 
-// Сроки старта — относительно текущей даты, без зашитых годов (PLAN P5.3).
+// Ответы о площади: подписи — QUIZ_TEXT.areas в texts.ts, границы вилки — QUIZ_AREAS в content/pricing.ts.
 const AREAS = [
   // Нижняя граница — минимальная площадь калькулятора, 100 м² (решение 12.10.2026).
-  { label: T.areas[0], range: [CALC_LIMITS.area.min, 250] },
-  { label: T.areas[1], range: [250, 350] },
-  { label: T.areas[2], range: [350, 500] },
-  { label: T.areas[3], range: [500, 700] },
+  { label: T.areas[0], range: QUIZ_AREAS[0] },
+  { label: T.areas[1], range: QUIZ_AREAS[1] },
+  { label: T.areas[2], range: QUIZ_AREAS[2] },
+  { label: T.areas[3], range: QUIZ_AREAS[3] },
 ] as const
 
 const STYLES = [...STYLE_ORDER.map((s) => ({ label: PRICING.styles[s].title, style: s as Style | null })), { label: T.styleUnknown, style: null }]

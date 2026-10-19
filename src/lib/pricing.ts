@@ -72,22 +72,6 @@ export function projectPrice(p: Priced, tier: Tier, model: PricingModel = PRICIN
   }
 }
 
-function minOf(projects: Priced[], tier: Tier, style: Style | null, pick: 'price' | 'days', model: PricingModel) {
-  const pool = style ? projects.filter((p) => p.style === style) : projects
-  if (pool.length === 0) throw new Error(`Нет проектов в стиле ${style}`)
-  return Math.min(...pool.map((p) => projectPrice(p, tier, model)[pick]))
-}
-
-/** Минимальная цена «под ключ» по проектам каталога (по всем или по одному стилю). */
-export const minTurnkey = (projects: Priced[], style: Style | null = null, model: PricingModel = PRICING) =>
-  minOf(projects, 'turnkey', style, 'price', model)
-
-export const minTurnkeyDays = (projects: Priced[], style: Style | null = null, model: PricingModel = PRICING) =>
-  minOf(projects, 'turnkey', style, 'days', model)
-
-export const minContour = (projects: Priced[], style: Style | null = null, model: PricingModel = PRICING) =>
-  minOf(projects, 'contour', style, 'price', model)
-
 /**
  * Самая низкая цена и срок, которые можно получить в калькуляторе и квизе: минимальная площадь, без террасы и опций,
  * самый дешёвый стиль (или стиль варианта). Это цена «от» для H1: ниже на странице дешевле не найти.

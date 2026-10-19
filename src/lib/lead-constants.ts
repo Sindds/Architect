@@ -3,10 +3,7 @@
 import { FORM_ERRORS } from '@/content/texts'
 
 export const LEAD_SOURCES = [
-  'header',
-  'hero',
   'messenger',
-  'project_card',
   'project_modal',
   'pricing_pdf',
   'calculator',
@@ -27,6 +24,16 @@ export type LeadState =
 /** Заявка не дошла до сервера или сервер не смог её сохранить. Форма добавляет ссылку на телефон после двоеточия. */
 export const SEND_FAILED = FORM_ERRORS.sendFailed
 
-/** Поле-ловушка для ботов: человек его не видит и не заполняет. */
-export const HONEYPOT_FIELD = 'company'
+/**
+ * Поле-ловушка для ботов: человек его не видит и не заполняет. Имя и подпись ни на что не похожи
+ * (не «компания», не «адрес»), иначе автозаполнение браузера впишет туда данные и заявка пропадёт.
+ */
+export const HONEYPOT_FIELD = 'arc_trap_field'
+
+/** Рекламные метки: форма запоминает их на сессию и отправляет с заявкой, robots.txt убирает их через Clean-param. */
+export const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'yclid', 'gclid'] as const
+export type UtmKey = (typeof UTM_KEYS)[number]
+
+/** Длины полей — одни и те же в форме (maxLength) и в проверке на сервере. */
+export const LEAD_LIMITS = { name: 60, comment: 1000, utmValue: 200 } as const
 

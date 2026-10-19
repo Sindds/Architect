@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { clientIp } from '@/lib/client-ip'
-import { MIN_FILL_MS, TOKEN_MAX_AGE_MS, checkLeadToken, signLeadToken } from '@/lib/lead-token'
+import { MIN_FILL_MS, TOKEN_MAX_AGE_MS, checkLeadToken, minFillMs, signLeadToken } from '@/lib/lead-token'
 import { allowRequest, rateLimitSize, resetRateLimit } from '@/lib/rate-limit'
 
 const NOW = 1_800_000_000_000
@@ -60,5 +60,16 @@ describe('лимит частоты', () => {
     for (let i = 0; i < 6000; i++) allowRequest(`ip-${i}`, NOW)
     allowRequest('свежий', NOW + 11 * 60 * 1000)
     expect(rateLimitSize()).toBeLessThan(10)
+  })
+})
+
+describe('порог времени заполнения на сервере', () => {
+  it('LEAD_MIN_FILL_MS может только уменьшить порог 3 с и не ниже 0,5 с; мусор — обычные 3 с', () => {
+    expect(minFillMs({})).toBe(3000)
+    expect(minFillMs({ LEAD_MIN_FILL_MS: '1000' })).toBe(1000)
+    expect(minFillMs({ LEAD_MIN_FILL_MS: '10' })).toBe(500)
+    expect(minFillMs({ LEAD_MIN_FILL_MS: '99999' })).toBe(3000)
+    expect(minFillMs({ LEAD_MIN_FILL_MS: '0' })).toBe(3000)
+    expect(minFillMs({ LEAD_MIN_FILL_MS: 'abc' })).toBe(3000)
   })
 })

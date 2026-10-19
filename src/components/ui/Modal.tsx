@@ -51,6 +51,7 @@ export function Modal({ open, onClose, title, hideTitle, size = 'lg', children, 
   const titleId = useId()
   // Окно открыто по props: закрытие из кода (open → false) не должно снова звать onClose.
   const openRef = useRef(open)
+  const downOnBackdrop = useRef(false)
   useLayoutEffect(() => {
     openRef.current = open
   }, [open])
@@ -79,8 +80,13 @@ export function Modal({ open, onClose, title, hideTitle, size = 'lg', children, 
         // реагируем только на своё закрытие и только когда его закрыл браузер (Esc), а не код.
         if (e.target === e.currentTarget && openRef.current) onClose()
       }}
+      // Щелчок по затемнению закрывает окно, но только если и нажали на затемнение: выделение текста в поле,
+      // отпущенное над фоном, тоже даёт click по <dialog>, и окно закрылось бы вместе с вводом.
+      onPointerDown={(e) => {
+        downOnBackdrop.current = e.target === e.currentTarget
+      }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
+        if (e.target === e.currentTarget && downOnBackdrop.current) onClose()
       }}
       className={`m-auto max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] overflow-y-auto overscroll-contain rounded-[24px] border border-line bg-surface p-0 text-fg shadow-[0_24px_80px_-20px_rgb(0_0_0/0.55)] backdrop:bg-black/70 open:animate-[modal-in_220ms_var(--ease-out-soft)] motion-reduce:open:animate-none sm:max-h-[calc(100dvh-3rem)] ${
         size === 'sm' ? 'max-w-lg' : 'max-w-6xl'

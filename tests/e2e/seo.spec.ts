@@ -2,7 +2,7 @@ import { expect, test } from './fixtures'
 import { PRICING, STYLE_ORDER } from '@/content/pricing'
 import { FAQ } from '@/content/texts'
 import { SITE } from '@/content/site'
-import { groupDigits } from '@/lib/format'
+import { formatMlnFrom, groupDigits } from '@/lib/format'
 import { minCalc, projectPrice } from '@/lib/pricing'
 
 // content/projects не импортируем: он тянет картинки .webp, которые Playwright не загружает. Проекты берём со страницы.
@@ -56,7 +56,7 @@ test('llms.txt для ИИ-ассистентов: компания, цены, �
   expect(res.headers()['content-type']).toContain('text/markdown')
   const md = (await res.text()).replace(/ /g, ' ')
   expect(md).toMatch(new RegExp(`^# ${SITE.brandFull}`))
-  expect(md).toContain('тёплый контур от 8,36 млн ₽')
+  expect(md).toContain(`тёплый контур от ${formatMlnFrom(minCalc('contour').price).replace(/\u00a0/g, ' ')}`)
   for (const name of PROJECT_NAMES) expect(md).toContain(`### ${name}`)
   for (const f of FAQ) expect(md).toContain(`### ${f.question}`)
   expect(md).toContain(SITE.address)
@@ -94,6 +94,46 @@ test('разметка schema.org: подрядчик с адресом и ча�
   expect(faq.mainEntity).toHaveLength(FAQ.length)
   // Отзывы шаблона в разметку не попадают: без источника это нарушение правил поисковиков.
   expect(html).not.toMatch(/"aggregateRating"|"@type":"Review"/)
+})
+
+test('юридические страницы: название бренда в заголовке один раз', async ({ request }) => {
+  for (const url of ['/privacy', '/soglasie', '/cookies']) {
+    const title = (await (await request.get(url)).text()).match(/<title>([^<]*)<\/title>/)?.[1] ?? ''
+    expect(title, url).toMatch(new RegExp(`^[^—]+ — ${SITE.brandFull}$`))
+  }
+})
+
+test('llms.txt: сроки опций склоняются («+21 день», а не «+21 дней»)', async ({ request }) => {
+  const md = (await (await request.get('/llms.txt')).text()).replace(/\u00a0/g, ' ')
+  expect(md).not.toMatch(/\b(1|21|31) дней/)
+})
+
+test('заголовки безопасности: сайт нельзя встроить в чужую страницу, тип файлов не угадывается', async ({ request }) => {
+  for (const url of ['/', '/privacy', '/robots.txt']) {
+    const h = (await request.get(url)).headers()
+    expect(h['x-frame-options'], url).toBe('DENY')
+    expect(h['content-security-policy'], url).toContain("frame-ancestors 'none'")
+    expect(h['x-content-type-options'], url).toBe('nosniff')
+    expect(h['referrer-policy'], url).toBe('strict-origin-when-cross-origin')
+    expect(h['permissions-policy'], url).toContain('camera=()')
+  }
+})
+
+test('/api/health отвечает 200 без кеша; robots.txt закрывает /api/', async ({ request }) => {
+  const res = await request.get('/api/health')
+  expect(res.status()).toBe(200)
+  expect(await res.json()).toEqual({ status: 'ok' })
+  expect(res.headers()['cache-control']).toContain('no-store')
+  expect(await (await request.get('/robots.txt')).text()).toContain('Disallow: /api/')
+})
+
+test('ссылки на смету: неверная — 403, перебор с одного IP — 429', async ({ request }) => {
+  // Свой адрес на каждый запуск (два проекта и повторы идут на один сервер, а лимит помнит 10 минут).
+  const headers = { 'x-forwarded-for': `198.18.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}` }
+  const statuses: number[] = []
+  for (let i = 0; i < 21; i++) statuses.push((await request.get(`/smeta/подделка-${i}.abc`, { headers })).status())
+  expect(statuses.slice(0, 20)).toEqual(Array(20).fill(403))
+  expect(statuses[20]).toBe(429)
 })
 
 test('значки, манифест и картинка для соцсетей отдаются', async ({ request }) => {

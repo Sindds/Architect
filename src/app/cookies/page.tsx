@@ -5,7 +5,7 @@ import { LEGAL } from '@/content/legal'
 const doc = LEGAL['cookies']
 
 export const metadata: Metadata = {
-  title: `${doc.title} — ARCLINE`,
+  title: doc.title,
   description: doc.description,
   alternates: { canonical: '/cookies' },
 }

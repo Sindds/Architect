@@ -1,6 +1,7 @@
 import { PRICING, STYLE_ORDER, TIER_ORDER } from '@/content/pricing'
 import { PROJECTS } from '@/content/projects'
 import { SITE } from '@/content/site'
+import { SEO_TEXT } from '@/content/texts'
 import type { Picture, Style } from '@/content/types'
 import { formatDaysFrom, formatMlnFrom, groupDigits } from './format'
 import { isPlaceholderLink, realEmail, realNumber } from './placeholders'
@@ -25,14 +26,14 @@ const turnkey = minCalc('turnkey')
 export function seoDescription(lead: string, style: Style | null = null) {
   const c = minCalc('contour', style)
   const t = minCalc('turnkey', style)
-  return plain(`${lead}: тёплый контур от ${formatMlnFrom(c.price)}, под ключ от ${formatMlnFrom(t.price)}, ${formatDaysFrom(t.days)}. Цена в договоре.`)
+  return plain(SEO_TEXT.description(lead, formatMlnFrom(c.price), formatMlnFrom(t.price), formatDaysFrom(t.days)))
 }
 
 /** Заголовок и описание главной: ключевая фраза в начале, цена и срок — из pricing.ts. */
 export const SEO = {
-  title: `Дома из клееного бруса под ключ в Подмосковье — ${SITE.brandFull}`,
-  description: seoDescription('Строительство загородных домов из клееного бруса и монолита'),
-  ogTitle: `Дома из клееного бруса с панорамным остеклением — от ${plain(formatMlnFrom(contour.price))}`,
+  title: SEO_TEXT.title(SITE.brandFull),
+  description: seoDescription(SEO_TEXT.descriptionLead),
+  ogTitle: SEO_TEXT.ogTitle(plain(formatMlnFrom(contour.price))),
 }
 
 const image = (p: Picture) => absolute(p.src.src)
@@ -77,17 +78,17 @@ export function structuredData() {
     priceRange: `от ${groupDigits(lowest)} ₽`,
     currenciesAccepted: 'RUB',
     ...(sameAs.length ? { sameAs } : {}),
-    knowsAbout: ['дома из клееного бруса', 'монолитные дома', 'фахверк', 'панорамное остекление', 'строительство домов под ключ'],
+    knowsAbout: SEO_TEXT.knowsAbout,
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
-      name: 'Строительство дома: пакеты готовности',
+      name: SEO_TEXT.catalogName,
       itemListElement: TIER_ORDER.map((tier) => {
         const t = PRICING.tiers[tier]
         return {
           '@type': 'Offer',
           name: t.title,
           description: t.short,
-          itemOffered: { '@type': 'Service', name: `Строительство дома: ${t.title.toLowerCase()}`, provider: { '@id': org } },
+          itemOffered: { '@type': 'Service', name: SEO_TEXT.serviceName(t.title.toLowerCase()), provider: { '@id': org } },
           priceSpecification: STYLE_ORDER.map((style) => ({
             '@type': 'UnitPriceSpecification',
             name: PRICING.styles[style].title,
@@ -104,7 +105,7 @@ export function structuredData() {
   const projects = {
     '@type': 'ItemList',
     '@id': `${SITE_URL}/#projects`,
-    name: 'Проекты домов',
+    name: SEO_TEXT.projectsName,
     itemListElement: PROJECTS.map((p, i) => {
       const low = projectPrice(p, 'contour')
       const high = projectPrice(p, 'turnkey')
@@ -114,10 +115,10 @@ export function structuredData() {
         url: absolute(`/?project=${p.slug}`),
         item: {
           '@type': 'Product',
-          name: `Проект дома ${p.name}`,
+          name: SEO_TEXT.projectName(p.name),
           description: p.tagline,
           image: [p.cover, ...p.gallery].map(image),
-          category: `Дом: ${PRICING.styles[p.style].title.toLowerCase()}`,
+          category: SEO_TEXT.projectCategory(PRICING.styles[p.style].title.toLowerCase()),
           brand: { '@id': org },
           additionalProperty: [
             { '@type': 'PropertyValue', name: 'Площадь дома', value: p.area, unitText: 'м²' },

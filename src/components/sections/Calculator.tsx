@@ -2,7 +2,7 @@
 
 import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
-import { ADDON_ORDER, CALC_LIMITS, PRICING, STYLE_ORDER, TIER_ORDER } from '@/content/pricing'
+import { ADDON_ORDER, CALC_DEFAULTS, CALC_LIMITS, PRICING, STYLE_ORDER, TIER_ORDER } from '@/content/pricing'
 import { CALCULATOR_TEXT as T, COMMON_TEXT, COPY } from '@/content/texts'
 import { getProject } from '@/content/projects'
 import type { AddonKey, Style, Tier } from '@/content/types'
@@ -18,14 +18,14 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
   const { calcPreset, openLead } = useLanding()
   const uid = useId()
-  // Значения по умолчанию — CONTENT-SPEC §5.2: 350 м², «под чистовую», терраса 50 м², KNX.
-  const [area, setArea] = useState(350)
-  const [areaText, setAreaText] = useState('350')
-  const [terrace, setTerrace] = useState(50)
+  // Значения по умолчанию — CALC_DEFAULTS в content/pricing.ts (CONTENT-SPEC §5.2).
+  const [area, setArea] = useState<number>(CALC_DEFAULTS.area)
+  const [areaText, setAreaText] = useState(String(CALC_DEFAULTS.area))
+  const [terrace, setTerrace] = useState<number>(CALC_DEFAULTS.terrace)
   const [style, setStyle] = useState<Style>(defaultStyle)
-  const [tier, setTier] = useState<Tier>('whitebox')
-  const [addons, setAddons] = useState<AddonKey[]>(['knx'])
-  const [presetName, setPresetName] = useState<string | null>(null)
+  const [tier, setTier] = useState<Tier>(CALC_DEFAULTS.tier)
+  const [addons, setAddons] = useState<AddonKey[]>([...CALC_DEFAULTS.addons])
+  const [preset, setPreset] = useState<{ name: string; area: number; terrace: number; style: Style } | null>(null)
   // Мобильная панель итога: видна, пока человек двигает параметры, а карточка результата за экраном.
   const controlsRef = useRef<HTMLDivElement>(null)
   // Цель «начал считать» — один раз, при первом изменении любого параметра.
@@ -56,17 +56,19 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
 
   useEffect(() => {
     // Префилл из окна проекта или ссылки /?calc=slug.
-    const p = getProject(calcPreset)
+    const p = getProject(calcPreset?.slug ?? null)
     if (!p) return
     /* eslint-disable react-hooks/set-state-in-effect */
     setArea(p.area)
     setAreaText(String(p.area))
     setTerrace(p.terrace)
     setStyle(p.style)
-    setPresetName(p.name)
+    setPreset({ name: p.name, area: p.area, terrace: p.terrace, style: p.style })
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [calcPreset])
 
+  // «Проект NORDIC» в заявке — только пока параметры совпадают с проектом; изменили площадь или стиль — это уже свой дом.
+  const presetName = preset && preset.area === area && preset.terrace === terrace && preset.style === style ? preset.name : null
   const b = breakdown({ area, terrace, style, tier, addons })
 
   const commitArea = (raw: string) => {

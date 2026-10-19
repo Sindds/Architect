@@ -1,12 +1,12 @@
 import { z } from 'zod'
-import { FORM_ERRORS as E } from '@/content/texts'
-import { CONTACT_METHODS, HONEYPOT_FIELD, LEAD_SOURCES, type LeadState } from './lead-constants'
+import { FORM_ERRORS as E, VARIANT_TITLES } from '@/content/texts'
+import { CONTACT_METHODS, HONEYPOT_FIELD, LEAD_LIMITS, LEAD_SOURCES, type LeadState } from './lead-constants'
 import { normalizePhone, phoneProblem } from './phone'
 
 export { CONTACT_METHODS, HONEYPOT_FIELD, LEAD_SOURCES, SEND_FAILED, type LeadSource, type LeadState } from './lead-constants'
 
 export const leadSchema = z.object({
-  name: z.string().trim().min(2, E.nameShort).max(60, E.nameLong),
+  name: z.string().trim().min(2, E.nameShort).max(LEAD_LIMITS.name, E.nameLong),
   phone: z
     .string()
     .superRefine((v, ctx) => {
@@ -16,13 +16,15 @@ export const leadSchema = z.object({
     .transform((v) => normalizePhone(v) as string),
   consent: z.literal('on', { message: E.consent }),
   contactMethod: z.enum(Object.keys(CONTACT_METHODS) as [keyof typeof CONTACT_METHODS]).default('call'),
-  comment: z.string().trim().max(1000, E.commentLong).optional(),
+  comment: z.string().trim().max(LEAD_LIMITS.comment, E.commentLong).optional(),
   source: z.enum(LEAD_SOURCES),
   context: z.string().max(200).optional(),
-  variant: z.string().max(20).optional(),
+  /** Вариант первого экрана: только известные ключи — свободная строка ушла бы менеджерам в Telegram и CRM. */
+  variant: z.enum(Object.keys(VARIANT_TITLES) as [keyof typeof VARIANT_TITLES]).optional(),
   estimate: z.string().max(600).optional(),
   quiz: z.string().max(1000).optional(),
-  utm: z.string().max(600).optional(),
+  /** JSON меток: 7 ключей по 200 символов (форма обрезает длинные значения). */
+  utm: z.string().max(2000).optional(),
   /** Параметры дома для PDF-сметы (JSON), проверяет smetaInputSchema на сервере. */
   estimateInput: z.string().max(400).optional(),
   /** ClientID Яндекс Метрики (для офлайн-конверсий), если счётчик загружен. */
@@ -64,6 +66,11 @@ export function validateLead(form: FormData): LeadState | { status: 'valid'; dat
     for (const issue of parsed.error.issues) {
       const key = String(issue.path[0] ?? '')
       if (['name', 'phone', 'consent', 'comment'].includes(key) && !fieldErrors[key]) fieldErrors[key] = issue.message
+    }
+    // Ошибка только в скрытом поле: подсветить нечего, поэтому показываем телефон, а не «Проверьте поля формы».
+    if (!Object.keys(fieldErrors).length) {
+      console.error('[lead] Заявка не прошла проверку скрытых полей:', parsed.error.issues.map((i) => i.path.join('.')).join(', '))
+      return { status: 'error', message: E.sendFailed }
     }
     return { status: 'error', message: E.checkFields, fieldErrors }
   }

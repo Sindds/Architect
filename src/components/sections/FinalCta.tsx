@@ -10,7 +10,7 @@ import { revealOrder } from "@/lib/reveal";
 export function FinalCta({ variant }: { variant: VariantKey }) {
   const copy = COPY.sections.contacts;
   const o = SITE.operator;
-  // Реквизиты для договора и проверки компании (ЗоЗПП ст. 9, 149-ФЗ ст. 10 ч. 2). В концепте номера — нули.
+  // Реквизиты для договора и проверки компании (ЗоЗПП ст. 9, 149-ФЗ ст. 10 ч. 2). В шаблоне номера — нули, заменить в company.ts.
   const requisites = [
     [T.requisites.company, o.name],
     [T.requisites.inn, o.inn],

@@ -41,4 +41,3 @@ export const VARIANTS: Record<VariantKey, Variant> = {
 
 export const CAMPAIGN_VARIANTS = ['fachwerk', 'monolith', 'scandi'] as const
 
-export const isVariantKey = (v: string): v is VariantKey => v in VARIANTS

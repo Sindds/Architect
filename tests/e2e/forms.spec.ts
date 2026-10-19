@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import type { Locator, Page } from '@playwright/test'
 import { E2E_LEADS_DIR } from '../../playwright.config'
-import { clickCentered, expect, expectSeen, test } from './fixtures'
+import { clickCentered, expect, expectSeen, test, waitFillTime } from './fixtures'
 import { COPY } from '@/content/texts'
 import { PRICING } from '@/content/pricing'
 import { SITE } from '@/content/site'
@@ -19,7 +19,7 @@ async function submitLead(page: Page, root: Locator, submit: RegExp | string) {
   await root.getByLabel('Имя').fill('Анна')
   await root.getByLabel('Телефон').fill('9161234567')
   await root.getByRole('checkbox').check()
-  await page.waitForTimeout(3100)
+  await waitFillTime(page)
   await root.getByRole('button', { name: submit }).click()
   const success = root.getByTestId('lead-success')
   await expectSeen(success)
@@ -208,6 +208,26 @@ test.describe('Отправка заявок', () => {
     await savedLead(id).toMatchObject({ id, name: 'Анна', phone: '+79161234567', source: 'final_cta' })
   })
 
+  test('обрыв сети при первом запросе метки защиты: форма запрашивает её снова, заявка уходит', async ({ page }) => {
+    await page.goto('/')
+    // Первый вызов server action (метка при первом фокусе) обрывается, как в метро; дальше сеть есть.
+    let aborted = 0
+    await page.route(
+      (url) => url.pathname === '/',
+      (route) => {
+        if (route.request().method() === 'POST' && route.request().headers()['next-action'] && aborted === 0) {
+          aborted++
+          return route.abort('internetdisconnected')
+        }
+        return route.fallback()
+      },
+    )
+    const contacts = page.locator('#contacts')
+    const id = await submitLead(page, contacts, 'Перезвоните мне')
+    expect(aborted).toBe(1)
+    await savedLead(id).toMatchObject({ id, name: 'Анна', source: 'final_cta' })
+  })
+
   test('окно проекта: смета в PDF → заявка и ссылка на PDF', async ({ page }) => {
     await page.goto('/?project=vista')
     await expectSeen(page.getByTestId('project-modal'))
@@ -281,7 +301,7 @@ test('номер +7 с любым кодом принимается: заявк�
   await expect(phone).toHaveValue('+7 (654) 485-25-55')
   await expect(phone).not.toHaveAttribute('aria-invalid', 'true')
   await modal.getByRole('checkbox').check()
-  await page.waitForTimeout(3100)
+  await waitFillTime(page)
   await modal.getByRole('button', { name: 'Отправить заявку' }).click()
   await expectSeen(modal.getByTestId('lead-success'))
 })
@@ -347,6 +367,26 @@ test('нет плашек «Визуализация» и пометок «де�
 
 // Правка заказчика 18.10.2026: увеличенный чертёж закрывался вместе с окном дома.
 // Причина — React передаёт событие close вложенного <dialog> окнам-предкам (ui/Modal.tsx).
+test('окно заявки: выделение текста в поле, отпущенное над фоном, не закрывает окно; щелчок по фону закрывает', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Написать в мессенджер' }).first().click()
+  const modal = page.getByTestId('lead-modal')
+  const name = modal.getByLabel('Имя')
+  await expectSeen(name)
+  await name.fill('Анна Сергеевна')
+  const box = (await name.boundingBox())!
+  // Тянем выделение из поля и отпускаем кнопку мыши над затемнением в углу экрана.
+  await page.mouse.move(box.x + box.width - 4, box.y + box.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(2, 2, { steps: 5 })
+  await page.mouse.up()
+  await expect(modal).toBeVisible()
+  await expect(name).toHaveValue('Анна Сергеевна')
+  // Обычный щелчок по затемнению закрывает окно.
+  await page.mouse.click(2, 2)
+  await expect(modal).toBeHidden()
+})
+
 test('окно проекта: увеличенный чертёж закрывается крестиком и Esc, окно дома остаётся открытым', async ({ page }) => {
   await page.goto('/?project=nordic')
   const modal = page.getByTestId('project-modal')

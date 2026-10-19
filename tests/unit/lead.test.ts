@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { HONEYPOT_FIELD, validateLead } from '@/lib/lead-schema'
+import { HONEYPOT_FIELD, SEND_FAILED, validateLead } from '@/lib/lead-schema'
 import { leadNotificationText } from '@/lib/notify'
 import { maskRuPhone, maskRuPhoneEdit, normalizePhone, phoneProblem } from '@/lib/phone'
 import { allowRequest, resetRateLimit } from '@/lib/rate-limit'
@@ -11,7 +11,7 @@ function form(overrides: Record<string, string | undefined> = {}) {
     name: 'Анна',
     phone: '+7 (916) 123-45-67',
     consent: 'on',
-    source: 'hero',
+    source: 'final_cta',
     token: 'метка',
     ...overrides,
   }
@@ -105,6 +105,22 @@ describe('маска телефона при наборе', () => {
   })
 })
 
+describe('номер другой страны', () => {
+  it('+375, +44 не превращаются в +7: маска оставляет ввод, проверка называет причину', () => {
+    for (const foreign of ['+375 29 123-45-67', '+44 20 7946 0958', '+3']) {
+      expect(maskRuPhoneEdit(foreign, foreign.length).value).toBe(foreign)
+      expect(normalizePhone(foreign)).toBeNull()
+    }
+    expect(phoneProblem('+375 29 123-45-67')).toBe('Принимаем номера России и Казахстана: +7 и 10 цифр')
+  })
+
+  it('+7 и «+8» (опечатка вместо 8) — российский номер', () => {
+    expect(normalizePhone('+7 916 123-45-67')).toBe('+79161234567')
+    expect(normalizePhone('+8 916 123-45-67')).toBe('+79161234567')
+    expect(maskRuPhoneEdit('+79161234567', 12).value).toBe('+7 (916) 123-45-67')
+  })
+})
+
 describe('полный номер: лишние цифры не принимаются', () => {
   it('цифра в конце, в начале или в середине полного номера ничего не меняет, курсор на месте', () => {
     expect(edit('+7 (916) 123-45-67|', { type: '8' })).toBe('+7 (916) 123-45-67|')
@@ -149,6 +165,15 @@ describe('заявка', () => {
 
   it('неизвестный источник отклоняется', () => {
     expect(validateLead(form({ source: 'spam' })).status).toBe('error')
+  })
+
+  it('ошибка только в скрытом поле — «Не удалось отправить» с телефоном, а не «Проверьте поля» без подсветки', () => {
+    expect(validateLead(form({ utm: 'x'.repeat(2001) }))).toEqual({ status: 'error', message: SEND_FAILED })
+  })
+
+  it('длинные рекламные метки (7 штук по 200 символов) проходят', () => {
+    const utm = JSON.stringify(Object.fromEntries(['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'yclid', 'gclid'].map((k) => [k, 'я'.repeat(200)])))
+    expect(validateLead(form({ utm })).status).toBe('valid')
   })
 })
 

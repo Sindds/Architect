@@ -72,7 +72,6 @@ export interface Review {
   initials: string
   object: string
   text: string
-  isDemo: boolean
   sourceUrl?: string
 }
 

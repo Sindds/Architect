@@ -2,7 +2,7 @@ import { ADDON_ORDER, PRICING, STYLE_ORDER, TIER_ORDER } from '@/content/pricing
 import { FAQ, STEPS, STEPS_EXAMPLE, WHY_US } from '@/content/texts'
 import { PROJECTS } from '@/content/projects'
 import { SITE } from '@/content/site'
-import { formatDaysFrom, formatMln, formatMlnFrom, groupDigits } from '@/lib/format'
+import { formatDays, formatDaysFrom, formatMln, formatMlnFrom, groupDigits } from '@/lib/format'
 import { minCalc, minPriceFor, projectPrice } from '@/lib/pricing'
 import { SEO, SITE_URL } from '@/lib/seo'
 
@@ -46,7 +46,7 @@ export function GET() {
     '## Дополнительные опции',
     ...ADDON_ORDER.map((key) => {
       const a = PRICING.addons[key]
-      return `- ${a.title}: ${plain(groupDigits(a.price))} ₽, +${a.days} дней. ${a.note}`
+      return `- ${a.title}: ${plain(groupDigits(a.price))} ₽, +${plain(formatDays(a.days))}. ${a.note}`
     }),
     '',
     '## Проекты',

@@ -1,10 +1,11 @@
 import { SITE_URL } from '@/lib/seo'
+import { UTM_KEYS } from '@/lib/lead-constants'
 
 // robots.txt текстом, а не через MetadataRoute.Robots: Next не умеет директиву Clean-param для Яндекса.
 export const dynamic = 'force-static'
 
 /** Параметры адреса, которые не меняют содержимое страницы: рекламные метки, вариант первого экрана, окна. */
-const CLEAN_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'yclid', 'gclid', 'v', 'project', 'calc']
+const CLEAN_PARAMS = [...UTM_KEYS, 'v', 'project', 'calc']
 
 export function GET() {
   const body = [
@@ -13,6 +14,8 @@ export function GET() {
     'Allow: /',
     // Личные ссылки на сметы после заявки: живут 7 дней, в выдаче им не место.
     'Disallow: /smeta/',
+    // Служебные адреса (проверка работы сайта) — не страницы.
+    'Disallow: /api/',
     `Clean-param: ${CLEAN_PARAMS.join('&')} /`,
     '',
     `Sitemap: ${SITE_URL}/sitemap.xml`,

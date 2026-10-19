@@ -98,6 +98,17 @@ export const CALC_LIMITS = {
   terrace: { min: 0, max: 200, step: 5 },
 } as const
 
+/** Калькулятор при открытии страницы (CONTENT-SPEC §5.2); стиль — по варианту страницы. Тот же дом — в смете пакета в PDF. */
+export const CALC_DEFAULTS = { area: 350, terrace: 50, tier: 'whitebox', addons: ['knx'] } as const
+
+/** Ответы квиза о площади: границы вилки, м² (подписи — QUIZ_TEXT.areas в texts.ts, совпадение проверяет тест). */
+export const QUIZ_AREAS = [
+  [CALC_LIMITS.area.min, 250],
+  [250, 350],
+  [350, 500],
+  [500, 700],
+] as const
+
 export const TIER_ORDER = ['contour', 'whitebox', 'turnkey'] as const
 export const STYLE_ORDER = ['minimal', 'fachwerk', 'chalet', 'monolith'] as const
 export const ADDON_ORDER = ['knx', 'geothermal', 'spa'] as const

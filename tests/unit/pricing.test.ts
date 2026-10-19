@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { STEPS, STEPS_EXAMPLE, FAQ } from '@/content/texts'
-import { CALC_LIMITS, STYLE_ORDER } from '@/content/pricing'
+import { FAQ, QUIZ_TEXT, STEPS, STEPS_EXAMPLE, WHY_US } from '@/content/texts'
+import { CALC_DEFAULTS, CALC_LIMITS, QUIZ_AREAS, STYLE_ORDER } from '@/content/pricing'
 import { PROJECTS } from '@/content/projects'
 import type { Style, Tier } from '@/content/types'
 import { formatMln, formatMlnFrom, formatRub } from '@/lib/format'
-import { breakdown, daysFor, minCalc, minContour, minPriceFor, minTurnkey, priceFor, projectPrice } from '@/lib/pricing'
+import { breakdown, daysFor, minCalc, minPriceFor, priceFor, projectPrice } from '@/lib/pricing'
 import { heroFor, projectsFor } from '@/lib/variant'
 
 const NBSP = ' '
@@ -30,8 +30,9 @@ describe('CONTENT-SPEC §5.2 — цены и сроки проектов', () =>
   }
 
   it('минимумы: под ключ 51 610 000 ₽, контур 26 420 000 ₽ (NORDIC)', () => {
-    expect(minTurnkey(PROJECTS)).toBe(51_610_000)
-    expect(minContour(PROJECTS)).toBe(26_420_000)
+    const minOf = (tier: 'contour' | 'turnkey') => Math.min(...PROJECTS.map((p) => projectPrice(p, tier).price))
+    expect(minOf('turnkey')).toBe(51_610_000)
+    expect(minOf('contour')).toBe(26_420_000)
   })
 
   it('«от»-цены за м² по стилям', () => {
@@ -42,7 +43,8 @@ describe('CONTENT-SPEC §5.2 — цены и сроки проектов', () =>
   })
 
   it('калькулятор по умолчанию: 350 м², фахверк, под чистовую, терраса 50, KNX → 47 150 000 ₽, 133 дня', () => {
-    const e = { area: 350, terrace: 50, style: 'fachwerk', tier: 'whitebox', addons: ['knx'] } as const
+    expect(CALC_DEFAULTS).toEqual({ area: 350, terrace: 50, tier: 'whitebox', addons: ['knx'] })
+    const e = { ...CALC_DEFAULTS, style: 'fachwerk' } as const
     expect(priceFor({ ...e, addons: [...e.addons] })).toBe(47_150_000)
     expect(breakdown({ ...e, addons: [...e.addons] }).days).toBe(133)
   })
@@ -136,5 +138,22 @@ describe('Форматирование', () => {
     expect(formatRub(51_610_000)).toBe(`51${NBSP}610${NBSP}000${NBSP}₽`)
     expect(formatMln(62_980_000)).toBe(`63${NBSP}млн${NBSP}₽`)
     expect(formatMln(119_400_000)).toBe(`119,4${NBSP}млн${NBSP}₽`)
+  })
+})
+
+describe('тексты и расчёт не расходятся', () => {
+  it('подписи ответов квиза о площади совпадают с границами вилки (QUIZ_AREAS)', () => {
+    QUIZ_TEXT.areas.forEach((label, i) => {
+      const [low, high] = QUIZ_AREAS[i]!
+      expect(label, label).toContain(String(i === QUIZ_AREAS.length - 1 ? low : high))
+      if (i > 0 && i < QUIZ_AREAS.length - 1) expect(label, label).toContain(String(low))
+    })
+  })
+
+  it('проценты оплаты в FAQ и в «Как мы работаем» — те же, что у этапов, и в том же порядке', () => {
+    const percents = STEPS.map((s) => s.paymentPercent)
+    const faq = FAQ.find((f) => /оплата по этапам/i.test(f.question))?.answer.join(' ') ?? ''
+    const why = WHY_US.find((w) => /оплачивайте/i.test(w.title))?.fact ?? ''
+    for (const text of [faq, why]) expect([...text.matchAll(/(\d+)%/g)].map((m) => Number(m[1]))).toEqual(percents)
   })
 })

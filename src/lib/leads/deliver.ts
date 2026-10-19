@@ -23,8 +23,9 @@ export type SinkResult = { sink: SinkName; ok: true; ref?: string; url?: string 
 const fileSink = (dir: string): Sink => ({
   name: 'file',
   async send(lead) {
-    await mkdir(dir, { recursive: true })
-    await appendFile(path.join(dir, 'leads.ndjson'), `${JSON.stringify(lead)}\n`, 'utf8')
+    // Персональные данные: файл читает только владелец процесса (права задаются при создании файла и папки).
+    await mkdir(dir, { recursive: true, mode: 0o700 })
+    await appendFile(path.join(dir, 'leads.ndjson'), `${JSON.stringify(lead)}\n`, { encoding: 'utf8', mode: 0o600 })
     return { ref: String(lead.id) }
   },
 })
@@ -35,14 +36,22 @@ const fileSink = (dir: string): Sink => ({
  */
 export function configuredSinks(env: Env = process.env, fetchImpl: typeof fetch = fetch): Sink[] {
   const sinks: Sink[] = []
+  // Ошибка в настройке одного канала (например, http:// вместо https:// у Битрикс24) не должна выключать остальные:
+  // такой канал остаётся в списке и отказывает на каждой заявке, а уведомление в Telegram называет его.
+  const add = <C>(name: SinkName, config: () => C | null, send: (lead: LeadRecord, c: C) => Promise<{ ref?: string; url?: string }>) => {
+    try {
+      const c = config()
+      if (c) sinks.push({ name, send: (lead) => send(lead, c) })
+    } catch (error) {
+      const message = `ошибка настройки: ${error instanceof Error ? error.message : String(error)}`
+      sinks.push({ name, send: () => Promise.reject(new Error(message)) })
+    }
+  }
   const file = env.LEADS_FILE ?? (env.VERCEL ? 'off' : 'on')
   if (file !== 'off') sinks.push(fileSink(env.LEADS_DIR?.trim() || path.join(process.cwd(), '.data')))
-  const mail = emailConfig(env)
-  if (mail) sinks.push({ name: 'email', send: (lead) => sendLeadEmail(lead, mail) })
-  const b24 = bitrix24Config(env)
-  if (b24) sinks.push({ name: 'bitrix24', send: (lead) => sendToBitrix24(lead, b24, fetchImpl) })
-  const onec = oneCConfig(env)
-  if (onec) sinks.push({ name: 'onec', send: (lead) => sendToOneC(lead, onec, fetchImpl) })
+  add('email', () => emailConfig(env), (lead, mail) => sendLeadEmail(lead, mail))
+  add('bitrix24', () => bitrix24Config(env), (lead, b24) => sendToBitrix24(lead, b24, fetchImpl))
+  add('onec', () => oneCConfig(env), (lead, onec) => sendToOneC(lead, onec, fetchImpl))
   return sinks
 }
 

@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { startTransition, useActionState, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { issueLeadToken, submitLead } from '@/app/actions/lead'
 import { SITE } from '@/content/site'
-import { FORM_TEXT as T } from '@/content/texts'
-import { CONTACT_METHODS, HONEYPOT_FIELD, type LeadSource, type LeadState, SEND_FAILED } from '@/lib/lead-constants'
+import { FORM_ERRORS, FORM_TEXT as T } from '@/content/texts'
+import { CONTACT_METHODS, HONEYPOT_FIELD, LEAD_LIMITS, type LeadSource, type LeadState, SEND_FAILED, UTM_KEYS } from '@/lib/lead-constants'
 import { maskRuPhoneEdit, phoneProblem } from '@/lib/phone'
 import type { SmetaInput } from '@/lib/smeta-token'
 import { getClientId, track } from '@/lib/analytics'
@@ -26,13 +26,11 @@ interface LeadFormProps {
 
 const UTM_KEY = 'arcline:utm'
 
-/** Первый визит: запоминаем utm-метки и yclid на время сессии. */
+/** Первый визит: запоминаем utm-метки, yclid и gclid на время сессии. Длинные значения обрезаем: сервер принимает до 200 символов. */
 function readUtm(): string | undefined {
   try {
     const params = new URLSearchParams(window.location.search)
-    const found = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'yclid']
-      .filter((k) => params.get(k))
-      .map((k) => [k, params.get(k) as string])
+    const found = UTM_KEYS.filter((k) => params.get(k)).map((k) => [k, (params.get(k) as string).slice(0, LEAD_LIMITS.utmValue)])
     if (found.length) sessionStorage.setItem(UTM_KEY, JSON.stringify(Object.fromEntries(found)))
     return sessionStorage.getItem(UTM_KEY) ?? undefined
   } catch {
@@ -91,13 +89,26 @@ export function LeadForm({
   }, [])
 
   // Один запрос на форму и только когда человек начал её заполнять: форма внизу страницы не нагружает сервер при загрузке.
-  // Сбой сети — метка «none»: кнопка станет активной, а сервер ответит ошибкой с телефоном.
+  // Сбой сети — метка «none»: кнопка станет активной, следующий фокус или отправка запросят метку заново.
   const requestToken = () => {
     if (tokenRequested.current) return
     tokenRequested.current = true
-    issueLeadToken().then(setToken, () => setToken('none'))
-    void getClientId().then((id) => id && setClientId(id))
+    issueLeadToken().then(setToken, () => {
+      tokenRequested.current = false
+      setToken('none')
+    })
+    if (!clientId) void getClientId().then((id) => id && setClientId(id))
   }
+
+  // Метка устарела (форма была открыта больше 12 часов): берём новую, чтобы повторная отправка прошла.
+  useEffect(() => {
+    if (state.status !== 'error' || state.message !== FORM_ERRORS.expired) return
+    tokenRequested.current = true
+    issueLeadToken().then(setToken, () => {
+      tokenRequested.current = false
+      setToken('none')
+    })
+  }, [state])
 
   useEffect(() => {
     if (state.status !== 'idle') statusRef.current?.focus()
@@ -157,9 +168,15 @@ export function LeadForm({
       className="grid gap-4"
       data-testid="lead-form"
       onFocus={requestToken}
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault()
         const data = new FormData(e.currentTarget)
+        if (token === 'none') {
+          // Метку не получили из-за сбоя сети: пробуем ещё раз перед отправкой.
+          const fresh = await issueLeadToken().catch(() => 'none')
+          setToken(fresh)
+          data.set('token', fresh)
+        }
         startTransition(() => action(data))
       }}
     >
@@ -185,7 +202,7 @@ export function LeadForm({
           <label htmlFor={`${uid}-name`} className="mb-1.5 block text-sm font-medium">
             {T.name}
           </label>
-          <input {...field('name')} type="text" autoComplete="name" required maxLength={60} className="field" value={name} onChange={(e) => setName(e.target.value)} />
+          <input {...field('name')} type="text" autoComplete="name" required maxLength={LEAD_LIMITS.name} className="field" value={name} onChange={(e) => setName(e.target.value)} />
           {errors.name && (
             <p id={`${uid}-name-error`} className={`mt-1.5 text-sm ${errorText}`}>
               {errors.name}
@@ -248,7 +265,7 @@ export function LeadForm({
             <textarea
               {...field('comment')}
               rows={3}
-              maxLength={1000}
+              maxLength={LEAD_LIMITS.comment}
               className="field min-h-24 resize-y"
               value={comment}
               onChange={(e) => setComment(e.target.value)}

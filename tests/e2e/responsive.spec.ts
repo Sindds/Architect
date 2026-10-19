@@ -1,5 +1,7 @@
 import { type Page } from '@playwright/test'
 import { expect, test } from './fixtures'
+import { formatMlnFrom } from '@/lib/format'
+import { minCalc } from '@/lib/pricing'
 
 // Дефекты из аудита 08.10.2026: каждый тест падал до исправления.
 
@@ -30,7 +32,7 @@ for (const width of [320, 375, 768, 1024, 1280, 1440]) {
     expect(h1?.lines).toBeLessThanOrEqual(5)
     const [price] = await textLines(page, '[data-testid=hero-price]')
     expect(price?.lines).toBe(1)
-    await expect(page.getByTestId('hero-price')).toContainText('8,36')
+    await expect(page.getByTestId('hero-price')).toHaveText(`от ${formatMlnFrom(minCalc('contour').price)}`)
   })
 }
 

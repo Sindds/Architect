@@ -1,7 +1,7 @@
 'use client'
 
 import Script from 'next/script'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { SITE } from '@/content/site'
 import type { VariantKey } from '@/content/types'
 import { track } from '@/lib/analytics'
@@ -16,6 +16,26 @@ const id = Number(SITE.metrikaId) || 0
  */
 export function Metrika({ variant }: { variant: VariantKey }) {
   const [consent] = useConsent()
+  // Счётчик загружался в этом окне: после «Принять все». «Настройки cookie» сначала сбрасывают выбор,
+  // поэтому смотрим не на предыдущее значение, а на то, был ли счётчик загружен.
+  const loaded = useRef(false)
+
+  // Отозвали согласие («Настройки cookie» → «Только необходимые»): загруженный счётчик сам не выгружается,
+  // поэтому удаляем его cookie и данные в браузере и перезагружаем страницу уже без Метрики.
+  useEffect(() => {
+    if (consent === 'all') loaded.current = true
+    if (!id || !loaded.current || consent !== 'necessary') return
+    for (const name of document.cookie.split(';').map((c) => c.split('=')[0]?.trim() ?? '')) {
+      if (!name.startsWith('_ym')) continue
+      for (const domain of ['', `; domain=${location.hostname}`, `; domain=.${location.hostname.replace(/^www\./, '')}`]) {
+        document.cookie = `${name}=; Max-Age=0; path=/${domain}`
+      }
+    }
+    try {
+      for (const key of Object.keys(localStorage)) if (key.startsWith('_ym')) localStorage.removeItem(key)
+    } catch {}
+    location.reload()
+  }, [consent])
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {

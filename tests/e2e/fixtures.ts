@@ -1,4 +1,5 @@
-import { test as base, expect, type Locator } from '@playwright/test'
+import { test as base, expect, type Locator, type Page } from '@playwright/test'
+import { E2E_MIN_FILL_MS } from '../../playwright.config'
 
 /** Ключ сессии, после которого лоадер не показывается (src/lib/theme.ts). */
 export const LOADER_KEY = 'arcline-loaded'
@@ -71,3 +72,6 @@ export async function clickCentered(locator: Locator) {
   await locator.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }))
   await locator.click()
 }
+
+/** Ждём минимальное время заполнения формы (на тестовом сервере — E2E_MIN_FILL_MS): иначе сервер ответит «слишком быстро». */
+export const waitFillTime = (page: Page) => page.waitForTimeout(E2E_MIN_FILL_MS + 150)

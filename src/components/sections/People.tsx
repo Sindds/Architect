@@ -113,7 +113,7 @@ export function Reviews() {
                     <span className="text-muted">{r.object}</span>
                   </span>
                 </figcaption>
-                {!r.isDemo && r.sourceUrl && (
+                {r.sourceUrl && (
                   <a
                     href={r.sourceUrl}
                     className="link mt-4 text-sm"

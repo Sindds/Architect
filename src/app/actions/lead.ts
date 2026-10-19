@@ -15,6 +15,13 @@ import { signSmetaToken, smetaInputSchema, smetaSecret } from '@/lib/smeta-token
 
 const secret = () => leadTokenSecret(process.env)
 
+/**
+ * Номер заявки для клиента и менеджера: 7 цифр, 9 млн вариантов (совпадение двух номеров вероятно
+ * только после нескольких тысяч заявок). Уникальный ключ для 1С и дублей — uid в записи заявки.
+ * Ловушка для ботов отвечает номером того же вида, чтобы бот не отличил отказ от приёма.
+ */
+const newLeadId = () => randomInt(1_000_000, 10_000_000)
+
 /** Ссылка на PDF-смету после заявки с параметрами дома (PLAN P5.4). Без SMETA_SIGNING_SECRET ссылки нет. */
 function smetaLink(id: number, raw: string | undefined): string | undefined {
   if (!raw) return undefined
@@ -42,7 +49,11 @@ export async function issueLeadToken(): Promise<string> {
 export async function submitLead(_prev: LeadState, form: FormData): Promise<LeadState> {
   const checked = validateLead(form)
   // Бот заполнил поле-ловушку: отвечаем успехом и ничего не сохраняем.
-  if (checked.status === 'bot') return { status: 'ok', id: randomInt(10_000, 99_999) }
+  if (checked.status === 'bot') {
+    // Если сюда попадёт человек (автозаполнение браузера), заявка пропадёт молча — поэтому пишем в журнал.
+    console.warn('[lead] Сработала ловушка для ботов: заявка не сохранена')
+    return { status: 'ok', id: newLeadId() }
+  }
   if (checked.status !== 'valid') return checked
 
   // Время заполнения считает сервер: время из браузера бот подделает.
@@ -62,7 +73,7 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
     return { status: 'error', message: FORM_ERRORS.tooMany }
   }
 
-  const id = randomInt(10_000, 99_999)
+  const id = newLeadId()
   const { source, variant } = checked.data
 
   // Файл на сервере, почта, Битрикс24 и 1С — те, что заданы в переменных окружения (docs/INTEGRATIONS.md).

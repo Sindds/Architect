@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { clickCentered, expect, test } from './fixtures'
+import { clickCentered, expect, test, waitFillTime } from './fixtures'
 
 // PLAN P7.2: цели Метрики проверяем заглушкой window.ym — она записывает вызовы reachGoal.
 const goals = (page: Page) =>
@@ -60,7 +60,7 @@ test('lead_submit — только когда сервер принял заяв
     await modal.getByLabel('Имя').fill('Анна')
     await modal.getByLabel('Телефон').fill('9161234567')
     await modal.getByRole('checkbox').check()
-    await page.waitForTimeout(3100)
+    await waitFillTime(page)
     await modal.getByRole('button', { name: 'Отправить заявку' }).click()
   }
   await fill()

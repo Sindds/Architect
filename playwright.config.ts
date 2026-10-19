@@ -4,6 +4,8 @@ import { defineConfig, devices } from '@playwright/test'
 
 const PORT = 3100
 /** Папка, куда тестовый сервер пишет заявки: e2e проверяет, что заявка дошла с именем и телефоном. */
+/** Минимальное время заполнения формы на тестовом сервере (в работе — 3 с): тесты форм ждут меньше. */
+export const E2E_MIN_FILL_MS = 1000
 export const E2E_LEADS_DIR = path.join(process.cwd(), 'test-results', 'leads')
 const PRESET_CHROMIUM = '/opt/pw-browsers/chromium'
 
@@ -33,6 +35,7 @@ export default defineConfig({
       SMETA_SIGNING_SECRET: 'e2e-smeta-secret-not-for-production',
       RATE_LIMIT_SALT: 'e2e-salt',
       LEADS_FILE: 'on',
+      LEAD_MIN_FILL_MS: String(E2E_MIN_FILL_MS),
       LEADS_DIR: E2E_LEADS_DIR,
     },
   },

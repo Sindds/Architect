@@ -2,6 +2,12 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 
 /** Минимальное время заполнения формы: быстрее заполняют только боты. */
 export const MIN_FILL_MS = 3000
+
+/** Порог для этого сервера: LEAD_MIN_FILL_MS может только уменьшить его (не меньше 0,5 с) — для автотестов. */
+export function minFillMs(env: Record<string, string | undefined> = process.env): number {
+  const n = Number(env.LEAD_MIN_FILL_MS)
+  return Number.isFinite(n) && n > 0 ? Math.min(MIN_FILL_MS, Math.max(500, n)) : MIN_FILL_MS
+}
 /** Метка действует 12 часов: форма в забытой вкладке потребует обновить страницу. */
 export const TOKEN_MAX_AGE_MS = 12 * 60 * 60 * 1000
 /** Допуск на расхождение часов между инстансами сервера. */
@@ -26,7 +32,7 @@ export function signLeadToken(now: number, key: string | null): string {
 }
 
 /** Проверка метки при отправке: подпись, не быстрее MIN_FILL_MS и не старше TOKEN_MAX_AGE_MS. */
-export function checkLeadToken(token: string | undefined, now: number, key: string | null): TokenCheck {
+export function checkLeadToken(token: string | undefined, now: number, key: string | null, minFill = minFillMs()): TokenCheck {
   if (!key || !token) return 'invalid'
   const [issued, sig] = token.split('.')
   if (!issued || !sig || !/^[0-9a-z]{1,12}$/.test(issued)) return 'invalid'
@@ -35,7 +41,7 @@ export function checkLeadToken(token: string | undefined, now: number, key: stri
   if (expected.length !== given.length || !timingSafeEqual(expected, given)) return 'invalid'
   const age = now - parseInt(issued, 36)
   if (age < -CLOCK_SKEW_MS) return 'invalid'
-  if (age < MIN_FILL_MS) return 'too_fast'
+  if (age < minFill) return 'too_fast'
   if (age > TOKEN_MAX_AGE_MS) return 'expired'
   return 'ok'
 }

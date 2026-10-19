@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { COPY, FAQ, STEPS, WHY_US } from '@/content/texts'
+import { COPY, DOCUMENTS_TEXT, FAQ, STEPS, WHY_US } from '@/content/texts'
 import { LEGAL } from '@/content/legal'
 import { REVIEWS, TEAM } from '@/content/people'
 import { PRICING } from '@/content/pricing'
@@ -177,5 +177,9 @@ describe('Тексты: структура', () => {
     const terms = (found: Iterable<string>) => [...new Set(found)].sort()
     const contract = terms([...section.matchAll(/<td class="r">(\d+ (?:лет|года|год))<\/td>/g)].map((m) => m[1]!))
     expect(terms(answer.match(/\d+ (?:лет|года|год)/g) ?? [])).toEqual(contract)
+    // Карточка образца договора в блоке «Документы» называет тот же срок на фундамент и каркас.
+    const frame = DOCUMENTS_TEXT.contractAbout.match(/гарантия (\d+ (?:лет|года|год)) на фундамент и каркас/)?.[1]
+    expect(frame).toBeTruthy()
+    expect(answer).toContain(`каркас — ${frame}`)
   })
 })

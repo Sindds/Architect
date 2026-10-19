@@ -1,6 +1,6 @@
 import { Check, Minus } from "lucide-react";
 import { COMMON_TEXT, COPY, PRICING_TEXT as T } from "@/content/texts";
-import { PRICING, STYLE_ORDER, TIER_ORDER } from "@/content/pricing";
+import { CALC_DEFAULTS, PRICING, STYLE_ORDER, TIER_ORDER } from "@/content/pricing";
 import { PROJECTS } from "@/content/projects";
 import { SITE } from "@/content/site";
 import type { Style } from "@/content/types";
@@ -20,7 +20,7 @@ function smetaSize(input: SmetaInput): string {
   return `с ${lines} ${plural(lines, ["позицией", "позициями", "позициями"])} в ${sheet.sections.length} ${plural(sheet.sections.length, ["разделе", "разделах", "разделах"])}`;
 }
 
-/** Смета пакета в PDF — для дома по умолчанию из калькулятора (CONTENT-SPEC §5.2): 350 м², терраса 50 м². */
+/** Смета пакета в PDF — для дома по умолчанию из калькулятора (CALC_DEFAULTS): площадь и терраса те же, без опций. */
 export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
   const minArea = Math.min(...PROJECTS.map((p) => p.area));
   return (
@@ -37,7 +37,7 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
       >
         {TIER_ORDER.map((tier, i) => {
           const t = PRICING.tiers[tier];
-          const smeta: SmetaInput = { area: 350, terrace: 50, style: defaultStyle, tier, addons: [] };
+          const smeta: SmetaInput = { area: CALC_DEFAULTS.area, terrace: CALC_DEFAULTS.terrace, style: defaultStyle, tier, addons: [] };
           const featured = tier === "whitebox";
           const muted = featured ? "text-on-inverse-muted" : "text-muted";
           return (
