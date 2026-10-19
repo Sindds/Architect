@@ -185,7 +185,6 @@ export const PRICING_TEXT = {
 export const CALC_TABS = { label: 'Способ расчёта', calculator: 'Калькулятор', quiz: 'Квиз за 2 минуты' }
 
 export const CALCULATOR_TEXT = {
-  preset: (name: string) => `Подставили параметры проекта ${name}. Меняйте их как хотите.`,
   area: 'Площадь дома, м²',
   areaNumber: 'Площадь дома, м², числом',
   terrace: 'Терраса, м²',

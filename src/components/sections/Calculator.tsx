@@ -89,11 +89,6 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
   return (
     <div className="grid gap-6 lg:grid-cols-12" data-testid="calculator">
       <div ref={controlsRef} onChange={onInteract} className="card grid gap-7 p-5 sm:p-8 lg:col-span-7">
-        {presetName && (
-          <p className="label text-accent" role="status">
-            {T.preset(presetName)}
-          </p>
-        )}
         <div>
           <div className="flex items-end justify-between gap-4">
             <label htmlFor={`${uid}-area`} className="font-medium">

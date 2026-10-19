@@ -193,6 +193,8 @@ test.describe('Окна проектов и кейсов', () => {
     await expect(page.getByTestId('calc-area-input')).toHaveValue('540')
     await expect(page.getByRole('radio', { name: /Монолит/ })).toBeChecked()
     await expect(page).toHaveURL(/calc=titan/)
+    // Надпись «Подставили параметры проекта …» убрана по просьбе заказчика (19.10.2026).
+    await expect(page.getByTestId('calculator')).not.toContainText(/Подставили параметры/i)
   })
 })
 
