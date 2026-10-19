@@ -24,6 +24,21 @@ async function submitLead(page: Page, root: Locator, submit: RegExp | string) {
   const success = root.getByTestId('lead-success')
   await expectSeen(success)
   await expect(success).toContainText(/Заявка №\d+ принята/)
+  return Number((await success.innerText()).match(/№(\d+)/)?.[1])
+}
+
+type SavedLead = { id: number; name: string; phone: string; source: string; context?: string; estimate?: string; quiz?: string }
+
+/** Заявка с этим номером в хранилище тестового сервера (файл test-results/leads): дошла, а не только показала «принята». */
+function savedLead(id: number) {
+  const file = path.join(E2E_LEADS_DIR, 'leads.ndjson')
+  return expect.poll(() =>
+    (existsSync(file) ? readFileSync(file, 'utf8') : '')
+      .split('\n')
+      .filter(Boolean)
+      .map((l) => JSON.parse(l) as SavedLead)
+      .find((l) => l.id === id),
+  )
 }
 
 const LOWER_PRONOUN = /(?<![А-Яа-яЁё])(вы|вас|вам|вами|ваш|ваша|ваше|ваши|вашего|вашей|вашему|вашим|вашими|ваших|вашу|вашем)(?![А-Яа-яЁё])/
@@ -55,10 +70,21 @@ test.describe('Квиз', () => {
     await expectSeen(result.getByText('Скандинавский'))
     await expectSeen(result.getByRole('button', { name: 'Получить расчёт' }))
 
+    // textContent, а не innerText: innerText отдаёт текст с text-transform заголовка (заглавными).
+    const fork = (await result.getByRole('heading', { name: /Предварительная стоимость дома/ }).textContent())?.match(/от\s(.+?)\s*млн/)?.[1]
     await result.getByRole('button', { name: 'Получить расчёт' }).click()
     const modal = page.getByTestId('lead-modal')
     await expectSeen(modal.getByRole('heading', { name: 'Получить расчёт' }))
-    await submitLead(page, modal, /Получить расчёт|Отправить/)
+    expect(fork).toBeTruthy()
+    const id = await submitLead(page, modal, /Получить расчёт|Отправить/)
+    // Вместе с именем и телефоном уходят ответы квиза и вилка цены, которую человек видел на экране.
+    await savedLead(id).toMatchObject({
+      name: 'Анна',
+      phone: '+79161234567',
+      source: 'quiz',
+      quiz: expect.stringMatching(/250–350 м².*Скандинавский.*В течение года.*Участок есть/),
+      context: expect.stringContaining(`Вилка от ${fork}`),
+    })
   })
 
   test('«Изменить ответы» и переключение вкладок: квиз и калькулятор всегда видны', async ({ page }) => {
@@ -99,6 +125,30 @@ test.describe('Калькулятор', () => {
     await expect(total).toHaveText(formatRub(expected.total))
     await expectSeen(total)
   })
+
+  test('заявка из калькулятора уходит с параметрами и итогом расчёта, после отправки — смета в PDF', async ({ page }) => {
+    await page.goto('/')
+    const calc = page.getByTestId('calculator')
+    await calc.scrollIntoViewIfNeeded()
+    const area = page.getByTestId('calc-area-input')
+    await area.fill('420')
+    await area.press('Enter')
+    await calc.getByRole('radio', { name: new RegExp(PRICING.styles.monolith.title) }).check()
+    await calc.getByRole('radio', { name: new RegExp(`^${PRICING.tiers.turnkey.title}`) }).check()
+    await calc.getByRole('checkbox', { name: new RegExp(PRICING.addons.knx.title) }).uncheck()
+    const expected = breakdown({ area: 420, terrace: 50, style: 'monolith', tier: 'turnkey', addons: [] })
+    await expect(page.getByTestId('calc-total')).toHaveText(formatRub(expected.total))
+
+    await page.locator('#calculator').getByRole('button', { name: 'Получить смету в PDF' }).first().click()
+    const modal = page.getByTestId('lead-modal')
+    const id = await submitLead(page, modal, /Отправить|Получить/)
+    await savedLead(id).toMatchObject({
+      name: 'Анна',
+      source: 'calculator',
+      estimate: expect.stringContaining(`${PRICING.styles.monolith.title}, 420 м², терраса 50 м²; ${PRICING.tiers.turnkey.title}; Итого ${formatRub(expected.total)}`),
+    })
+    await expectSeen(modal.getByTestId('smeta-download'))
+  })
 })
 
 test.describe('Каждая кнопка заявки открывает видимую форму с заголовком кнопки', () => {
@@ -123,8 +173,6 @@ test.describe('Каждая кнопка заявки открывает вид�
       heading: COPY.smetaTitle,
     },
     { name: 'команда: вопрос архитектору', open: (p) => clickCentered(p.getByRole('button', { name: 'Задать вопрос архитектору' })), heading: 'Обсудите свой будущий дом с архитектором' },
-    { name: 'контакты: MAX', open: (p) => p.locator('#contacts').getByRole('button', { name: 'MAX' }).click(), heading: 'Написать в MAX' },
-    { name: 'контакты: ВКонтакте', open: (p) => p.locator('#contacts').getByRole('button', { name: 'ВКонтакте' }).click(), heading: 'Написать во ВКонтакте' },
     {
       name: 'окно проекта: смета в PDF',
       open: async (p) => {
@@ -156,13 +204,8 @@ test.describe('Отправка заявок', () => {
   test('финальная форма «Перезвоните мне»: заявка сохраняется с именем и телефоном', async ({ page }) => {
     await page.goto('/')
     const contacts = page.locator('#contacts')
-    await submitLead(page, contacts, 'Перезвоните мне')
-    const id = Number((await contacts.getByTestId('lead-success').innerText()).match(/№(\d+)/)?.[1])
-    // Заявка дошла до хранилища (на тестовом сервере — файл), а не только показала «принята».
-    const file = path.join(E2E_LEADS_DIR, 'leads.ndjson')
-    await expect
-      .poll(() => (existsSync(file) ? readFileSync(file, 'utf8') : '').split('\n').filter(Boolean).map((l) => JSON.parse(l) as { id: number; name: string; phone: string; source: string }).find((l) => l.id === id))
-      .toMatchObject({ id, name: 'Анна', phone: '+79161234567', source: 'final_cta' })
+    const id = await submitLead(page, contacts, 'Перезвоните мне')
+    await savedLead(id).toMatchObject({ id, name: 'Анна', phone: '+79161234567', source: 'final_cta' })
   })
 
   test('окно проекта: смета в PDF → заявка и ссылка на PDF', async ({ page }) => {

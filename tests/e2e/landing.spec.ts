@@ -58,7 +58,7 @@ test.describe('Первый экран и варианты', () => {
     const req = page.getByTestId('requisites')
     for (const term of ['Компания', 'ИНН', 'КПП', 'ОГРН', 'Юридический адрес']) await expect(req.getByText(term, { exact: true })).toBeVisible()
     await expect(req).toContainText(SITE.operator.inn)
-    await expect(req).toContainText('Московская обл., Новорижское шоссе, 7-й километр, с1')
+    await expect(req).toContainText('Московская область, Новорижское шоссе, 7-й километр, с1')
     await expect(page.locator('#contacts')).not.toContainText(/концепт|условн|вымышлен|Карта с отметкой/i)
     await expect(page.locator('#contacts')).toContainText(SITE.address)
   })
@@ -416,17 +416,26 @@ test.describe('Нижняя панель на телефоне и мессенд
     await expect(bar).not.toHaveAttribute('data-shown', /.*/)
   })
 
-  test('в контактах кнопки Telegram, MAX и ВКонтакте; без ссылок в концепте — форма с выбранным мессенджером', async ({ page }) => {
+  test('в контактах Telegram, MAX, ВКонтакте и WhatsApp — прямые ссылки на чаты в новой вкладке, без формы', async ({ page }) => {
+    // Внешние сайты в тесте не открываем: вкладка мессенджера получает пустую страницу.
+    await page.context().route(/^https:\/\/(t\.me|max\.ru|vk\.com|wa\.me)\//, (r) => r.fulfill({ contentType: 'text/html', body: '<title>Чат</title>' }))
     await page.goto('/')
     const contacts = page.locator('#contacts')
-    const modal = page.getByTestId('lead-modal')
-    for (const [button, heading] of [['MAX', 'Написать в MAX'], ['ВКонтакте', 'Написать во ВКонтакте']] as const) {
-      await contacts.getByRole('button', { name: button }).click()
-      await expect(modal.getByRole('heading', { name: heading })).toBeVisible()
-      await expect(modal.getByRole('radio', { name: button })).toBeChecked()
-      await page.keyboard.press('Escape')
-      await expect(modal).toBeHidden()
+    for (const [name, key] of [['Telegram', 'telegram'], ['MAX', 'max'], ['ВКонтакте', 'vk'], ['WhatsApp', 'whatsapp']] as const) {
+      const link = contacts.getByRole('link', { name, exact: true })
+      await expect(link).toHaveAttribute('href', SITE.messengers[key])
+      await expect(link).toHaveAttribute('target', '_blank')
+      await expect(link).toHaveAttribute('rel', /noopener/)
+      // Та же кнопка, что у соседей: класс и высота цели касания не меньше 44 px.
+      await expect(link).toHaveClass(/btn btn-light/)
+      expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+      await link.scrollIntoViewIfNeeded()
+      const [chat] = await Promise.all([page.waitForEvent('popup'), link.click()])
+      await expect(chat).toHaveURL(SITE.messengers[key])
+      await chat.close()
+      await expect(page.getByTestId('lead-modal')).toBeHidden()
     }
+    await expect(contacts.getByRole('button', { name: /Telegram|MAX|ВКонтакте|WhatsApp/ })).toHaveCount(0)
   })
 })
 

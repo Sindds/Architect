@@ -74,9 +74,13 @@ test('lead_submit — только когда сервер принял заяв
 })
 
 test('мессенджер: messenger_click', async ({ page }) => {
+  // Вкладка мессенджера получает пустую страницу: внешний сайт в тесте не открываем.
+  await page.context().route(/^https:\/\/wa\.me\//, (r) => r.fulfill({ contentType: 'text/html', body: '<title>Чат</title>' }))
   await page.goto('/')
-  await page.locator('#contacts').getByRole('button', { name: 'Telegram' }).click()
-  await expect.poll(() => names(page)).toContain('messenger_click')
+  const link = page.locator('#contacts').getByRole('link', { name: 'WhatsApp' })
+  await link.scrollIntoViewIfNeeded()
+  await link.click()
+  await expect.poll(() => goals(page)).toEqual(expect.arrayContaining([expect.objectContaining({ goal: 'messenger_click', params: expect.objectContaining({ channel: 'whatsapp' }) })]))
 })
 
 test('«Только необходимые»: нет запросов к mc.yandex.ru', async ({ page }) => {

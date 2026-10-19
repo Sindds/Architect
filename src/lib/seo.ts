@@ -37,6 +37,8 @@ export const SEO = {
 /** Номер не заглушка шаблона: после кода страны есть цифры кроме нулей (+7 000 000-00-00, ИНН 0000000000 — заглушки). */
 const realNumber = (value: string) => /[1-9]/.test(value.replace(/^\+?7/, ''))
 const realEmail = (value: string) => Boolean(value.trim()) && !value.endsWith('example.com')
+/** Ссылка-заглушка шаблона: после домена пусто или одни нули (t.me/+70000000000, vk.com/club0, max.ru/). */
+const isPlaceholderLink = (url: string) => !/[1-9a-z]/i.test(url.replace(/^https?:\/\/[^/]+\/?/, '').replace(/^(\+?7|club|u\/)/, ''))
 
 const image = (p: Picture) => absolute(p.src.src)
 
@@ -44,7 +46,10 @@ const image = (p: Picture) => absolute(p.src.src)
 export function structuredData() {
   const org = `${SITE_URL}/#organization`
   const phone = SITE.phoneHref.replace('tel:', '')
-  const sameAs = Object.values(SITE.messengers).filter((url) => url)
+  // Профили компании (sameAs): сообщество ВКонтакте, Telegram, MAX. WhatsApp — чат по номеру, не профиль.
+  const sameAs = Object.entries(SITE.messengers)
+    .filter(([channel, url]) => channel !== 'whatsapp' && url && !isPlaceholderLink(url))
+    .map(([, url]) => url)
   const lowest = Math.min(contour.price, turnkey.price)
 
   const organization = {

@@ -23,7 +23,7 @@ export function Metrika({ variant }: { variant: VariantKey }) {
       if (!el) return
       const href = el.getAttribute('href') ?? ''
       if (href.startsWith('tel:')) track('phone_click')
-      else if (el.hasAttribute('data-messenger') || /^https:\/\/(t\.me|max\.ru)\//.test(href)) {
+      else if (el.hasAttribute('data-messenger') || /^https:\/\/(t\.me|max\.ru|vk\.(com|me)|wa\.me)\//.test(href)) {
         track('messenger_click', { channel: el.getAttribute('data-messenger') || 'link' })
       } else if (href.startsWith('/smeta/') || href.endsWith('.pdf')) {
         track('pdf_download', { doc: href.startsWith('/smeta/') ? 'smeta' : (href.split('/').pop() ?? 'pdf') })

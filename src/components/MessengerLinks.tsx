@@ -1,42 +1,24 @@
-'use client'
-
 import { SITE } from '@/content/site'
-import { useLanding } from './LandingProvider'
 
 const CHANNELS = [
-  { key: 'telegram', label: 'Telegram', href: SITE.messengers.telegram, title: 'Написать в Telegram' },
-  { key: 'max', label: 'MAX', href: SITE.messengers.max, title: 'Написать в MAX' },
-  { key: 'vk', label: 'ВКонтакте', href: SITE.messengers.vk, title: 'Написать во ВКонтакте' },
+  { key: 'telegram', label: 'Telegram', href: SITE.messengers.telegram },
+  { key: 'max', label: 'MAX', href: SITE.messengers.max },
+  { key: 'vk', label: 'ВКонтакте', href: SITE.messengers.vk },
+  { key: 'whatsapp', label: 'WhatsApp', href: SITE.messengers.whatsapp },
 ] as const
 
 /**
- * Написать в мессенджер без формы. Если ссылка не задана (концепт), кнопка открывает форму с этим мессенджером:
- * человек оставляет номер, менеджер пишет первым.
+ * Прямые ссылки на чаты компании: щелчок открывает мессенджер в новой вкладке, без формы.
+ * Канал без ссылки в SITE.messengers не показывается. data-messenger — цель Метрики messenger_click.
  */
-export function MessengerLinks({ className = 'btn btn-ghost', onNavigate }: { className?: string; onNavigate?: () => void }) {
-  const { openLead } = useLanding()
+export function MessengerLinks({ className = 'btn btn-ghost' }: { className?: string }) {
   return (
     <>
-      {CHANNELS.map((c) =>
-        c.href ? (
-          <a key={c.key} href={c.href} target="_blank" rel="noopener" className={className} data-messenger={c.key} onClick={onNavigate}>
-            {c.label}
-          </a>
-        ) : (
-          <button
-            key={c.key}
-            type="button"
-            className={className}
-            data-messenger={c.key}
-            onClick={() => {
-              onNavigate?.()
-              openLead({ title: c.title, source: 'messenger', extended: true, contactMethod: c.key })
-            }}
-          >
-            {c.label}
-          </button>
-        ),
-      )}
+      {CHANNELS.filter((c) => c.href).map((c) => (
+        <a key={c.key} href={c.href} target="_blank" rel="noopener noreferrer" className={className} data-messenger={c.key}>
+          {c.label}
+        </a>
+      ))}
     </>
   )
 }

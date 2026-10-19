@@ -77,6 +77,7 @@ test('разметка schema.org: подрядчик с адресом и ча�
   expect(org).not.toHaveProperty('telephone')
   expect(org).not.toHaveProperty('taxID')
   expect(org).not.toHaveProperty('email')
+  expect(org).not.toHaveProperty('sameAs')
   expect(org.priceRange).toBe(`от ${groupDigits(minCalc('contour').price)} ₽`)
   expect(graph.find((n) => n['@type'] === 'WebSite')).toBeTruthy()
   type Item = { name: string; category: string; additionalProperty: { name: string; value: number | string }[]; offers: { lowPrice: number; highPrice: number } }
