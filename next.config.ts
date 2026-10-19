@@ -4,6 +4,19 @@ import type { NextConfig } from 'next'
 // /?v=key и /?utm_content=key показывают статическую страницу /v/key, адрес в браузере не меняется.
 const variantKeys = '(?<variant>fachwerk|monolith|scandi)'
 
+// Журнал сборки Vercel (Deployments → Build Logs): без ключа формы и канала заявок посетитель увидит
+// «Не удалось отправить». Полный список того, что не заполнено, — pnpm ready.
+if (process.env.VERCEL) {
+  const env = process.env
+  const problems = [
+    !env.LEAD_TOKEN_SECRET && 'не задан LEAD_TOKEN_SECRET — форма не принимает заявки',
+    !(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS && env.LEADS_EMAIL_TO) && !env.B24_WEBHOOK_URL && !env.ONEC_LEADS_URL &&
+      'не подключены почта (SMTP_*, LEADS_EMAIL_TO), Битрикс24 (B24_WEBHOOK_URL) и 1С — заявкам некуда уйти',
+    !env.SMETA_SIGNING_SECRET && 'не задан SMETA_SIGNING_SECRET — после заявки не будет ссылки на PDF-смету',
+  ].filter(Boolean)
+  for (const p of problems) console.warn(`⚠ Заявки: ${p}. Settings → Environment Variables, затем Redeploy.`)
+}
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // PDF-смета (/smeta/[token]): react-pdf работает в Node как есть, без сборщика; шрифты читаются с диска.

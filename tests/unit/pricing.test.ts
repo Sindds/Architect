@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { STEPS, STEPS_EXAMPLE, FAQ } from '@/content/process'
+import { STEPS, STEPS_EXAMPLE, FAQ } from '@/content/texts'
 import { CALC_LIMITS, STYLE_ORDER } from '@/content/pricing'
 import { PROJECTS } from '@/content/projects'
 import type { Style, Tier } from '@/content/types'

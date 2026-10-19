@@ -3,6 +3,7 @@
 import { randomInt } from 'node:crypto'
 import { headers } from 'next/headers'
 import { after } from 'next/server'
+import { FORM_ERRORS } from '@/content/texts'
 import { clientIp } from '@/lib/client-ip'
 import { type LeadState, SEND_FAILED, validateLead } from '@/lib/lead-schema'
 import { checkLeadToken, leadTokenSecret, signLeadToken } from '@/lib/lead-token'
@@ -47,8 +48,8 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
   // Время заполнения считает сервер: время из браузера бот подделает.
   const key = secret()
   const token = checkLeadToken(checked.data.token, Date.now(), key)
-  if (token === 'too_fast') return { status: 'error', message: 'Форма отправлена слишком быстро. Подождите пару секунд и отправьте ещё раз.' }
-  if (token === 'expired') return { status: 'error', message: 'Форма долго была открыта. Обновите страницу и отправьте заявку ещё раз или позвоните:' }
+  if (token === 'too_fast') return { status: 'error', message: FORM_ERRORS.tooFast }
+  if (token === 'expired') return { status: 'error', message: FORM_ERRORS.expired }
   if (token === 'invalid') {
     if (!key) {
       console.error('[lead] Не задан LEAD_TOKEN_SECRET: заявки не принимаются')
@@ -58,7 +59,7 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
   }
 
   if (!allowRequest(hashIp(clientIp(await headers())))) {
-    return { status: 'error', message: 'Слишком много заявок подряд. Позвоните нам:' }
+    return { status: 'error', message: FORM_ERRORS.tooMany }
   }
 
   const id = randomInt(10_000, 99_999)

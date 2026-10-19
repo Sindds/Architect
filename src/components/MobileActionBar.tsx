@@ -2,6 +2,7 @@
 
 import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { COMMON_TEXT } from '@/content/texts'
 import { useConsent } from '@/lib/consent'
 
 /** Блоки, где кнопка мешает: свои кнопки есть на первом экране, у калькулятора — своя панель итога, в контактах — форма. */
@@ -46,7 +47,7 @@ export function MobileActionBar() {
       }`}
       style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
     >
-      Рассчитать стоимость
+      {COMMON_TEXT.mobileCalculate}
       <span aria-hidden className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-on-inverse text-inverse">
         <ArrowUpRight className="size-4" />
       </span>

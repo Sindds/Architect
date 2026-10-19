@@ -1,6 +1,6 @@
 import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { Fragment } from "react";
-import { COPY } from "@/content/copy";
+import { CONTACTS_TEXT as T, COPY } from "@/content/texts";
 import { SITE } from "@/content/site";
 import type { VariantKey } from "@/content/types";
 import { LeadForm } from "../forms/LeadForm";
@@ -12,11 +12,11 @@ export function FinalCta({ variant }: { variant: VariantKey }) {
   const o = SITE.operator;
   // Реквизиты для договора и проверки компании (ЗоЗПП ст. 9, 149-ФЗ ст. 10 ч. 2). В концепте номера — нули.
   const requisites = [
-    ["Компания", o.name],
-    ["ИНН", o.inn],
-    ["КПП", o.kpp],
-    ["ОГРН", o.ogrn],
-    ["Юридический адрес", o.address],
+    [T.requisites.company, o.name],
+    [T.requisites.inn, o.inn],
+    [T.requisites.kpp, o.kpp],
+    [T.requisites.ogrn, o.ogrn],
+    [T.requisites.address, o.address],
   ];
   const contacts = [
     {
@@ -77,7 +77,7 @@ export function FinalCta({ variant }: { variant: VariantKey }) {
               source="final_cta"
               variant={variant}
               tone="dark"
-              submitLabel="Перезвоните мне"
+              submitLabel={T.submit}
             />
           </div>
         </div>
@@ -103,7 +103,7 @@ export function FinalCta({ variant }: { variant: VariantKey }) {
             style={revealOrder(contacts.length)}
             className="reveal rounded-2xl border border-white/10 p-5"
           >
-            <p className="label text-[#9fc0de]">Реквизиты</p>
+            <p className="label text-[#9fc0de]">{T.requisitesTitle}</p>
             <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
               {requisites.map(([term, value]) => (
                 <Fragment key={term}>

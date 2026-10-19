@@ -1,5 +1,5 @@
 import { PROJECTS } from '@/content/projects'
-import { COPY } from '@/content/copy'
+import { COPY } from '@/content/texts'
 import { VARIANTS } from '@/content/variants'
 import type { Project, VariantKey } from '@/content/types'
 import { formatDaysFrom, formatMlnFrom } from './format'

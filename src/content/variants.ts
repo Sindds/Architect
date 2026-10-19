@@ -1,12 +1,13 @@
 import { MEDIA } from './media'
+import { VARIANT_TITLES } from './texts'
 import type { Variant, VariantKey } from './types'
 
-// Варианты первого экрана под рекламные кампании — CONTENT-SPEC §9.
+// Варианты первого экрана под рекламные кампании — CONTENT-SPEC §9. Заголовки — texts.ts, VARIANT_TITLES.
 // Цена в H1 не вводится руками: «от …» (минимальный тёплый контур) считает pricing.ts по проектам стиля варианта.
 export const VARIANTS: Record<VariantKey, Variant> = {
   default: {
     key: 'default',
-    h1Prefix: 'Дома из клееного бруса с панорамным остеклением в Подмосковье',
+    h1Prefix: VARIANT_TITLES.default,
     heroStyleFilter: null,
     heroImage: MEDIA.heroForest,
     firstProject: 'nordic',
@@ -14,7 +15,7 @@ export const VARIANTS: Record<VariantKey, Variant> = {
   },
   fachwerk: {
     key: 'fachwerk',
-    h1Prefix: 'Фахверковые дома с панорамным остеклением в Подмосковье',
+    h1Prefix: VARIANT_TITLES.fachwerk,
     heroStyleFilter: 'fachwerk',
     heroImage: MEDIA.vistaExterior,
     firstProject: 'vista',
@@ -22,7 +23,7 @@ export const VARIANTS: Record<VariantKey, Variant> = {
   },
   monolith: {
     key: 'monolith',
-    h1Prefix: 'Монолитные дома с панорамными фасадами в Подмосковье',
+    h1Prefix: VARIANT_TITLES.monolith,
     heroStyleFilter: 'monolith',
     heroImage: MEDIA.titanExterior,
     firstProject: 'titan',
@@ -30,7 +31,7 @@ export const VARIANTS: Record<VariantKey, Variant> = {
   },
   scandi: {
     key: 'scandi',
-    h1Prefix: 'Одноэтажные дома в скандинавском стиле в Подмосковье',
+    h1Prefix: VARIANT_TITLES.scandi,
     heroStyleFilter: 'minimal',
     heroImage: MEDIA.nordicExterior,
     firstProject: 'nordic',

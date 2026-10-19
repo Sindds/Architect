@@ -2,6 +2,7 @@
 
 import { ChevronDown } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { PRICING_TEXT } from '@/content/texts'
 
 /**
  * Состав пакета. На телефоне свёрнут, чтобы три пакета не тянулись на три экрана;
@@ -15,7 +16,7 @@ export function PackageDetails({ summaryClassName, children }: { summaryClassNam
   return (
     <details ref={ref} className="group mb-4 sm:mb-6">
       <summary className={summaryClassName}>
-        Что входит и что нет
+        {PRICING_TEXT.details}
         <ChevronDown aria-hidden className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" />
       </summary>
       {children}

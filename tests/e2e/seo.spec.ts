@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 import { PRICING, STYLE_ORDER } from '@/content/pricing'
-import { FAQ } from '@/content/process'
+import { FAQ } from '@/content/texts'
 import { SITE } from '@/content/site'
 import { groupDigits } from '@/lib/format'
 import { minCalc, projectPrice } from '@/lib/pricing'

@@ -5,8 +5,7 @@ import {
   FileSignature,
   Calculator,
 } from "lucide-react";
-import { COPY } from "@/content/copy";
-import { WHY_US } from "@/content/process";
+import { COPY, WHY_US } from "@/content/texts";
 import { SectionHead } from "../ui/SectionHead";
 import { revealOrder } from "@/lib/reveal";
 

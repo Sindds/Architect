@@ -1,4 +1,4 @@
-import type { SectionCopy } from '@/content/copy'
+import type { SectionCopy } from '@/content/texts'
 import { revealOrder } from '@/lib/reveal'
 import { nbsp } from '@/lib/typography'
 

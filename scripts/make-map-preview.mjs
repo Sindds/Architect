@@ -1,7 +1,7 @@
 /**
  * Статичное превью карты для футера: pnpm map:preview
  *
- * Склеивает тайлы OpenStreetMap вокруг SITE.geo в одну картинку src/assets/images/office-map.webp.
+ * Склеивает тайлы OpenStreetMap вокруг SITE.geo в одну картинку src/content/images/office-map.webp.
  * Картинка лежит на нашем сервере: посетитель видит район сразу, без запросов к сторонним сайтам и без cookie.
  * Интерактивная Яндекс Карта грузится поверх по клику или после согласия (src/components/OfficeMap.tsx).
  *
@@ -13,9 +13,9 @@
 import { readFileSync } from 'node:fs'
 import sharp from 'sharp'
 
-const site = readFileSync(new URL('../src/content/site.ts', import.meta.url), 'utf8')
+const site = readFileSync(new URL('../src/content/company.ts', import.meta.url), 'utf8')
 const geo = site.match(/geo:\s*\{\s*lat:\s*([\d.]+),\s*lon:\s*([\d.]+)/)
-if (!geo) throw new Error('Не нашёл SITE.geo в src/content/site.ts')
+if (!geo) throw new Error('Не нашёл geo в src/content/company.ts')
 const [lat, lon] = [Number(geo[1]), Number(geo[2])]
 
 const Z = 15 // точный адрес офиса: видны улицы и здания
@@ -51,6 +51,6 @@ const full = await canvas.png().toBuffer()
 await sharp(full)
   .extract({ left: pad, top: pad, width: W, height: H })
   .webp({ quality: 72 })
-  .toFile(new URL('../src/assets/images/office-map.webp', import.meta.url).pathname)
+  .toFile(new URL('../src/content/images/office-map.webp', import.meta.url).pathname)
 
-console.log(`Готово: ${tiles.length} тайлов, z=${Z}, центр ${lat}, ${lon} → src/assets/images/office-map.webp`)
+console.log(`Готово: ${tiles.length} тайлов, z=${Z}, центр ${lat}, ${lon} → src/content/images/office-map.webp`)

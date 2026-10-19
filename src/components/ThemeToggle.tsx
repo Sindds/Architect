@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { COMMON_TEXT as T } from '@/content/texts'
 import { THEME_KEY, type Theme } from '@/lib/theme'
 
 function applyTheme(next: Theme) {
@@ -42,8 +43,8 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
       type="button"
       onClick={toggle}
       className={`inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors ${className}`}
-      aria-label={dark ? 'Включить светлую тему' : 'Включить тёмную тему'}
-      title={dark ? 'Светлая тема' : 'Тёмная тема'}
+      aria-label={dark ? T.themeToLight : T.themeToDark}
+      title={dark ? T.themeLight : T.themeDark}
     >
       {dark ? <Sun aria-hidden className="size-5" strokeWidth={1.6} /> : <Moon aria-hidden className="size-5" strokeWidth={1.6} />}
     </button>

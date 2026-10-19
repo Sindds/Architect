@@ -4,12 +4,28 @@
 
 ## Под нового заказчика
 
-1. **Ключи и заявки.** `pnpm env:init` — создаст `.env.local` и случайные ключи защиты. Впишите почту (`SMTP_*`, `LEADS_EMAIL_TO`) или Битрикс24 (`B24_WEBHOOK_URL`), при желании Telegram. Проверка — `pnpm leads:check`, тестовая заявка — `pnpm leads:check --send`. На Vercel скопируйте переменные из `.env.local` в Project → Settings → Environment Variables. Подробно — `docs/INTEGRATIONS.md`.
-2. **Компания** — `src/content/site.ts`: название, телефон, почта, адрес и `postalAddress`, координаты `geo` (затем `pnpm map:preview`), часы, ссылки на Telegram, MAX, ВКонтакте и WhatsApp (`messengers`, в шаблоне заглушки), реквизиты `operator`, обработчики `processors` (хостинг, почтовый сервис). Что ещё не заполнено, покажет `legalReadiness(SITE)` из `src/content/legal.ts`.
-3. **Цены и сроки** — `src/content/pricing.ts`; проекты — `src/content/projects.ts`; тексты — `src/content/copy.ts`, `process.ts`, `people.ts` (отзывы — настоящие, со ссылкой `sourceUrl`; портреты — фото сотрудников с их согласия).
-4. **Картинки** — `src/assets/images` (WebP). После смены цен, фото первого экрана или логотипа — `pnpm seo:images` (значки и картинка для соцсетей) и `pnpm docs:pdf` (образцы договора и сметы).
-5. **Адрес сайта и поисковики** — `NEXT_PUBLIC_SITE_URL` (на Vercel без него берётся домен продакшена), `YANDEX_VERIFICATION` и `GOOGLE_SITE_VERIFICATION` — коды подтверждения из Вебмастера и Search Console, `NEXT_PUBLIC_METRIKA_ID` — Метрика.
-6. **Проверка** — `pnpm check`, `pnpm build`, `pnpm e2e`. Юридические тексты перед запуском читает юрист заказчика, оператор подаёт уведомление в Роскомнадзор (`docs/COMPLIANCE.md`).
+Всё, что меняется под заказчика, — в папке `src/content/`, карта «что где» — `src/content/README.md`.
+
+1. **Данные компании — один файл `src/content/company.ts`**: название, телефон, почта, адрес и точка на карте, часы, ссылки на Telegram, MAX, ВКонтакте и WhatsApp, реквизиты, обработчики данных. Поля с пометкой «ЗАМЕНИТЬ» в шаблоне — заглушки.
+2. **Тексты — `src/content/texts.ts`**: все надписи страницы по блокам (меню, заголовки, кнопки, формы, квиз, калькулятор, этапы, вопросы, футер). Проекты — `projects.ts`, команда и отзывы — `people.ts`, цены и пакеты — `pricing.ts`.
+3. **Картинки — папка `src/content/images/`**: новый файл под тем же именем заменяет старый, подписи — `media.ts`.
+4. **Пересобрать файлы**: `pnpm map:preview` (карта), `pnpm docs:pdf` (образцы договора и сметы), `pnpm seo:images` (значки и картинка для соцсетей).
+5. **Проверить**: `pnpm ready` — что ещё не заполнено и не настроено для публикации; `pnpm check`, `pnpm build`, `pnpm e2e`. Юридические тексты перед запуском читает юрист заказчика, оператор подаёт уведомление в Роскомнадзор (`docs/COMPLIANCE.md`).
+6. **Опубликовать** — раздел «Публикация» ниже.
+
+## Публикация
+
+Заявки доходят до менеджера только через подключённый канал: почту, Битрикс24 или 1С. Без него форма показывает «Не удалось отправить. Позвоните: …». На Vercel файл заявок на сервере не работает: там нельзя записывать файлы.
+
+**Vercel**
+
+1. `pnpm env:init` — создаст `.env.local` с ключами защиты формы (`LEAD_TOKEN_SECRET`, `SMETA_SIGNING_SECRET`, `RATE_LIMIT_SALT`). Шаблон со всеми переменными и подсказками, где их взять, — `docs/env.example`.
+2. Впишите в `.env.local` почту для заявок. Пример для Яндекс 360: `SMTP_HOST=smtp.yandex.ru`, `SMTP_PORT=465`, `SMTP_USER` — адрес ящика, `SMTP_PASS` — пароль приложения (id.yandex.ru → Безопасность → Пароли приложений), `LEADS_EMAIL_TO` — кому слать. Или Битрикс24: `B24_WEBHOOK_URL`. Подробно — `docs/INTEGRATIONS.md`.
+3. Проверьте: `pnpm leads:check` (вход на почтовый сервер), `pnpm leads:check --send` (тестовая заявка), `pnpm ready`.
+4. Vercel → проект → Settings → Environment Variables: добавьте переменные из `.env.local` и `NEXT_PUBLIC_SITE_URL` (адрес сайта, например `https://arcline.ru`). Затем Deployments → последний деплой → Redeploy: переменные применяются только к новой сборке.
+5. Отправьте заявку с сайта и убедитесь, что письмо пришло. Если чего-то не хватает, сборка на Vercel пишет предупреждение «⚠ Заявки: …» в журнал (Deployments → Build Logs).
+
+**Сервер в России** (152-ФЗ, ч. 5 ст. 18: данные граждан РФ первично хранятся в РФ — `docs/COMPLIANCE.md`): Node 20.9+, `pnpm install --frozen-lockfile && pnpm build && pnpm start`, переменные — в `.env.local` или в окружении процесса, перед сайтом — nginx или Caddy с HTTPS. Здесь работает и файл заявок (`LEADS_DIR` — постоянная папка).
 
 Контент, цифры и запреты — `docs/CONTENT-SPEC.md`. Исходный прототип — `legacy/` (только для чтения).
 
@@ -59,14 +75,15 @@ Playwright берёт Chromium из `CHROMIUM_PATH`, затем из `/opt/pw-br
 
 | Что | Файл |
 |---|---|
-| Компания, контакты, адрес, реквизиты, меню | `src/content/site.ts` |
+| Компания, контакты, адрес, реквизиты, мессенджеры | `src/content/company.ts` |
+| Все тексты страницы, меню, этапы, FAQ, ошибки формы | `src/content/texts.ts` |
+| Картинки и подписи `alt` | `src/content/images/`, `src/content/media.ts` |
 | Ставки, коэффициенты стилей, опции, состав пакетов | `src/content/pricing.ts` |
 | Формулы цены и срока | `src/lib/pricing.ts` (единственное место расчёта) |
 | Проекты и экспликация помещений | `src/content/projects.ts` |
-| Этапы, «Почему мы», FAQ | `src/content/process.ts` |
 | Команда и отзывы | `src/content/people.ts` |
-| Варианты первого экрана | `src/content/variants.ts` |
-| Фото и подписи `alt` | `src/content/media.ts` |
+| Рекламные варианты первого экрана | `src/content/variants.ts` (заголовки — `texts.ts`) |
+| Юридические страницы | `src/content/legal.ts` |
 
 Цены и сроки в разметке не пишутся руками — это проверяет `pnpm lint:content` вместе с чёрным списком формулировок из `CONTENT-SPEC.md` §2.
 

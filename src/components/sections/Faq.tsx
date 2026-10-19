@@ -1,6 +1,5 @@
 import { Plus } from 'lucide-react'
-import { COPY } from '@/content/copy'
-import { FAQ } from '@/content/process'
+import { COPY, FAQ } from '@/content/texts'
 import { SectionHead } from '../ui/SectionHead'
 import { revealOrder } from '@/lib/reveal'
 

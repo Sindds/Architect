@@ -3,7 +3,7 @@
 import { ArrowUpRight } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
-import { COPY } from '@/content/copy'
+import { COPY, PROJECTS_TEXT as T } from '@/content/texts'
 import { PRICING, STYLE_ORDER } from '@/content/pricing'
 import type { Project, Style } from '@/content/types'
 import { formatDaysFrom, formatMln } from '@/lib/format'
@@ -41,14 +41,14 @@ export function Projects({ projects }: { projects: Project[] }) {
   }, [projects])
   const [filter, setFilter] = useState<Style | 'all'>('all')
   const visible = filter === 'all' ? projects : projects.filter((p) => p.style === filter)
-  const filters: { key: Style | 'all'; label: string }[] = [{ key: 'all', label: 'Все' }, ...STYLE_ORDER.map((s) => ({ key: s, label: PRICING.styles[s].title }))]
+  const filters: { key: Style | 'all'; label: string }[] = [{ key: 'all', label: T.filterAll }, ...STYLE_ORDER.map((s) => ({ key: s, label: PRICING.styles[s].title }))]
 
   return (
     <section id="projects" aria-labelledby="projects-title" className="lazy-section border-t border-line">
       <div className="shell py-16 sm:py-24">
         <SectionHead id="projects-title" copy={COPY.sections.projects} />
 
-        <div className="mt-10 flex flex-wrap gap-2" role="group" aria-label="Фильтр по стилю">
+        <div className="mt-10 flex flex-wrap gap-2" role="group" aria-label={T.filterLabel}>
           {filters.map((f) => (
             <button key={f.key} type="button" aria-pressed={filter === f.key} onClick={() => setFilter(f.key)} className="chip">
               {f.label}
@@ -96,7 +96,7 @@ export function Projects({ projects }: { projects: Project[] }) {
                           </button>
                         </h3>
                         <p className="label num mt-1 font-medium text-[#d4d8dd]">
-                          терраса {p.terrace} м² · {p.floors === 1 ? '1 этаж' : `${p.floors} этажа`} · {formatDaysFrom(contour.days)}
+                          {T.terrace(p.terrace)} · {T.floors(p.floors)} · {formatDaysFrom(contour.days)}
                         </p>
                       </div>
                       <span aria-hidden className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-[#111315] transition-transform group-hover:rotate-45 motion-reduce:transition-none">
@@ -108,12 +108,12 @@ export function Projects({ projects }: { projects: Project[] }) {
                   <p className="mt-4 text-muted">{nbsp(p.tagline)}</p>
                   <dl className="num mt-3 grid grid-cols-2 gap-3">
                     <div className="card px-4 py-3">
-                      <dt className="text-sm text-muted">Тёплый контур</dt>
-                      <dd className="text-base font-semibold min-[400px]:text-lg">от {formatMln(contour.price)}</dd>
+                      <dt className="text-sm text-muted">{T.contour}</dt>
+                      <dd className="text-base font-semibold min-[400px]:text-lg">{T.from(formatMln(contour.price))}</dd>
                     </div>
                     <div className="card px-4 py-3">
-                      <dt className="text-sm text-muted">Под ключ</dt>
-                      <dd className="text-base font-semibold min-[400px]:text-lg">от {formatMln(turnkey.price)}</dd>
+                      <dt className="text-sm text-muted">{T.turnkey}</dt>
+                      <dd className="text-base font-semibold min-[400px]:text-lg">{T.from(formatMln(turnkey.price))}</dd>
                     </div>
                   </dl>
                 </article>

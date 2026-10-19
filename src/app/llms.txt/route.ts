@@ -1,5 +1,5 @@
 import { ADDON_ORDER, PRICING, STYLE_ORDER, TIER_ORDER } from '@/content/pricing'
-import { FAQ, STEPS, STEPS_EXAMPLE, WHY_US } from '@/content/process'
+import { FAQ, STEPS, STEPS_EXAMPLE, WHY_US } from '@/content/texts'
 import { PROJECTS } from '@/content/projects'
 import { SITE } from '@/content/site'
 import { formatDaysFrom, formatMln, formatMlnFrom, groupDigits } from '@/lib/format'

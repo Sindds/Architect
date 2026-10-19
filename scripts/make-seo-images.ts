@@ -47,7 +47,7 @@ async function icons() {
 
 async function ogImage() {
   const font = (file: string) => `data:font/ttf;base64,${readFileSync(path.join(root, 'scripts/pdf-fonts', file)).toString('base64')}`
-  const photo = await sharp(path.join(root, 'src/assets/images/hero-forest.webp')).resize(1200, 630, { fit: 'cover' }).jpeg({ quality: 85 }).toBuffer()
+  const photo = await sharp(path.join(root, 'src/content/images/hero-forest.webp')).resize(1200, 630, { fit: 'cover' }).jpeg({ quality: 85 }).toBuffer()
   const price = formatMlnFrom(minCalc('contour').price)
   const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>
 @font-face { font-family: Manrope; src: url(${font('manrope-700.ttf')}); font-weight: 700; }

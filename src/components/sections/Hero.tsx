@@ -1,6 +1,6 @@
 import { MapPin } from "lucide-react";
 import Image from "next/image";
-import { COPY } from "@/content/copy";
+import { COPY } from "@/content/texts";
 import { SITE } from "@/content/site";
 import type { VariantKey } from "@/content/types";
 import { nbsp } from "@/lib/typography";
@@ -62,7 +62,7 @@ export function Hero({ variant }: { variant: VariantKey }) {
           <div className="mt-5 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:flex-wrap sm:items-center">
             <QuizButton />
             <a href="#projects" className="btn btn-glass">
-              Смотреть проекты
+              {COPY.hero.projectsButton}
             </a>
           </div>
         </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { ArrowRight } from 'lucide-react'
-import { COPY } from '@/content/copy'
+import { COMMON_TEXT, COPY, PROJECT_MODAL_TEXT as T } from '@/content/texts'
 import { PRICING, TIER_ORDER } from '@/content/pricing'
 import type { Project } from '@/content/types'
 import { formatDays, formatRub, groupDigits } from '@/lib/format'
@@ -15,7 +15,7 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
   const style = project ? PRICING.styles[project.style] : undefined
 
   return (
-    <Modal open={Boolean(project)} onClose={onClose} title={project ? `${project.name} — ${style?.title.toLowerCase()} стиль, ${project.area} м²` : ''} testId="project-modal">
+    <Modal open={Boolean(project)} onClose={onClose} title={project && style ? T.title(project.name, style.title.toLowerCase(), project.area) : ''} testId="project-modal">
       {project && style && (
         <div className="grid gap-8 px-4 pb-8 pt-5 sm:px-8 lg:grid-cols-12">
           <div className="lg:col-span-7">
@@ -26,12 +26,12 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
             <p className="text-xl leading-snug font-semibold">{project.tagline}</p>
             <dl className="mt-5 grid grid-cols-2 border-t border-line sm:grid-cols-3">
               {[
-                ['Дом', `${project.area} м²`],
-                ['Терраса', `${project.terrace} м²`],
-                ['Этажей', project.floors],
-                ['Спален', project.bedrooms],
-                ['Санузлов', project.bathrooms],
-                ['Конструкция', style.construction],
+                [T.specs.house, `${project.area} м²`],
+                [T.specs.terrace, `${project.terrace} м²`],
+                [T.specs.floors, project.floors],
+                [T.specs.bedrooms, project.bedrooms],
+                [T.specs.bathrooms, project.bathrooms],
+                [T.specs.construction, style.construction],
               ].map(([k, v]) => (
                 <div key={String(k)} className="border-b border-line py-3 pr-3">
                   <dt className="label text-muted">{k}</dt>
@@ -40,14 +40,14 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
               ))}
             </dl>
 
-            <h3 className="label mt-6 text-muted">Цена и срок по пакетам</h3>
+            <h3 className="label mt-6 text-muted">{T.pricesTitle}</h3>
             <table className="num mt-2 w-full text-left">
-              <caption className="sr-only">Цена и срок строительства {project.name} по пакетам</caption>
+              <caption className="sr-only">{T.pricesCaption(project.name)}</caption>
               <thead className="sr-only">
                 <tr>
-                  <th scope="col">Пакет</th>
-                  <th scope="col">Цена</th>
-                  <th scope="col">Срок</th>
+                  <th scope="col">{T.columns.tier}</th>
+                  <th scope="col">{T.columns.price}</th>
+                  <th scope="col">{T.columns.days}</th>
                 </tr>
               </thead>
               <tbody>
@@ -65,11 +65,11 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                 })}
               </tbody>
             </table>
-            <p className="mt-2 text-sm text-muted">С террасой {project.terrace} м², без опций. Цена фиксируется в договоре.</p>
+            <p className="mt-2 text-sm text-muted">{T.pricesNote(project.terrace)}</p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
               <button type="button" className="btn btn-primary" onClick={() => calculateProject(project.slug)}>
-                Рассчитать этот проект
+                {T.calculate}
                 <span className="btn-dot">
                   <ArrowRight aria-hidden className="size-4" />
                 </span>
@@ -81,7 +81,7 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                   openLead({
                     title: COPY.smetaTitle,
                     source: 'project_modal',
-                    context: `Проект ${project.name}, ${project.area} м², под ключ`,
+                    context: T.leadContext(project.name, project.area),
                     smeta: {
                       area: project.area,
                       terrace: project.terrace,
@@ -95,13 +95,13 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                   })
                 }
               >
-                Получить смету в PDF
+                {COMMON_TEXT.getSmetaPdf}
               </button>
             </div>
           </div>
 
           <div className="lg:col-span-5">
-            <h3 className="label text-muted">Что в проекте</h3>
+            <h3 className="label text-muted">{T.features}</h3>
             <ul className="mt-3 grid gap-2">
               {project.features.map((f) => (
                 <li key={f} className="flex gap-3">
@@ -110,12 +110,12 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                 </li>
               ))}
             </ul>
-            <h3 className="label mt-6 text-muted">Конструктив</h3>
+            <h3 className="label mt-6 text-muted">{T.construction}</h3>
             <dl className="mt-2 grid gap-2">
               {[
-                ['Фундамент', project.construction.foundation],
-                ['Стены', project.construction.walls],
-                ['Остекление', project.construction.glazing],
+                [T.constructionRows.foundation, project.construction.foundation],
+                [T.constructionRows.walls, project.construction.walls],
+                [T.constructionRows.glazing, project.construction.glazing],
               ].map(([k, v]) => (
                 <div key={k} className="grid grid-cols-[7.5rem_1fr] gap-2">
                   <dt className="text-muted">{k}</dt>
@@ -126,7 +126,7 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
           </div>
 
           <div className="lg:col-span-7">
-            <h3 className="label text-muted">Распределение площадей</h3>
+            <h3 className="label text-muted">{T.areas}</h3>
             <div className={`mt-3 grid gap-6 ${project.explication.length > 1 ? 'sm:grid-cols-2' : ''}`}>
               {project.explication.map((floor) => (
                 <table key={floor.floor} className="num w-full text-left text-[0.9375rem]">
@@ -135,8 +135,8 @@ export function ProjectModal({ project, onClose }: { project: Project | undefine
                   </caption>
                   <thead className="sr-only">
                     <tr>
-                      <th scope="col">Помещение</th>
-                      <th scope="col">Площадь</th>
+                      <th scope="col">{T.roomColumns.room}</th>
+                      <th scope="col">{T.roomColumns.area}</th>
                     </tr>
                   </thead>
                   <tbody>

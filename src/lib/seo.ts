@@ -3,6 +3,7 @@ import { PROJECTS } from '@/content/projects'
 import { SITE } from '@/content/site'
 import type { Picture, Style } from '@/content/types'
 import { formatDaysFrom, formatMlnFrom, groupDigits } from './format'
+import { isPlaceholderLink, realEmail, realNumber } from './placeholders'
 import { minCalc, minPriceFor, projectPrice } from './pricing'
 
 /**
@@ -33,12 +34,6 @@ export const SEO = {
   description: seoDescription('Строительство загородных домов из клееного бруса и монолита'),
   ogTitle: `Дома из клееного бруса с панорамным остеклением — от ${plain(formatMlnFrom(contour.price))}`,
 }
-
-/** Номер не заглушка шаблона: после кода страны есть цифры кроме нулей (+7 000 000-00-00, ИНН 0000000000 — заглушки). */
-const realNumber = (value: string) => /[1-9]/.test(value.replace(/^\+?7/, ''))
-const realEmail = (value: string) => Boolean(value.trim()) && !value.endsWith('example.com')
-/** Ссылка-заглушка шаблона: после домена пусто или одни нули (t.me/+70000000000, vk.com/club0, max.ru/). */
-const isPlaceholderLink = (url: string) => !/[1-9a-z]/i.test(url.replace(/^https?:\/\/[^/]+\/?/, '').replace(/^(\+?7|club|u\/)/, ''))
 
 const image = (p: Picture) => absolute(p.src.src)
 

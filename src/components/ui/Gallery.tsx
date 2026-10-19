@@ -4,6 +4,7 @@ import { Maximize2 } from 'lucide-react'
 import Image from 'next/image'
 import { GALLERY_SIZES, warmPicture } from '@/lib/preload-image'
 import { useEffect, useState } from 'react'
+import { COMMON_TEXT } from '@/content/texts'
 import type { Picture } from '@/content/types'
 import { Modal } from './Modal'
 
@@ -26,7 +27,7 @@ export function Gallery({ pictures, label }: { pictures: Picture[]; label: strin
           type="button"
           onClick={() => setZoom(true)}
           className="group relative block w-full cursor-zoom-in overflow-hidden rounded-2xl bg-subtle"
-          aria-label={`Увеличить: ${current.alt}`}
+          aria-label={COMMON_TEXT.zoom(current.alt)}
         >
           <Image
             src={current.src}
@@ -44,14 +45,14 @@ export function Gallery({ pictures, label }: { pictures: Picture[]; label: strin
           </span>
         </button>
       </figure>
-      <div className="mt-3 grid grid-cols-3 gap-2" role="group" aria-label={`Изображения: ${label}`}>
+      <div className="mt-3 grid grid-cols-3 gap-2" role="group" aria-label={COMMON_TEXT.images(label)}>
         {pictures.map((p, i) => (
           <button
             key={p.alt}
             type="button"
             onClick={() => setIndex(i)}
             aria-pressed={i === index}
-            aria-label={`Показать: ${p.alt}`}
+            aria-label={COMMON_TEXT.show(p.alt)}
             className="relative cursor-pointer overflow-hidden rounded-xl bg-subtle outline-offset-2 aria-pressed:ring-2 aria-pressed:ring-accent-deco"
           >
             <Image src={p.src} alt="" sizes="200px" className="aspect-[16/10] w-full object-cover opacity-90 transition-opacity hover:opacity-100" />

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { startTransition, useActionState, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { issueLeadToken, submitLead } from '@/app/actions/lead'
 import { SITE } from '@/content/site'
+import { FORM_TEXT as T } from '@/content/texts'
 import { CONTACT_METHODS, HONEYPOT_FIELD, type LeadSource, type LeadState, SEND_FAILED } from '@/lib/lead-constants'
 import { maskRuPhoneEdit, phoneProblem } from '@/lib/phone'
 import type { SmetaInput } from '@/lib/smeta-token'
@@ -60,7 +61,7 @@ export function LeadForm({
   smeta,
   quiz,
   extended = false,
-  submitLabel = 'Отправить заявку',
+  submitLabel = T.submit,
   contactMethod = 'call',
   tone = 'light',
 }: LeadFormProps) {
@@ -126,11 +127,11 @@ export function LeadForm({
             <Check aria-hidden className="size-5" />
           </span>
           <div>
-            <p className="text-xl font-medium">Заявка №{state.id} принята.</p>
+            <p className="text-xl font-medium">{T.success(state.id)}</p>
             <p className={`mt-1 ${muted}`}>{SITE.callbackPromise}</p>
             {state.smeta && (
               <a href={state.smeta} download className={`btn mt-4 ${dark ? 'btn-light' : 'btn-primary'}`} data-testid="smeta-download">
-                Скачать смету (PDF)
+                {T.smetaDownload}
                 <span className="btn-dot">
                   <FileDown aria-hidden className="size-4" />
                 </span>
@@ -174,7 +175,7 @@ export function LeadForm({
       {/* Ловушка для ботов: скрыта от людей и скринридеров */}
       <div aria-hidden className="absolute -left-[9999px] size-px overflow-hidden">
         <label>
-          Компания
+          {T.honeypot}
           <input type="text" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" />
         </label>
       </div>
@@ -182,7 +183,7 @@ export function LeadForm({
       <div className={`grid gap-4 ${extended ? '' : 'sm:grid-cols-2'}`}>
         <div>
           <label htmlFor={`${uid}-name`} className="mb-1.5 block text-sm font-medium">
-            Имя
+            {T.name}
           </label>
           <input {...field('name')} type="text" autoComplete="name" required maxLength={60} className="field" value={name} onChange={(e) => setName(e.target.value)} />
           {errors.name && (
@@ -193,7 +194,7 @@ export function LeadForm({
         </div>
         <div>
           <label htmlFor={`${uid}-phone`} className="mb-1.5 block text-sm font-medium">
-            Телефон
+            {T.phone}
           </label>
           <input
             {...field('phone')}
@@ -218,7 +219,7 @@ export function LeadForm({
       {extended && (
         <>
           <fieldset>
-            <legend className="mb-2 text-sm font-medium">Как удобнее связаться</legend>
+            <legend className="mb-2 text-sm font-medium">{T.contactMethod}</legend>
             <div className="flex flex-wrap gap-2">
               {Object.entries(CONTACT_METHODS).map(([value, label]) => (
                 <label
@@ -242,7 +243,7 @@ export function LeadForm({
           </fieldset>
           <div>
             <label htmlFor={`${uid}-comment`} className="mb-1.5 block text-sm font-medium">
-              Комментарий <span className={muted}>(необязательно)</span>
+              {T.comment} <span className={muted}>{T.optional}</span>
             </label>
             <textarea
               {...field('comment')}
@@ -273,17 +274,17 @@ export function LeadForm({
             aria-describedby={errors.consent ? `${uid}-consent-error` : undefined}
           />
           <span>
-            Даю{' '}
+            {T.consentBefore}{' '}
             <Link href="/soglasie" className="link" target="_blank">
-              согласие на обработку персональных данных
+              {T.consentLink}
             </Link>
           </span>
         </label>
         {/* Согласие оформляется отдельно от других документов (ч. 1 ст. 9 152-ФЗ): политика — справка рядом, не часть флажка. */}
         <p className={`mt-1 text-sm ${muted}`}>
-          Как мы храним и защищаем данные, описано в{' '}
+          {T.policyBefore}{' '}
           <Link href="/privacy" className="link" target="_blank">
-            политике конфиденциальности
+            {T.policyLink}
           </Link>
           .
         </p>
@@ -300,7 +301,7 @@ export function LeadForm({
             {state.message}
             {!state.fieldErrors && (
               <>
-                {state.message.endsWith(':') ? ' ' : ' Или позвоните: '}
+                {state.message.endsWith(':') ? ' ' : ` ${T.orCall} `}
                 <a href={SITE.phoneHref} className="link num whitespace-nowrap">
                   {SITE.phoneDisplay}
                 </a>
@@ -311,7 +312,7 @@ export function LeadForm({
       </div>
 
       <button type="submit" className={`btn w-full sm:w-auto sm:justify-self-start ${dark ? 'btn-light' : 'btn-primary'}`} disabled={pending || !token}>
-        {pending ? 'Отправляем…' : submitLabel}
+        {pending ? T.sending : submitLabel}
         <span className="btn-dot">
           <ArrowUpRight aria-hidden className="size-4" />
         </span>

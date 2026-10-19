@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { type LegalDoc, operatorRequisites } from '@/content/legal'
 import { SITE } from '@/content/site'
+import { PAGES_TEXT } from '@/content/texts'
 import { ThemeToggle } from './ThemeToggle'
 import { Logo } from './ui/Logo'
 
@@ -9,18 +10,18 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
   return (
     <div className="min-h-dvh px-2 pt-2 pb-6 sm:px-4 sm:pt-4 md:px-6">
       <header className="mx-auto flex max-w-[94rem] items-center gap-2 rounded-full border border-line bg-surface py-1.5 pr-1.5 pl-3 shadow-xl sm:pl-5">
-        <Link href="/" className="mr-auto inline-flex min-h-11 items-center" aria-label={`${SITE.brandFull}, на главную`}>
+        <Link href="/" className="mr-auto inline-flex min-h-11 items-center" aria-label={PAGES_TEXT.homeLabel(SITE.brandFull)}>
           <Logo />
         </Link>
         <ThemeToggle className="border border-line hover:bg-subtle" />
         <Link href="/" className="btn btn-ghost">
           <ArrowLeft aria-hidden className="size-4" />
-          На главную
+          {PAGES_TEXT.toHome}
         </Link>
       </header>
       <main className="shell max-w-3xl py-14">
         <p className="label text-accent">
-          Версия {SITE.legalVersion.version} от {SITE.legalVersion.date}
+          {PAGES_TEXT.version(SITE.legalVersion.version, SITE.legalVersion.date)}
         </p>
         <h1 className="display mt-4 text-3xl leading-tight font-normal sm:text-4xl">{doc.title}</h1>
         <div className="mt-10 grid gap-4">

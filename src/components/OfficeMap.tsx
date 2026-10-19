@@ -3,8 +3,9 @@
 import { MapPin, MousePointerClick } from 'lucide-react'
 import Image from 'next/image'
 import { useState } from 'react'
-import preview from '@/assets/images/office-map.webp'
+import preview from '@/content/images/office-map.webp'
 import { SITE } from '@/content/site'
+import { MAP_TEXT as T } from '@/content/texts'
 import { useConsent } from '@/lib/consent'
 
 const { lat, lon, zoom } = SITE.geo
@@ -28,7 +29,7 @@ export function OfficeMap() {
         {show ? (
           <iframe
             src={widget}
-            title={`Карта: ${SITE.brandFull}, ${SITE.address}`}
+            title={T.frameTitle(SITE.brandFull, SITE.address)}
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
             className="block size-full border-0"
@@ -38,7 +39,7 @@ export function OfficeMap() {
             {/* Светлая карта OSM перекрашена под тёмный футер: инверсия с возвратом оттенков. */}
             <Image
               src={preview}
-              alt={`Карта района: ${SITE.address}`}
+              alt={T.previewAlt(SITE.address)}
               fill
               sizes="(min-width: 1024px) 60vw, 100vw"
               className="object-cover [filter:invert(0.92)_hue-rotate(180deg)_saturate(0.55)_brightness(0.95)]"
@@ -52,24 +53,24 @@ export function OfficeMap() {
             </span>
             <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-3 bg-gradient-to-t from-black/75 to-transparent p-4 pt-12">
               <button type="button" className="btn btn-light min-h-11" onClick={() => setAsked(true)}>
-                Интерактивная карта
+                {T.interactive}
                 <span className="btn-dot">
                   <MousePointerClick aria-hidden className="size-4" />
                 </span>
               </button>
-              <p className="max-w-[16rem] text-xs text-white/80">Откроется карта Яндекса: она ставит свои cookie.</p>
+              <p className="max-w-[16rem] text-xs text-white/80">{T.interactiveNote}</p>
             </div>
           </>
         )}
       </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 text-sm">
         <a href={external} target="_blank" rel="noopener" className="link inline-flex min-h-11 items-center">
-          Открыть в Яндекс Картах
+          {T.openInYandex}
         </a>
         {!show && (
           // Лицензия OpenStreetMap: подпись со ссылкой на условия обязательна.
           <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" className="link inline-flex min-h-11 items-center text-on-inverse-muted">
-            Картинка карты: © участники OpenStreetMap
+            {T.attribution}
           </a>
         )}
       </div>

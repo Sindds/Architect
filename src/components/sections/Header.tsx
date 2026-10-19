@@ -2,7 +2,7 @@
 
 import { ArrowUpRight, Menu, MessageCircle, Phone, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { COPY } from '@/content/copy'
+import { COPY, HEADER_TEXT as T } from '@/content/texts'
 import { SITE } from '@/content/site'
 import { useLanding } from '../LandingProvider'
 import { ThemeToggle } from '../ThemeToggle'
@@ -51,10 +51,10 @@ export function Header() {
       >
         <a href="#top" className="mr-auto inline-flex min-h-11 min-w-0 items-center">
           <Logo />
-          <span className="sr-only">, в начало страницы</span>
+          <span className="sr-only">{T.logoSuffix}</span>
         </a>
 
-        <nav aria-label="Разделы страницы" className="hidden xl:block">
+        <nav aria-label={T.navLabel} className="hidden xl:block">
           <ul className="flex items-center gap-0.5">
             {SITE.nav.map((item) => {
               const current = active === item.href
@@ -78,16 +78,16 @@ export function Header() {
         <a href={SITE.phoneHref} className="num hidden min-h-11 items-center px-3 text-sm font-semibold whitespace-nowrap md:inline-flex" data-testid="header-phone">
           {SITE.phoneDisplay}
         </a>
-        <a href={SITE.phoneHref} className={`inline-flex size-11 shrink-0 items-center justify-center rounded-full transition-colors md:hidden ${iconBtn}`} aria-label={`Позвонить: ${SITE.phoneDisplay}`} data-testid="header-phone-icon">
+        <a href={SITE.phoneHref} className={`inline-flex size-11 shrink-0 items-center justify-center rounded-full transition-colors md:hidden ${iconBtn}`} aria-label={T.call(SITE.phoneDisplay)} data-testid="header-phone-icon">
           <Phone aria-hidden className="size-5" strokeWidth={1.6} />
         </a>
-        <button type="button" onClick={messenger} data-messenger="form" className={`inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors ${iconBtn}`} aria-label="Написать в мессенджер">
+        <button type="button" onClick={messenger} data-messenger="form" className={`inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors ${iconBtn}`} aria-label={T.messenger}>
           <MessageCircle aria-hidden className="size-5" strokeWidth={1.6} />
         </button>
         <ThemeToggle className={iconBtn} />
         {/* Кнопка обещает расчёт — ведёт в калькулятор, а не в форму звонка. */}
         <a href="#calculator" className={`btn hidden whitespace-nowrap lg:inline-flex ${glass ? 'btn-light' : 'btn-primary'}`}>
-          Рассчитать стоимость
+          {T.calculate}
           <span className="btn-dot">
             <ArrowUpRight aria-hidden className="size-4" />
           </span>
@@ -96,7 +96,7 @@ export function Header() {
           type="button"
           onClick={() => menuRef.current?.showModal()}
           className={`inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors xl:hidden ${iconBtn}`}
-          aria-label="Открыть меню"
+          aria-label={T.openMenu}
         >
           <Menu aria-hidden className="size-5" strokeWidth={1.6} />
         </button>
@@ -104,7 +104,7 @@ export function Header() {
 
       <dialog
         ref={menuRef}
-        aria-label="Меню"
+        aria-label={T.menu}
         className="pointer-events-auto m-0 h-dvh max-h-dvh w-full max-w-full bg-[#0b0c0e] p-0 text-white"
         onClick={(e) => {
           if (e.target === e.currentTarget) menuRef.current?.close()
@@ -113,11 +113,11 @@ export function Header() {
         <div className="on-dark flex h-full flex-col px-6 pb-8">
           <div className="flex h-20 items-center justify-between border-b border-white/15">
             <Logo />
-            <button type="button" onClick={() => menuRef.current?.close()} className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full bg-white/10" aria-label="Закрыть меню">
+            <button type="button" onClick={() => menuRef.current?.close()} className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full bg-white/10" aria-label={T.closeMenu}>
               <X aria-hidden className="size-6" strokeWidth={1.6} />
             </button>
           </div>
-          <nav aria-label="Разделы страницы (мобильное меню)" className="mt-6">
+          <nav aria-label={T.navMobileLabel} className="mt-6">
             <ul className="grid gap-1">
               {SITE.nav.map((item) => (
                 <li key={item.href}>
@@ -134,7 +134,7 @@ export function Header() {
               <span className="mt-1 block text-sm font-normal text-[#b9bec6]">{SITE.hours}</span>
             </a>
             <a href="#calculator" className="btn btn-light w-full" onClick={() => menuRef.current?.close()}>
-              Рассчитать стоимость
+              {T.calculate}
               <span className="btn-dot">
                 <ArrowUpRight aria-hidden className="size-4" />
               </span>

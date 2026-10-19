@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { PRICING } from '@/content/pricing'
-import { STEPS } from '@/content/process'
+import { STEPS } from '@/content/texts'
 import { ESTIMATE_SAMPLE } from '@/content/estimate-sample'
 import { SITE } from '@/content/site'
 import { formatDays, formatRub, groupDigits } from '@/lib/format'

@@ -3,6 +3,7 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { CALC_LIMITS, PRICING, STYLE_ORDER } from '@/content/pricing'
+import { QUIZ_TEXT as T } from '@/content/texts'
 import type { Style } from '@/content/types'
 import { formatMlnRange } from '@/lib/format'
 import { priceFor } from '@/lib/pricing'
@@ -13,18 +14,17 @@ import { track } from '@/lib/analytics'
 // Сроки старта — относительно текущей даты, без зашитых годов (PLAN P5.3).
 const AREAS = [
   // Нижняя граница — минимальная площадь калькулятора, 100 м² (решение 12.10.2026).
-  { label: 'До 250 м²', range: [CALC_LIMITS.area.min, 250] },
-  { label: '250–350 м²', range: [250, 350] },
-  { label: '350–500 м²', range: [350, 500] },
-  { label: 'Больше 500 м²', range: [500, 700] },
+  { label: T.areas[0], range: [CALC_LIMITS.area.min, 250] },
+  { label: T.areas[1], range: [250, 350] },
+  { label: T.areas[2], range: [350, 500] },
+  { label: T.areas[3], range: [500, 700] },
 ] as const
 
-const STYLES = [...STYLE_ORDER.map((s) => ({ label: PRICING.styles[s].title, style: s as Style | null })), { label: 'Пока не знаю', style: null }]
+const STYLES = [...STYLE_ORDER.map((s) => ({ label: PRICING.styles[s].title, style: s as Style | null })), { label: T.styleUnknown, style: null }]
 
-const START = ['В ближайшие 3 месяца', 'В течение года', 'Пока изучаю варианты']
-const LAND = ['Участок есть', 'Покупаю участок', 'Участка пока нет']
-
-const QUESTIONS = ['Какую площадь дома Вы рассматриваете?', 'Какой стиль дома Вам ближе?', 'Когда планируете начать строительство?', 'У Вас уже есть участок?'] as const
+const START = T.start
+const LAND = T.land
+const QUESTIONS = T.questions
 
 export function Quiz() {
   const { openLead } = useLanding()
@@ -39,7 +39,7 @@ export function Quiz() {
     if (done) track('quiz_complete')
   }, [done])
 
-  const options: string[][] = [AREAS.map((a) => a.label), STYLES.map((s) => s.label), START, LAND]
+  const options: (readonly string[])[] = [AREAS.map((a) => a.label), STYLES.map((s) => s.label), START, LAND]
 
   const go = (next: number) => {
     setStep(next)
@@ -64,11 +64,10 @@ export function Quiz() {
       <div className="grid gap-6" data-testid="quiz-result">
         <div className="reveal card p-6 sm:p-8">
           <h3 ref={headingRef} tabIndex={-1} className="display text-2xl leading-tight font-bold outline-none sm:text-3xl">
-            Предварительная стоимость дома — {formatMlnRange(low, high)}
+            {T.result(formatMlnRange(low, high))}
           </h3>
           <p className="mt-3 text-muted">
-            Минимальная цена — за тёплый контур дома небольшой площади, максимальная — за дом максимальной площади под ключ. Терраса и дополнительные опции не учтены. Точную стоимость
-            рассчитаем после уточнения проекта и участка.
+            {T.resultNote}
           </p>
           <ul className="mt-5 grid gap-1.5 text-[0.9375rem]">
             {QUESTIONS.map((q, i) => (
@@ -79,7 +78,7 @@ export function Quiz() {
             ))}
           </ul>
           <button type="button" className="link mt-4 inline-flex min-h-11 cursor-pointer items-center text-muted" onClick={() => go(0)}>
-            Изменить ответы
+            {T.change}
           </button>
         </div>
         <div className="reveal flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
@@ -88,20 +87,20 @@ export function Quiz() {
             className="btn btn-primary w-full sm:w-auto"
             onClick={() =>
               openLead({
-                title: 'Получить расчёт',
+                title: T.submit,
                 source: 'quiz',
                 quiz: summary(),
-                context: `Вилка ${formatMlnRange(low, high)}`,
+                context: T.leadContext(formatMlnRange(low, high)),
                 extended: true,
               })
             }
           >
-            Получить расчёт
+            {T.submit}
             <span className="btn-dot">
               <ArrowRight aria-hidden className="size-4" />
             </span>
           </button>
-          <p className="text-sm text-muted">Свяжемся с Вами, уточним параметры участка и подготовим смету для Вашего проекта.</p>
+          <p className="text-sm text-muted">{T.submitNote}</p>
         </div>
       </div>
     )
@@ -112,9 +111,9 @@ export function Quiz() {
     <div className="reveal card p-6 sm:p-8" style={revealOrder(1)} data-testid="quiz">
       <div className="flex items-center gap-4">
         <p className="label num font-medium text-muted">
-          Вопрос {step + 1} из {QUESTIONS.length}
+          {T.counter(step + 1, QUESTIONS.length)}
         </p>
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-subtle" role="progressbar" aria-label="Прогресс квиза" aria-valuemin={0} aria-valuemax={QUESTIONS.length} aria-valuenow={step}>
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-subtle" role="progressbar" aria-label={T.progress} aria-valuemin={0} aria-valuemax={QUESTIONS.length} aria-valuenow={step}>
           <div className="h-full rounded-full bg-accent-deco transition-[width] duration-300 motion-reduce:transition-none" style={{ width: `${(step / QUESTIONS.length) * 100}%` }} />
         </div>
       </div>
@@ -152,11 +151,11 @@ export function Quiz() {
         {step > 0 && (
           <button type="button" className="btn btn-ghost" onClick={() => go(step - 1)}>
             <ArrowLeft aria-hidden className="size-4" />
-            Назад
+            {T.back}
           </button>
         )}
         <button type="button" className="btn btn-primary" disabled={current === null} onClick={() => go(step + 1)}>
-          {step === QUESTIONS.length - 1 ? 'Показать вилку цены' : 'Далее'}
+          {step === QUESTIONS.length - 1 ? T.finish : T.next}
           <span className="btn-dot">
             <ArrowRight aria-hidden className="size-4" />
           </span>

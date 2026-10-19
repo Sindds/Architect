@@ -1,5 +1,5 @@
 import { Check, Minus } from "lucide-react";
-import { COPY } from "@/content/copy";
+import { COMMON_TEXT, COPY, PRICING_TEXT as T } from "@/content/texts";
 import { PRICING, STYLE_ORDER, TIER_ORDER } from "@/content/pricing";
 import { PROJECTS } from "@/content/projects";
 import { SITE } from "@/content/site";
@@ -33,7 +33,7 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
 
       <ol
         className="mt-10 grid gap-4 lg:mt-14 lg:grid-cols-3"
-        aria-label="Пакеты готовности"
+        aria-label={T.listLabel}
       >
         {TIER_ORDER.map((tier, i) => {
           const t = PRICING.tiers[tier];
@@ -51,11 +51,11 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
                 <p
                   className={`label num ${featured ? "text-[#9fc0de]" : "text-accent"}`}
                 >
-                  Пакет {i + 1} из 3
+                  {T.counter(i + 1, TIER_ORDER.length)}
                 </p>
                 {featured && (
                   <span className="label rounded-full bg-white/10 px-3 py-1.5 font-medium">
-                    Для работы с дизайнером
+                    {T.featured}
                   </span>
                 )}
               </div>
@@ -66,12 +66,12 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
                 <caption
                   className={`label mb-2 text-left font-medium ${muted}`}
                 >
-                  Дом, ₽ за м²
+                  {T.tableCaption}
                 </caption>
                 <thead className="sr-only">
                   <tr>
-                    <th scope="col">Стиль</th>
-                    <th scope="col">Цена за м²</th>
+                    <th scope="col">{T.columns.style}</th>
+                    <th scope="col">{T.columns.price}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -84,7 +84,7 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
                         {PRICING.styles[style].title}
                       </th>
                       <td className="py-1 text-right font-semibold whitespace-nowrap sm:py-2">
-                        от {groupDigits(minPriceFor(tier, style))} ₽
+                        {T.priceFrom(groupDigits(minPriceFor(tier, style)))}
                       </td>
                     </tr>
                   ))}
@@ -93,7 +93,7 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
                       scope="row"
                       className={`py-1 pr-2 font-normal sm:py-2 ${muted}`}
                     >
-                      Терраса
+                      {T.terrace}
                     </th>
                     <td
                       className={`py-1 text-right whitespace-nowrap sm:py-2 ${muted}`}
@@ -104,14 +104,13 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
                 </tbody>
               </table>
               <p className={`mt-3 text-sm ${muted}`}>
-                Срок {formatDaysFrom(daysFor(minArea, tier))} для дома {minArea}{" "}
-                м²
+                {T.term(formatDaysFrom(daysFor(minArea, tier)), minArea)}
               </p>
 
               <PackageDetails
                 summaryClassName={`label mt-5 flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-medium ${muted}`}
               >
-                <h4 className={`label mt-2 font-medium ${muted}`}>Входит</h4>
+                <h4 className={`label mt-2 font-medium ${muted}`}>{T.includes}</h4>
                 <ul className="mt-2 grid gap-1.5">
                   {t.includes.map((x) => (
                     <li key={x} className="flex gap-2.5">
@@ -123,7 +122,7 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
                     </li>
                   ))}
                 </ul>
-                <h4 className={`label mt-5 font-medium ${muted}`}>Не входит</h4>
+                <h4 className={`label mt-5 font-medium ${muted}`}>{T.excludes}</h4>
                 <ul className={`mt-2 grid gap-1.5 ${muted}`}>
                   {t.excludes.map((x) => (
                     <li key={x} className="flex gap-2.5">
@@ -137,11 +136,11 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
                 source="pricing_pdf"
                 formTitle={COPY.smetaTitle}
                 intro={COPY.smetaIntro(smetaSize(smeta))}
-                context={`Пакет «${t.title}»`}
+                context={T.leadContext(t.title)}
                 smeta={smeta}
                 className={`btn mt-auto w-full ${featured ? "btn-light" : "btn-ghost"}`}
               >
-                Получить смету в PDF
+                {COMMON_TEXT.getSmetaPdf}
               </LeadButton>
               </div>
             </li>
@@ -150,15 +149,14 @@ export function Pricing({ defaultStyle }: { defaultStyle: Style }) {
       </ol>
 
       <p className="mt-8 max-w-3xl rounded-2xl bg-accent-soft p-5 text-fg">
-        Цена фиксируется в договоре и меняется только по дополнительному
-        соглашению, если Вы решите изменить проект.{" "}
+        {T.note}{" "}
         <a
           href={SITE.docs.contract}
           target="_blank"
           rel="noopener"
           className="link font-semibold"
         >
-          Образец договора (PDF)
+          {T.contractLink}
         </a>
       </p>
     </section>

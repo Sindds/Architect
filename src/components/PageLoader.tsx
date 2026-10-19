@@ -3,6 +3,7 @@
 import { Compass } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { SITE } from '@/content/site'
+import { COMMON_TEXT } from '@/content/texts'
 import { LOADER_KEY } from '@/lib/theme'
 
 // Лоадер по образцу: тёмный экран, компас, название и полоса загрузки.
@@ -61,7 +62,7 @@ export function PageLoader() {
   if (state === 'gone') return null
 
   return (
-    <div className="page-loader" data-state={state} data-testid="page-loader" role="status" aria-live="polite" aria-label="Загружаем страницу">
+    <div className="page-loader" data-state={state} data-testid="page-loader" role="status" aria-live="polite" aria-label={COMMON_TEXT.loaderLabel}>
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-[0.05]"
@@ -80,7 +81,7 @@ export function PageLoader() {
             <div className="h-full rounded-full bg-gradient-to-r from-[#5b7e9f] to-[#8eb7dc] transition-[width] duration-300" style={{ width: `${progress}%` }} />
           </div>
           <p className="label num mt-2 flex justify-between text-[#b9bec6]">
-            <span>{progress < 100 ? 'Загружаем' : 'Готово'}</span>
+            <span>{progress < 100 ? COMMON_TEXT.loaderProgress : COMMON_TEXT.loaderDone}</span>
             <span>{progress}%</span>
           </p>
         </div>

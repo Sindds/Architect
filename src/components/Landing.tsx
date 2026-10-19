@@ -1,3 +1,4 @@
+import { COMMON_TEXT } from '@/content/texts'
 import type { VariantKey } from '@/content/types'
 import { VARIANTS } from '@/content/variants'
 import { structuredData } from '@/lib/seo'
@@ -28,7 +29,7 @@ export function Landing({ variant }: { variant: VariantKey }) {
   return (
     <LandingProvider variant={variant}>
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-fg focus:px-5 focus:py-3 focus:text-bg">
-        Перейти к содержанию
+        {COMMON_TEXT.skipLink}
       </a>
       <PageLoader />
       <Header />

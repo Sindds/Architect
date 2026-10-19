@@ -2,6 +2,7 @@
 
 import { ArrowUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { COMMON_TEXT } from '@/content/texts'
 import { useConsent } from '@/lib/consent'
 
 /**
@@ -34,8 +35,8 @@ export function ScrollTopButton() {
     <button
       type="button"
       onClick={toTop}
-      aria-label="Наверх"
-      title="Наверх"
+      aria-label={COMMON_TEXT.scrollTop}
+      title={COMMON_TEXT.scrollTop}
       data-testid="scroll-top"
       data-shown={shown ? '' : undefined}
       inert={!shown}

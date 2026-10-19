@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Style } from '@/content/types'
 import { useLanding } from '../LandingProvider'
-import { COPY } from '@/content/copy'
+import { CALC_TABS, COPY } from '@/content/texts'
 import { SectionHead } from '../ui/SectionHead'
 import { Calculator } from './Calculator'
 import { Quiz } from './Quiz'
 
 const TABS = [
-  { key: 'calc', label: 'Калькулятор' },
-  { key: 'quiz', label: 'Квиз за 2 минуты' },
+  { key: 'calc', label: CALC_TABS.calculator },
+  { key: 'quiz', label: CALC_TABS.quiz },
 ] as const
 
 export function CalculatorSection({ defaultStyle }: { defaultStyle: Style }) {
@@ -41,7 +41,7 @@ export function CalculatorSection({ defaultStyle }: { defaultStyle: Style }) {
     <section id="calculator" tabIndex={-1} aria-labelledby="calc-title" className="border-t border-line py-16 outline-none sm:py-24">
       <div className="shell">
         <SectionHead id="calc-title" copy={COPY.sections.calculator} />
-        <div role="tablist" aria-label="Способ расчёта" className="mt-10 inline-flex gap-1 rounded-full border border-line bg-surface p-1">
+        <div role="tablist" aria-label={CALC_TABS.label} className="mt-10 inline-flex gap-1 rounded-full border border-line bg-surface p-1">
           {TABS.map((t, i) => (
             <button
               key={t.key}

@@ -1,11 +1,12 @@
 import { z } from 'zod'
+import { FORM_ERRORS as E } from '@/content/texts'
 import { CONTACT_METHODS, HONEYPOT_FIELD, LEAD_SOURCES, type LeadState } from './lead-constants'
 import { normalizePhone, phoneProblem } from './phone'
 
 export { CONTACT_METHODS, HONEYPOT_FIELD, LEAD_SOURCES, SEND_FAILED, type LeadSource, type LeadState } from './lead-constants'
 
 export const leadSchema = z.object({
-  name: z.string().trim().min(2, 'Укажите имя — не короче 2 символов').max(60, 'Имя — не длиннее 60 символов'),
+  name: z.string().trim().min(2, E.nameShort).max(60, E.nameLong),
   phone: z
     .string()
     .superRefine((v, ctx) => {
@@ -13,9 +14,9 @@ export const leadSchema = z.object({
       if (problem) ctx.addIssue({ code: 'custom', message: problem })
     })
     .transform((v) => normalizePhone(v) as string),
-  consent: z.literal('on', { message: 'Без согласия на обработку данных отправить заявку невозможно' }),
+  consent: z.literal('on', { message: E.consent }),
   contactMethod: z.enum(Object.keys(CONTACT_METHODS) as [keyof typeof CONTACT_METHODS]).default('call'),
-  comment: z.string().trim().max(1000, 'Комментарий — не длиннее 1000 символов').optional(),
+  comment: z.string().trim().max(1000, E.commentLong).optional(),
   source: z.enum(LEAD_SOURCES),
   context: z.string().max(200).optional(),
   variant: z.string().max(20).optional(),
@@ -64,7 +65,7 @@ export function validateLead(form: FormData): LeadState | { status: 'valid'; dat
       const key = String(issue.path[0] ?? '')
       if (['name', 'phone', 'consent', 'comment'].includes(key) && !fieldErrors[key]) fieldErrors[key] = issue.message
     }
-    return { status: 'error', message: 'Проверьте поля формы.', fieldErrors }
+    return { status: 'error', message: E.checkFields, fieldErrors }
   }
   return { status: 'valid', data: parsed.data }
 }

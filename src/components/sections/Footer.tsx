@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { operatorRequisites } from '@/content/legal'
 import { SITE } from '@/content/site'
+import { FOOTER_TEXT as T } from '@/content/texts'
 import { CookieSettingsButton } from '../CookieSettingsButton'
 import { OfficeMap } from '../OfficeMap'
 import { Logo } from '../ui/Logo'
@@ -18,8 +19,8 @@ export function Footer() {
             <Logo />
             <p className="mt-4 max-w-sm text-on-inverse-muted">{SITE.about}</p>
           </div>
-          <nav aria-label="Разделы страницы (футер)" className="lg:col-span-3">
-            <p className="label text-[#9fc0de]">Разделы</p>
+          <nav aria-label={T.navLabel} className="lg:col-span-3">
+            <p className="label text-[#9fc0de]">{T.sections}</p>
             <ul className="mt-3 grid">
               {SITE.nav.map((item) => (
                 <li key={item.href}>
@@ -31,7 +32,7 @@ export function Footer() {
             </ul>
           </nav>
           <div className="lg:col-span-4">
-            <p className="label text-[#9fc0de]">Контакты</p>
+            <p className="label text-[#9fc0de]">{T.contacts}</p>
             <ul className="mt-3 grid">
               <li>
                 <a href={SITE.phoneHref} className="link num inline-flex min-h-11 items-center text-lg font-semibold">
@@ -50,7 +51,7 @@ export function Footer() {
         </div>
         <div className="grid gap-6 border-b border-white/10 py-10 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <p className="label text-[#9fc0de]">Как добраться</p>
+            <p className="label text-[#9fc0de]">{T.route}</p>
             <p className="mt-3 max-w-sm text-on-inverse-muted">
               {SITE.address}. {SITE.hours}
             </p>
@@ -69,17 +70,17 @@ export function Footer() {
           <ul className="flex flex-wrap gap-x-5 text-sm">
             <li>
               <Link href="/privacy" className="link inline-flex min-h-11 items-center">
-                Политика конфиденциальности
+                {T.privacy}
               </Link>
             </li>
             <li>
               <Link href="/soglasie" className="link inline-flex min-h-11 items-center">
-                Согласие на обработку данных
+                {T.consent}
               </Link>
             </li>
             <li>
               <Link href="/cookies" className="link inline-flex min-h-11 items-center">
-                Файлы cookie
+                {T.cookies}
               </Link>
             </li>
             <li>

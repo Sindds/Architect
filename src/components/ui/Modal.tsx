@@ -2,6 +2,7 @@
 
 import { X } from 'lucide-react'
 import { useEffect, useId, useLayoutEffect, useRef } from 'react'
+import { COMMON_TEXT } from '@/content/texts'
 
 /**
  * Пока открыто хотя бы одно окно, страница зафиксирована на месте: body — position: fixed со сдвигом
@@ -95,7 +96,7 @@ export function Modal({ open, onClose, title, hideTitle, size = 'lg', children, 
               type="button"
               onClick={onClose}
               className="inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-subtle text-fg transition-colors hover:bg-fg hover:text-bg"
-              aria-label="Закрыть окно"
+              aria-label={COMMON_TEXT.closeWindow}
             >
               <X aria-hidden className="size-6" strokeWidth={1.5} />
             </button>

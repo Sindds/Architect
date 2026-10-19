@@ -1,24 +1,23 @@
 import { Camera, ClipboardCheck, ShieldCheck } from 'lucide-react'
 import Image from 'next/image'
-import { COPY } from '@/content/copy'
+import { COPY, PROCESS_TEXT as T, STEPS, STEPS_EXAMPLE } from '@/content/texts'
 import { MEDIA } from '@/content/media'
 import { PRICING } from '@/content/pricing'
-import { STEPS, STEPS_EXAMPLE } from '@/content/process'
 import { formatDays } from '@/lib/format'
 import { SectionHead } from '../ui/SectionHead'
 import { revealOrder } from '@/lib/reveal'
 
 const CONTROL = [
-  { icon: Camera, text: 'Каждую неделю присылаем фотоотчёт и актуальный график работ.' },
-  { icon: ClipboardCheck, text: 'Фундамент, утепление и инженерные коммуникации проверяем и фиксируем в актах с фотографиями до того, как они будут скрыты последующими работами.' },
-  { icon: ShieldCheck, text: 'При необходимости поможем организовать независимую проверку с участием Вашего технического надзора.' },
+  { icon: Camera, text: T.control[0] },
+  { icon: ClipboardCheck, text: T.control[1] },
+  { icon: ShieldCheck, text: T.control[2] },
 ]
 
 export function Process() {
   const total = STEPS.reduce((s, x) => s + x.days, 0)
   // День начала каждого этапа: 0, 30, 75, …
   const starts = STEPS.map((_, i) => STEPS.slice(0, i).reduce((s, x) => s + x.days, 0))
-  const lead = `На примере ${STEPS_EXAMPLE.project} ${STEPS_EXAMPLE.area} м², ${PRICING.tiers[STEPS_EXAMPLE.tier].title.toLowerCase()}: от начала работ до получения ключей проходит ${formatDays(total)}.`
+  const lead = T.lead(STEPS_EXAMPLE.project, STEPS_EXAMPLE.area, PRICING.tiers[STEPS_EXAMPLE.tier].title.toLowerCase(), formatDays(total))
 
   return (
     <section id="process" aria-labelledby="process-title" className="lazy-section border-t border-line">
@@ -34,14 +33,14 @@ export function Process() {
                 className={`flex items-center justify-center rounded-full ${i % 2 ? 'bg-accent-soft text-accent' : 'bg-fg text-bg'}`}
                 style={{ width: `${(s.days / total) * 100}%` }}
               >
-                <span className="label num">{s.days} дн.</span>
+                <span className="label num">{T.days(s.days)}</span>
               </div>
             ))}
           </div>
           <div className="label num relative mt-2 h-5 font-normal text-muted">
             {STEPS.map((s, i) => (
               <span key={s.title} className="absolute -translate-x-1/2 first:translate-x-0" style={{ left: `${((starts[i] ?? 0) / total) * 100}%` }}>
-                {i === 0 ? 'день 0' : starts[i]}
+                {i === 0 ? T.dayZero : starts[i]}
               </span>
             ))}
             <span className="absolute right-0">{total}</span>
@@ -53,7 +52,7 @@ export function Process() {
             <li key={s.title} style={revealOrder(i)} className="reveal">
               <div className="card card-hover grid h-full gap-x-4 p-5 min-[360px]:grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-1 lg:flex lg:flex-col">
               <div className="col-span-full flex items-center justify-between gap-3">
-                <span className="label num text-accent">Этап {i + 1}</span>
+                <span className="label num text-accent">{T.stage(i + 1)}</span>
                 <span className="label num rounded-full bg-subtle px-2.5 py-1 font-medium text-muted">{formatDays(s.days)}</span>
               </div>
               <div>
@@ -62,7 +61,7 @@ export function Process() {
               </div>
               <p className="num mt-3 min-[360px]:text-right sm:text-left lg:mt-auto lg:pt-5">
                 <span className="display text-3xl font-bold lg:text-4xl">{s.paymentPercent}%</span>
-                <span className="block text-sm text-muted">оплаты после акта</span>
+                <span className="block text-sm text-muted">{T.payment}</span>
               </p>
               </div>
             </li>
@@ -74,7 +73,7 @@ export function Process() {
             <Image src={MEDIA.processFrame.src} alt={MEDIA.processFrame.alt} placeholder="blur" sizes="(min-width: 1024px) 720px, 100vw" className="aspect-[16/9] w-full object-cover" />
           </div>
           <div className="reveal card p-6 sm:p-8 lg:col-span-5">
-            <h3 className="display text-2xl font-bold">Держите стройку под контролем, даже на расстоянии</h3>
+            <h3 className="display text-2xl font-bold">{T.controlTitle}</h3>
             <ul className="mt-5 grid gap-4">
               {CONTROL.map(({ icon: Icon, text }) => (
                 <li key={text} className="flex gap-3">

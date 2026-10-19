@@ -1,7 +1,7 @@
 'use client'
 
 import { ErrorScreen } from '@/components/ErrorScreen'
-import { COPY } from '@/content/copy'
+import { COPY } from '@/content/texts'
 import { fontVariables } from './fonts'
 import './globals.css'
 

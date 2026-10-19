@@ -1,6 +1,6 @@
 import { ArrowUpRight, Quote } from "lucide-react";
 import Image from "next/image";
-import { COPY } from "@/content/copy";
+import { COPY, PEOPLE_TEXT as T } from "@/content/texts";
 import { REVIEWS, TEAM } from "@/content/people";
 import { LeadButton } from "../LeadButton";
 import { SectionHead } from "../ui/SectionHead";
@@ -63,13 +63,11 @@ export function Team() {
         </ul>
         <div className="mt-6 flex flex-col items-start gap-4 rounded-3xl bg-accent-soft p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
           <p className="max-w-xl text-lg">
-            Не определились с проектом? Расскажите архитектору, каким Вы
-            представляете свой загородный дом. Он поможет определить Ваши
-            потребности и подобрать подходящее решение.
+            {T.architectNote}
           </p>
           <LeadButton
             source="architect"
-            formTitle="Обсудите свой будущий дом с архитектором"
+            formTitle={T.architectTitle}
             extended
             className="btn btn-primary shrink-0"
             icon={
@@ -78,7 +76,7 @@ export function Team() {
               </span>
             }
           >
-            Задать вопрос архитектору
+            {T.architectButton}
           </LeadButton>
         </div>
       </div>
@@ -122,7 +120,7 @@ export function Reviews() {
                     target="_blank"
                     rel="noopener"
                   >
-                    Отзыв на Яндекс Картах
+                    {T.reviewSource}
                   </a>
                 )}
               </figure>

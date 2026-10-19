@@ -1,3 +1,5 @@
+import { FORM_ERRORS } from '@/content/texts'
+
 /**
  * Номер +7 → E.164 (+7XXXXXXXXXX) или null. Принимает 8…, +7…, 7… и 10 цифр.
  * Код после +7 любой: Россия и Казахстан (+7 6xx, +7 7xx) — решение 17.10.2026.
@@ -12,10 +14,10 @@ export function normalizePhone(input: string): string | null {
 export function phoneProblem(input: string): string | null {
   if (normalizePhone(input)) return null
   let digits = input.replace(/\D/g, '')
-  if (!digits) return 'Укажите телефон'
+  if (!digits) return FORM_ERRORS.phoneEmpty
   if (digits.length === 11 && /^[78]/.test(digits)) digits = digits.slice(1)
-  if (digits.length < 10) return 'Номер неполный: нужно 10 цифр после +7'
-  return 'Лишние цифры: после +7 нужно ровно 10'
+  if (digits.length < 10) return FORM_ERRORS.phoneShort
+  return FORM_ERRORS.phoneLong
 }
 
 /** Маска ввода: «+7 (999) 123-45-67». */

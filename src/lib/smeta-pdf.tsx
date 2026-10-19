@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { Document, Font, Page, StyleSheet, Text, View, renderToBuffer } from '@react-pdf/renderer'
 import { PRICING } from '@/content/pricing'
-import { STEPS } from '@/content/process'
+import { STEPS } from '@/content/texts'
 import { SITE } from '@/content/site'
 import { formatDays, formatRub, groupDigits } from '@/lib/format'
 import { estimateFor } from '@/lib/pricing'

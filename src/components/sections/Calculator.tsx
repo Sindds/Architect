@@ -3,7 +3,7 @@
 import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { ADDON_ORDER, CALC_LIMITS, PRICING, STYLE_ORDER, TIER_ORDER } from '@/content/pricing'
-import { COPY } from '@/content/copy'
+import { CALCULATOR_TEXT as T, COMMON_TEXT, COPY } from '@/content/texts'
 import { getProject } from '@/content/projects'
 import type { AddonKey, Style, Tier } from '@/content/types'
 import { formatDays, formatRub, groupDigits } from '@/lib/format'
@@ -77,11 +77,11 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
   }
 
   const estimate = [
-    presetName ? `Проект ${presetName}` : null,
-    `${PRICING.styles[style].title}, ${area} м², терраса ${terrace} м²`,
+    presetName ? T.summary.project(presetName) : null,
+    T.summary.house(PRICING.styles[style].title, area, terrace),
     PRICING.tiers[tier].title,
     ...addons.map((a) => PRICING.addons[a].title),
-    `Итого ${formatRub(b.total)}, ${formatDays(b.days)}`,
+    T.summary.total(formatRub(b.total), formatDays(b.days)),
   ]
     .filter(Boolean)
     .join('; ')
@@ -91,17 +91,17 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
       <div ref={controlsRef} onChange={onInteract} className="card grid gap-7 p-5 sm:p-8 lg:col-span-7">
         {presetName && (
           <p className="label text-accent" role="status">
-            Подставили параметры проекта {presetName}. Меняйте их как хотите.
+            {T.preset(presetName)}
           </p>
         )}
         <div>
           <div className="flex items-end justify-between gap-4">
             <label htmlFor={`${uid}-area`} className="font-medium">
-              Площадь дома, м²
+              {T.area}
             </label>
             <input
               id={`${uid}-area-num`}
-              aria-label="Площадь дома, м², числом"
+              aria-label={T.areaNumber}
               inputMode="numeric"
               className="field num w-28 text-right"
               value={areaText}
@@ -133,7 +133,7 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
         <div>
           <div className="flex items-end justify-between gap-4">
             <label htmlFor={`${uid}-terrace`} className="font-medium">
-              Терраса, м²
+              {T.terrace}
             </label>
             <output htmlFor={`${uid}-terrace`} className="num font-medium">
               {terrace}
@@ -152,16 +152,16 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
         </div>
 
         <fieldset>
-          <legend className="mb-3 font-medium">Стиль</legend>
+          <legend className="mb-3 font-medium">{T.style}</legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {STYLE_ORDER.map((s) => (
-              <Choice key={s} type="radio" name={`${uid}-style`} checked={style === s} onChange={() => setStyle(s)} label={PRICING.styles[s].title} hint={`от ${groupDigits(minPriceFor(tier, s))} ₽/м²`} />
+              <Choice key={s} type="radio" name={`${uid}-style`} checked={style === s} onChange={() => setStyle(s)} label={PRICING.styles[s].title} hint={T.priceFrom(groupDigits(minPriceFor(tier, s)))} />
             ))}
           </div>
         </fieldset>
 
         <fieldset>
-          <legend className="mb-3 font-medium">Пакет</legend>
+          <legend className="mb-3 font-medium">{T.tier}</legend>
           <div className="grid gap-2 sm:grid-cols-3">
             {TIER_ORDER.map((t) => (
               <Choice key={t} type="radio" name={`${uid}-tier`} checked={tier === t} onChange={() => setTier(t)} label={PRICING.tiers[t].title} />
@@ -170,7 +170,7 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
         </fieldset>
 
         <fieldset>
-          <legend className="mb-3 font-medium">Опции</legend>
+          <legend className="mb-3 font-medium">{T.addons}</legend>
           <div className="grid gap-2">
             {ADDON_ORDER.map((a) => (
               <Choice
@@ -188,35 +188,35 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
         </fieldset>
       </div>
 
-      <aside ref={resultRef} aria-label="Результат расчёта" className="lg:col-span-5">
+      <aside ref={resultRef} aria-label={T.resultLabel} className="lg:col-span-5">
         <div className="on-dark sticky top-28 rounded-3xl border border-white/10 bg-inverse p-6 text-on-inverse shadow-2xl sm:p-8">
-          <p className="label text-[#9fc0de]">Предварительная смета</p>
+          <p className="label text-[#9fc0de]">{T.resultTitle}</p>
           <dl className="num mt-4 grid gap-0 text-[0.9375rem]">
-            <Row label={`Дом · ${area} м² × ${PRICING.styles[style].title.toLowerCase()}`} value={formatRub(b.house)} />
-            <Row label={`Терраса · ${terrace} м²`} value={formatRub(b.terrace)} />
+            <Row label={T.houseRow(area, PRICING.styles[style].title.toLowerCase())} value={formatRub(b.house)} />
+            <Row label={T.terraceRow(terrace)} value={formatRub(b.terrace)} />
             {b.addons.map((a) => (
               <Row key={a.key} label={a.title} value={formatRub(a.price)} />
             ))}
           </dl>
           <div className="mt-5 border-t border-white/15 pt-4" aria-live="polite">
-            <p className="text-sm text-on-inverse-muted">Итого, {PRICING.tiers[tier].title.toLowerCase()}</p>
+            <p className="text-sm text-on-inverse-muted">{T.total(PRICING.tiers[tier].title.toLowerCase())}</p>
             <p className="display num mt-1 text-[2.4rem] leading-none font-bold sm:text-[2.75rem]" data-testid="calc-total">
               {formatRub(b.total)}
             </p>
             <p className="num mt-3 flex flex-wrap gap-x-5 gap-y-1 text-on-inverse-muted">
-              <span>{formatRub(b.perM2)} за м²</span>
-              <span data-testid="calc-days">Срок — {formatDays(b.days)}</span>
+              <span>{T.perM2(formatRub(b.perM2))}</span>
+              <span data-testid="calc-days">{T.days(formatDays(b.days))}</span>
             </p>
           </div>
           <p className="mt-4 text-sm text-on-inverse-muted">
-            Это предварительный расчёт, итог округлён до {formatRub(ROUNDING_STEP)}. Твёрдую цену фиксируем в договоре по смете Вашего проекта: дальше она меняется, только если Вы сами меняете проект или комплектацию.
+            {T.note(formatRub(ROUNDING_STEP))}
           </p>
           <button
             type="button"
             className="btn btn-light mt-5 w-full"
             onClick={() => openLead({ title: COPY.smetaTitle, source: 'calculator', estimate, context: estimate, smeta: { area, terrace, style, tier, addons } })}
           >
-            Получить смету в PDF
+            {COMMON_TEXT.getSmetaPdf}
             <span className="btn-dot">
               <ArrowUpRight aria-hidden className="size-4" />
             </span>
@@ -230,7 +230,7 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
           className="on-dark fixed inset-x-2 bottom-2 z-30 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-inverse py-2 pr-2 pl-4 text-on-inverse shadow-2xl lg:hidden"
         >
           <div className="min-w-0">
-            <p className="text-xs text-on-inverse-muted">Итого, {PRICING.tiers[tier].title.toLowerCase()}</p>
+            <p className="text-xs text-on-inverse-muted">{T.total(PRICING.tiers[tier].title.toLowerCase())}</p>
             <p className="display num truncate text-xl font-bold">{formatRub(b.total)}</p>
           </div>
           <button
@@ -238,7 +238,7 @@ export function Calculator({ defaultStyle }: { defaultStyle: Style }) {
             className="btn btn-light shrink-0"
             onClick={() => resultRef.current?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' })}
           >
-            Смета
+            {T.stickyButton}
             <span className="btn-dot">
               <ArrowUpRight aria-hidden className="size-4" />
             </span>
